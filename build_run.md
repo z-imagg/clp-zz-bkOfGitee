@@ -71,7 +71,7 @@ export PATH=$LLVM_HOME/bin:$PATH
 > 继续换
 ```bash
 sudo docker pull kernelci/clang-15:latest
-sudo docker --security-opt seccomp=unconfined run --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
+sudo docker  run   --security-opt seccomp=unconfined   --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
 sudo docker exec -it  centos7_clang15Plugin_devEnv  bash
 
 #
