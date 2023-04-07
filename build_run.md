@@ -62,6 +62,7 @@ sudo docker exec -it  centos7_clangPlugin_devEnv  bash
 
 ```bash
 export LLVM_HOME=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
+export  LD_LIBRARY_PATH=$LLVM_HOME/lib:$LLVM_HOME/libexec:$LLVM_HOME/lib/clang/15.0.0/lib/x86_64-unknown-linux-gnu/
 export PATH=$LLVM_HOME/bin:$PATH
 #报错 glibc2.7找不到
 ```
