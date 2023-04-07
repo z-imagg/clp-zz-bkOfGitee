@@ -75,6 +75,14 @@ sudo docker exec -it  centos7_clang15Plugin_devEnv  bash
 ```
 
 ```bash
+#apt设置清华镜像源
+
+
+apt --allow-unauthenticated update
+apt install cmake
+```
+
+```bash
 which clang
 #/usr/lib/llvm-15/bin/clang
 
