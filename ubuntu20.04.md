@@ -19,7 +19,7 @@ tar -xvf clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar -C /llvm_release_home/
 ```bash
 sudo systemctl start docker
 sudo docker pull ubuntu:20.04
-sudo docker run --name ubuntu2004_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ ubuntu:20.04
+sudo docker run --name ubuntu2004_clangPlugin_devEnv -itd -p 2201:22 -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ ubuntu:20.04
 sudo docker exec -it  ubuntu2004_clangPlugin_devEnv  bash
 ```
 
