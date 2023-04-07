@@ -57,6 +57,5 @@ export Clang_DIR=/usr/lib/llvm-15/
 sudo systemctl start docker
 sudo docker pull centos:7
 sudo docker run --name centos7_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ centos:7
-sudo docker exec -it  openjdk_compile  centos7_clangPlugin_devEnv
 sudo docker exec -it  centos7_clangPlugin_devEnv  bash
 ```
