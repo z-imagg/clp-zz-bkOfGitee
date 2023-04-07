@@ -23,7 +23,7 @@ sudo docker run --name centos8_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm
 sudo docker exec -it  centos8_clangPlugin_devEnv  bash
 ```
 ```bash
-#centos7 清华镜像源
+#centos8 清华镜像源; 并使用此纠正清华镜像centos8路径问题： https://blog.csdn.net/SuvanCode/article/details/123334021
 yum info cmake 
 yum install cmake
 ```
