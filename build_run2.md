@@ -30,6 +30,8 @@ yum install cmake gcc
 
 export LLVM_HOME=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
 export PATH=$LLVM_HOME/bin/:$PATH
+
+#centos8 报错： /usr/bin/ld: cannot find -lstdc++
 ```
   
 
