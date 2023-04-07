@@ -18,9 +18,14 @@ tar -xvf clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar -C /llvm_release_home/
 
 ```bash
 sudo systemctl start docker
-sudo docker pull centos:7
-sudo docker run --name centos7_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ centos:7
-sudo docker exec -it  centos7_clangPlugin_devEnv  bash
+sudo docker pull centos:8
+sudo docker run --name centos8_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ centos:8
+sudo docker exec -it  centos8_clangPlugin_devEnv  bash
+```
+```bash
+#centos7 清华镜像源
+yum info cmake 
+yum install cmake
 ```
   
 
