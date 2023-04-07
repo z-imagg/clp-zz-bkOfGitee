@@ -52,3 +52,13 @@ $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.so -plugin hello-world $CLANG_TU
 
 
 ```
+
+```bash
+
+cd build
+cmake -DCT_Clang_INSTALL_DIR=$Clang_DIR $CLANG_TUTOR_DIR/
+make
+##报错：more undefined references to `std::__throw_bad_array_new_length()' follow
+#看起来是ubuntu20.04 bug: https://github.com/votca/votca/issues/941     ,  https://bugs.launchpad.net/votca/+bug/1956898
+
+```
