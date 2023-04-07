@@ -34,6 +34,9 @@ make
 ##正常编译
 $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.so -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
 
+#(clang-tutor)  file: /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor//test/HelloWorld-basic.cpp
+#(clang-tutor)  count: 3
+
 
 
 ```
