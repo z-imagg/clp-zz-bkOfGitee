@@ -43,7 +43,7 @@ apt install cmake
 
 ```bash 
  
-export Clang_DIR=/pubx/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
+export Clang_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
 export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
 cd $CLANG_TUTOR_DIR
 mkdir build
