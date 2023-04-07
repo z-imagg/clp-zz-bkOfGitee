@@ -26,7 +26,10 @@ sudo docker exec -it  centos8_clangPlugin_devEnv  bash
 #centos7的cmake版本为2.x，版本太低，不符合这个项目要求的cmake版本
 #centos8 清华镜像源; 并使用此纠正清华镜像centos8路径问题： https://blog.csdn.net/SuvanCode/article/details/123334021
 yum info cmake 
-yum install cmake
+yum install cmake gcc
+
+export LLVM_HOME=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
+export PATH=$LLVM_HOME/bin/:$PATH
 ```
   
 
