@@ -24,7 +24,13 @@ sudo docker exec -it  ubuntu2004_clangPlugin_devEnv  bash
 ```
 
   
-
+```bash
+#清华镜像源ubuntu
+apt install iproute2 curl openssh-server -y
+echo """PermitRootLogin yes""" >>  /etc/ssh/sshd_config
+/etc/init.d/ssh start
+#/etc/init.d/ssh restart
+```
 
 
 ```bash 
