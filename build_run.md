@@ -94,8 +94,8 @@ which clang
 #/usr/lib/llvm-15/bin/clang
 
 
-export Clang_DIR=/usr/lib/llvm-15/
-export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
+#export Clang_DIR=/usr/lib/llvm-15/
+export Clang_DIR=/pubx/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
 cd $CLANG_TUTOR_DIR
 mkdir build
 cd build
@@ -103,5 +103,5 @@ cmake -DCT_Clang_INSTALL_DIR=$Clang_DIR $CLANG_TUTOR_DIR/HelloWorld/
 make
 # Run the plugin
 $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
-
+##正常编译
 ```
