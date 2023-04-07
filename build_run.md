@@ -73,3 +73,20 @@ sudo docker pull kernelci/clang-15:latest
 sudo docker run --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
 sudo docker exec -it  centos7_clang15Plugin_devEnv  bash
 ```
+
+```bash
+which clang
+#/usr/lib/llvm-15/bin/clang
+
+
+export Clang_DIR=/usr/lib/llvm-15/
+export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang-plugins-demo/clang-tutor/
+cd $CLANG_TUTOR_DIR
+mkdir build
+cd build
+cmake -DCT_Clang_INSTALL_DIR=$Clang_DIR $CLANG_TUTOR_DIR/HelloWorld/
+make
+# Run the plugin
+$Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
+
+```
