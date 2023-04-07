@@ -71,13 +71,16 @@ export PATH=$LLVM_HOME/bin:$PATH
 > 继续换
 ```bash
 sudo docker pull kernelci/clang-15:latest
-sudo docker run --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
+sudo docker --security-opt seccomp=unconfined run --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
 sudo docker exec -it  centos7_clang15Plugin_devEnv  bash
+
+#
 ```
 
 ```bash
 #apt设置清华镜像源
-
+# NO_PUBKEY 871920D1991BC93C 报错，解决： https://www.ljy2345.com/2022/08/docker-run-ubuntu-22-04-appear-no_pubkey-871920d1991bc93c/
+# docker启动时加参数 --security-opt seccomp=unconfined  
 
 apt --allow-unauthenticated update
 apt install cmake
