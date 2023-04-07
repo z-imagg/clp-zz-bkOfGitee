@@ -30,10 +30,10 @@ make
 # Run the plugin
 $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
 
+#总是报错： libstdc++找不到
 ```
 
 
-> 总是报错： libstdc++找不到
 
 ---------------
 >换个办法
@@ -44,4 +44,6 @@ readlink -f  `which clang++-15`
 
 export PATH=/usr/lib/llvm-15/bin/:$PATH
 export Clang_DIR=/usr/lib/llvm-15/
+
+#报错："/usr/lib/llvm-15/lib/libclangBasic.a"
 ```
