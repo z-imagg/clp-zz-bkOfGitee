@@ -19,6 +19,7 @@ sudo docker exec -it  opensuse_leap154_clangPlugin_devEnv  bash
 
 
 ```bash
+#opensuse 清华镜像设置：https://mirrors.tuna.tsinghua.edu.cn/help/opensuse/
 zypper info  cmake     #版本: 3.20.4-150400.2.5
 zypper install   cmake
 zypper install binutils-gold
