@@ -69,6 +69,7 @@ export PATH=$LLVM_HOME/bin:$PATH
 
 ------------
 > 继续换
+> 主机os改为ubuntu20.04
 ```bash
 sudo docker pull kernelci/clang-15:latest
 sudo docker  run   --security-opt seccomp=unconfined   --name centos7_clang15Plugin_devEnv -itd -v /pubx/:/pubx/   kernelci/clang-15:latest
@@ -83,6 +84,8 @@ sudo docker exec -it  centos7_clang15Plugin_devEnv  bash
 # docker启动时加参数 --security-opt seccomp=unconfined  
 
 apt --allow-unauthenticated update
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
 apt install cmake
 ```
 
