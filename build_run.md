@@ -21,7 +21,7 @@ export LD_LIBRARY_PATH=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhe
 
 ```bash
 export Clang_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
-export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang-plugin-demo/clang-tutor/
+export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
 cd $CLANG_TUTOR_DIR
 mkdir build
 cd build
@@ -92,7 +92,7 @@ which clang
 
 
 export Clang_DIR=/usr/lib/llvm-15/
-export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang-plugin-demo/clang-tutor/
+export CLANG_TUTOR_DIR=/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
 cd $CLANG_TUTOR_DIR
 mkdir build
 cd build
