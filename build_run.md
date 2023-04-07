@@ -59,3 +59,14 @@ sudo docker pull centos:7
 sudo docker run --name centos7_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ centos:7
 sudo docker exec -it  centos7_clangPlugin_devEnv  bash
 ```
+
+```bash
+export LLVM_HOME=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/
+export PATH=$LLVM_HOME/bin:$PATH
+```
+
+------------
+> 继续换
+```bash
+docker pull kernelci/clang-15:latest
+```
