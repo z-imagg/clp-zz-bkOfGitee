@@ -52,3 +52,8 @@ export Clang_DIR=/usr/lib/llvm-15/
 -------------
 > 继续换成： docker
 > [install docker at ubuntu ](https://docs.docker.com/engine/install/ubuntu/)
+
+```bash
+sudo systemctl start docker
+docker pull centos:7
+```
