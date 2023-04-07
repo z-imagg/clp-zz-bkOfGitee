@@ -39,5 +39,9 @@ $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $
 >换个办法
 ```bash
 sudo apt install clang-15 -y
+readlink -f  `which clang++-15`
+#/usr/lib/llvm-15/bin/clang
+
+export PATH=/usr/lib/llvm-15/bin/:$PATH
 export Clang_DIR=/usr/lib/llvm-15/
 ```
