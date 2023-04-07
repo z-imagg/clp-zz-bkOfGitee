@@ -12,7 +12,11 @@ sudo mkdir /llvm_release_home/
 sudo chown -R z.z /llvm_release_home
 tar -xvf clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar -C /llvm_release_home/
 
+```
+
+```bash
 export PATH=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/:$PATH
+export LD_LIBRARY_PATH=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib
 ```
 
 ```bash
