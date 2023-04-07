@@ -31,9 +31,9 @@ mkdir build
 cd build
 cmake -DCT_Clang_INSTALL_DIR=$Clang_DIR $CLANG_TUTOR_DIR/HelloWorld/
 make
-# Run the plugin
-$Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
 ##正常编译
+$Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.so -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
+
 
 
 ```
