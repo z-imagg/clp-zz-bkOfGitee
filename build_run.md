@@ -31,3 +31,13 @@ make
 $Clang_DIR/bin/clang -cc1 -load ./libHelloWorld.{so|dylib} -plugin hello-world $CLANG_TUTOR_DIR/test/HelloWorld-basic.cpp
 
 ```
+
+
+> 总是报错： libstdc++找不到
+
+---------------
+>换个办法
+```bash
+sudo apt install clang-15 -y
+export Clang_DIR=/usr/lib/llvm-15/
+```
