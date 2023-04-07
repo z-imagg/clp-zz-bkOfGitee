@@ -47,6 +47,7 @@ cmake -DCT_Clang_INSTALL_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-g
 make
 #正常编译
 
+#编译出的插件如下：
 find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libLACommenter.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
