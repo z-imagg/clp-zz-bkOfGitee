@@ -18,9 +18,9 @@ tar -xvf clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar -C /llvm_release_home/
 
 ```bash
 sudo systemctl start docker
-sudo docker pull centos:8
-sudo docker run --name centos8_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ centos:8
-sudo docker exec -it  centos8_clangPlugin_devEnv  bash
+sudo docker pull ubuntu:22.04
+sudo docker run --name ubuntu2204_clangPlugin_devEnv -itd -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ ubuntu:22.04
+sudo docker exec -it  ubuntu2204_clangPlugin_devEnv  bash
 ```
 ```bash
 #centos7的cmake版本为2.x，版本太低，不符合这个项目要求的cmake版本
