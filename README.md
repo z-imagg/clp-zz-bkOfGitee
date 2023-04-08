@@ -17,6 +17,7 @@ sudo docker pull opensuse/leap:15.4
 sudo docker run --name opensuse_leap154_clang15Plugin_devEnv -itd -p 2201:22 -v /pubx/:/pubx/ -v /llvm_release_home/:/llvm_release_home/ opensuse/leap:15.4
 sudo docker exec -it  opensuse_leap154_clang15Plugin_devEnv  bash
 ```
+> 假定宿主机ip为: 192.168.71.128,  则 ssh root@192.168.71.128:2201 可以访问 docker实例opensuse_leap154_clang15Plugin_devEnv
 
 
 > opensuse 清华镜像设置：https://mirrors.tuna.tsinghua.edu.cn/help/opensuse/
@@ -88,3 +89,20 @@ find `pwd` -name "*.so"
 
 
 # 步骤2. clion 2022.3.3 Remote Development (远程开发) 基于  "步骤1. opensuse/leap:15.4 命令行下编译"
+## 2.1. 安装clion 2022.3.3, 
+
+
+## 2.2. crack 
+> crack参照：[jetbrains_crack](https://gitcode.net/pubx/jetbrains/jetbrains_crack)
+
+## 2.3 准备
+1. 下载CLion-2022.3.3.tar.gz: 
+2. git clone待开发项目仓库 clang_plugin_demo/clang-tutor
+
+## 2.3. clion 2022.3.3 Remote Development (远程开发)
+> 打开 win10上刚安装好的 clion2022.3.3
+1. "File" --> 
+2. "Remote Development" --> "ssh", "New Connection" --> 192.168.71.128:2201,root,root --> 
+3. "Check Connection and Continue" -->  "Installation options" :"upload installer file"  -->
+4. "Select .tar.gz file" : "C:/Users/zzz/Downloads/CLion-2022.3.3.tar.gz"（win10中刚刚下载的CLion-2022.3.3.tar.gz） -->
+5. "Project directory" : "/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor" --> "Upload IDE and Connect"
