@@ -3,6 +3,16 @@ project(clang-tutor)
 
 #===============================================================================
 # 0. GET CLANG INSTALLATION DIR
+#cmake -DCT_Clang_INSTALL_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/  -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCURSES_LIBRARY=/lib64/libncurses.so.6 -DCURSES_INCLUDE_PATH=/usr/include/   -DCMAKE_EXPORT_COMPILE_COMMANDS=True   -DCMAKE_C_COMPILER=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -DCMAKE_CXX_COMPILER=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++    -DLLVM_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4 ..
+set(CT_Clang_INSTALL_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CURSES_LIBRARY "/lib64/libncurses.so.6")
+set(CURSES_INCLUDE_PATH "/usr/include/")
+set(CMAKE_EXPORT_COMPILE_COMMANDS True)
+set(CMAKE_C_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang")
+set(CMAKE_CXX_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++")
+set(LLVM_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
+#set(xxx "")
 #===============================================================================
 # In clang-tutor, `CT_Clang_INSTALL_DIR` is the key CMake variable - it points
 # to a Clang installation directory. For the sake of completeness,
@@ -11,17 +21,18 @@ project(clang-tutor)
 #   https://cmake.org/cmake/help/latest/command/find_package.html
 # Use only _one_ of these variables.
 
-if(DEFINED Clang_ROOT)
-  set(CT_CLANG_PACKAGE_DIR "${Clang_ROOT}/../../..")
-elseif(DEFINED Clang_DIR)
-  set(CT_CLANG_PACKAGE_DIR "${Clang_DIR}/../../..")
-endif()
-mark_as_advanced(CT_CLANG_PACKAGE_DIR)
+#if(DEFINED Clang_ROOT)
+#  set(CT_CLANG_PACKAGE_DIR "${Clang_ROOT}/../../..")
+#elseif(DEFINED Clang_DIR)
+#  set(CT_CLANG_PACKAGE_DIR "${Clang_DIR}/../../..")
+#endif()
+#mark_as_advanced(CT_CLANG_PACKAGE_DIR)
 
 # Set this to a valid Clang installation directory. This is most likely where
 # LLVM is installed on your system.
-set(CT_Clang_INSTALL_DIR "${CT_CLANG_PACKAGE_DIR}" CACHE PATH
-  "Clang installation directory")
+#set(CT_Clang_INSTALL_DIR "${CT_CLANG_PACKAGE_DIR}" CACHE PATH
+#  "Clang installation directory")
+set(CT_Clang_INSTALL_DIR "${CT_Clang_INSTALL_DIR}")
 
 #===============================================================================
 # 1. VERIFY CLANG INSTALLATION DIR
