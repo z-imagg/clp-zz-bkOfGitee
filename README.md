@@ -60,7 +60,11 @@ curl localhost:22
 zypper info  cmake     #版本: 3.20.4-150400.2.5
 zypper install  -y cmake
 zypper install -y  binutils-gold
-zypper install -y gcc
+
+#zypper install -y gcc #gcc包含了libasan4，gcc太大，只需要libasan4即可
+zypper info libasan4   #Version        : 7.5.0+r278197-4.30.1
+zypper install -y libasan4
+
 zypper install -y libstdc++6 libstdc++-devel
 ```
 
