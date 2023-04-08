@@ -106,3 +106,6 @@ find `pwd` -name "*.so"
 3. "Check Connection and Continue" -->  "Installation options" :"upload installer file"  -->
 4. "Select .tar.gz file" : "C:/Users/zzz/Downloads/CLion-2022.3.3.tar.gz"（win10中刚刚下载的CLion-2022.3.3.tar.gz） -->
 5. "Project directory" : "/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor" --> "Upload IDE and Connect"
+
+>详见下图
+![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/clion2022.3.3-remote-development.png)
