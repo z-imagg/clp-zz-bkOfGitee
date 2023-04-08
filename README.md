@@ -138,7 +138,7 @@ find `pwd` -name "*.so"
 ![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/clion2022.3.3-remote-development.png)
 
 ## 2.4 构建
-![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/build_helloworld.png)
+![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/compile_helloworld.png)
 
 ## 2.5 调试
 ```bash
