@@ -44,7 +44,10 @@ zypper install  -y gdb
 
 ```bash
 zypper install  -y openssh-server
+
 ssh-keygen -A
+#ssh-keygen: generating new host keys: RSA DSA ECDSA ED25519
+
 echo """PermitRootLogin yes""" >>  /etc/ssh/sshd_config
 /usr/sbin/sshd  -f /etc/ssh/sshd_config
 #如何重启sshd: 先kill, 再启动
