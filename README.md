@@ -65,17 +65,8 @@ zypper install -y libstdc++6 libstdc++-devel
 
 ```bash
 
-#zypper install -y gcc #gcc包含了libasan4，gcc太大，只需要libasan4即可
-zypper info libasan4   #Version        : 7.5.0+r278197-4.30.1
-zypper install -y libasan4
-
-ldconfig -p | grep san
-#        libubsan.so.0 (libc6,x86-64) => /usr/lib64/libubsan.so.0
-#        libtsan.so.0 (libc6,x86-64) => /usr/lib64/libtsan.so.0
-#        liblsan.so.0 (libc6,x86-64) => /usr/lib64/liblsan.so.0
-
-#请注意: 下载的llvm中也有类似的库 libclang_rt.lsan.a
- ls /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/lib/x86_64-unknown-linux-gnu/libclang_rt.lsan.a
+zypper install -y gcc 
+zypper remove -y gcc #并不需要gcc，只是需要gcc的依赖库
 ```
 
 ```bash
