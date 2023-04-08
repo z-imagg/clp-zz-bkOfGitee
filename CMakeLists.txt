@@ -32,7 +32,6 @@ set(LLVM_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
 # LLVM is installed on your system.
 #set(CT_Clang_INSTALL_DIR "${CT_CLANG_PACKAGE_DIR}" CACHE PATH
 #  "Clang installation directory")
-set(CT_Clang_INSTALL_DIR "${CT_Clang_INSTALL_DIR}")
 
 #===============================================================================
 # 1. VERIFY CLANG INSTALLATION DIR
