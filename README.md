@@ -54,6 +54,13 @@ grep -E 'PermitRootLogin\s+yes'  /etc/ssh/sshd_config  || echo """PermitRootLogi
 #如何重启sshd: 先kill, 再启动
 
 curl localhost:22
+
+passwd root #修改root密码
+```
+
+```bash
+#宿主机上尝试连接docker容器
+ssh root@localhost -p 2201
 ```
 
 ```bash
