@@ -1,4 +1,4 @@
-#步骤1. opensuse/leap:15.4 命令行下编译
+# 步骤1. opensuse/leap:15.4 命令行下编译
 
 ```bash
 #https://github.com/llvm/llvm-project/releases?page=2
