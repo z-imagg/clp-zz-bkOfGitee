@@ -1,3 +1,5 @@
+#步骤1. opensuse/leap:15.4 命令行下编译
+
 ```bash
 #https://github.com/llvm/llvm-project/releases?page=2
 wget https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.0/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar.xz
@@ -83,3 +85,6 @@ find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeRefactor.so
 
 ```
+
+
+# 步骤2. clion 2022.3.3 Remote Development (远程开发) 基于  "步骤1. opensuse/leap:15.4 命令行下编译"
