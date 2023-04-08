@@ -52,6 +52,8 @@ grep -E 'PermitRootLogin\s+yes'  /etc/ssh/sshd_config  || echo """PermitRootLogi
 
 /usr/sbin/sshd  -f /etc/ssh/sshd_config
 #如何重启sshd: 先kill, 再启动
+
+curl localhost:22
 ```
 
 ```bash
