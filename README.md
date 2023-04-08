@@ -34,6 +34,7 @@ zypper ar -cfg 'http://mirrors.tuna.tsinghua.edu.cn/opensuse/update/leap/$releas
 ```bash
 
 zypper install  -y tar gzip
+#clion2022.3.3 remote development需要用到gzip命令
 
 zypper info gdb  #Version        : 11.1-8.30.1
 #CLion-2021.2.2.exe: 支持的gdb版本范围：7.8.x-10.2.x
