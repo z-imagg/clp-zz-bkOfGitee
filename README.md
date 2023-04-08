@@ -140,5 +140,10 @@ find `pwd` -name "*.so"
 ## 2.4 构建
 
 ## 2.5 调试
+```bash
+#相当于:
+cd /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/cmake-build-debug
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang  -cc1 -load cmake-build-debug/lib/libHelloWorld.so -plugin hello-world test/HelloWorld-basic.cpp
+```
 ![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/debug_helloworld.png)
 
