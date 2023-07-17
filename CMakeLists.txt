@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.13.4)
-project(clang-tutor)
 
 #===============================================================================
 # 0. GET CLANG INSTALLATION DIR
+#修改默认编译器
 set(CT_Clang_INSTALL_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CURSES_LIBRARY "/lib64/libncurses.so.6")
@@ -13,6 +13,8 @@ set(CMAKE_CXX_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rh
 set(LLVM_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
 #set(xxx "")
 
+project(clang-tutor)
+#project放到默认编译器定义之后，否则cmake会死循环
 
 
 set(CT_LLVM_INCLUDE_DIR "${CT_Clang_INSTALL_DIR}/include/llvm")
