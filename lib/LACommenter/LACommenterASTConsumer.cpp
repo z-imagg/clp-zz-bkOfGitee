@@ -1,5 +1,5 @@
 
-#include "LACommenter.h"
+#include "LACommenter/LACommenterASTConsumer.h"
 
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
