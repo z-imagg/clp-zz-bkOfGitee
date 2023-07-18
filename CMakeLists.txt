@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.13.4)
-project(clang-tutor)
 
 #===============================================================================
 # 0. GET CLANG INSTALLATION DIR
+#修改默认编译器
 set(CT_Clang_INSTALL_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CURSES_LIBRARY "/lib64/libncurses.so.6")
 set(CURSES_INCLUDE_PATH "/usr/include/")
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
-set(CMAKE_C_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang")
-set(CMAKE_CXX_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++")
+#编译器还是使用自带的gcc, 否则 调试时 没有 libstdc++  的调试信息，导致std::string在gdb中不显示，参考：https://stackoverflow.com/questions/58356385/python-exception-class-gdb-error-there-is-no-member-named-m-dataplus-whe/58356946#58356946
+#   gdb显示std::string时报错: There is no member named _M_dataplus。 因此gdb不显示std::string的值.
+#set(CMAKE_C_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang")
+#set(CMAKE_CXX_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++")
 set(LLVM_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
 #set(xxx "")
 
+project(clang-tutor)
+#project放到默认编译器定义之后，否则cmake会死循环
 
 
 set(CT_LLVM_INCLUDE_DIR "${CT_Clang_INSTALL_DIR}/include/llvm")
