@@ -6,7 +6,9 @@ set(CLANG_TUTOR_TOOLS
 
 set(ct-la-commenter_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/LACommenterMain.cpp"
- "${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter.cpp"
+ "${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACommenterASTConsumer.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACommenterMatcher.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACPluginAction.cpp"
 )
 
 set(ct-code-refactor_SOURCES

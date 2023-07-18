@@ -9,7 +9,7 @@ set(CLANG_TUTOR_PLUGINS
     )
 
 set(LACommenter_SOURCES
-  LACommenter.cpp)
+  LACommenter/LACommenterASTConsumer.cpp LACommenter/LACommenterMatcher.cpp LACommenter/LACPluginAction.cpp )
 
 set(CodeStyleChecker_SOURCES
   CodeStyleChecker.cpp)
