@@ -15,7 +15,7 @@ set(CodeStyleChecker_SOURCES
   CodeStyleChecker.cpp)
 
 set(Obfuscator_SOURCES
-  Obfuscator.cpp)
+  Obfuscator/ObfuscatorASTConsumer.cpp Obfuscator/ObfuscatorMatcherForAdd.cpp  Obfuscator/ObfuscatorMatcherForSub.cpp  Obfuscator/ObfuscatorPluginAction.cpp)
 
 set(UnusedForLoopVar_SOURCES
   UnusedForLoopVar.cpp)
