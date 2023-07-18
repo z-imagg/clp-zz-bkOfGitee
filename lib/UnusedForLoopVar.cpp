@@ -24,12 +24,6 @@ using namespace ast_matchers;
 
 static std::string NameToMatch("[U|u][N|n][U|u][S|s][E|e][D|d]");
 
-namespace {
-
-AST_MATCHER_P(NamedDecl, matchesAnyListedName, std::string, Name) {
-  return llvm::Regex(Name).match(Node.getName());
-}
-} // namespace
 
 //-----------------------------------------------------------------------------
 // UnusedForLoopVarMatcher - implementation
@@ -178,6 +172,12 @@ bool UnusedForLoopVarVisitor::VisitDeclRefExpr(DeclRefExpr const *Stmt) {
   return true;
 }
 
+namespace {
+
+    AST_MATCHER_P(NamedDecl, matchesAnyListedName, std::string, Name) {
+      return llvm::Regex(Name).match(Node.getName());
+    }
+} // namespace
 //-----------------------------------------------------------------------------
 // UnusedForLoopVarASTConsumer - implementation
 //-----------------------------------------------------------------------------
