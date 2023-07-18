@@ -18,7 +18,10 @@ CodeRefactorASTConsumer::CodeRefactorASTConsumer(Rewriter &R,
                                                  std::string ClassName,
                                                  std::string OldName,
                                                  std::string NewName)
-        : CodeRefactorHandler(R, NewName), ClassName(ClassName), OldName(OldName),
+        //Rewriter:4:  Consumer将Rewriter传递给Matcher
+        : CodeRefactorHandler(R, NewName),
+
+        ClassName(ClassName), OldName(OldName),
           NewName(NewName) {
 
   const auto MatcherForMemberAccess = cxxMemberCallExpr(

@@ -28,7 +28,9 @@
 //-----------------------------------------------------------------------------
 class ObfuscatorASTConsumer : public clang::ASTConsumer {
 public:
+    //Rewriter:3:  Action将Rewriter传递给Consumer
     ObfuscatorASTConsumer(std::shared_ptr<clang::Rewriter> R);
+
     void HandleTranslationUnit(clang::ASTContext &Ctx) override {
       Matcher.matchAST(Ctx);
     }

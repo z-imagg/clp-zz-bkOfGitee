@@ -18,6 +18,7 @@
 //-----------------------------------------------------------------------------
 class LACommenterASTConsumer : public clang::ASTConsumer {
 public:
+    //Rewriter:3:  Action将Rewriter传递给Consumer
     LACommenterASTConsumer(clang::Rewriter &R);
     void HandleTranslationUnit(clang::ASTContext &Ctx) override {
       Finder.matchAST(Ctx);

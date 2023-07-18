@@ -9,8 +9,12 @@
 using namespace clang;
 using namespace ast_matchers;
 
+//Rewriter:3:  Action将Rewriter传递给Consumer
+LACommenterASTConsumer::LACommenterASTConsumer(Rewriter &R) :
 
-LACommenterASTConsumer::LACommenterASTConsumer(Rewriter &R) : LACHandler(R) {
+//Rewriter:4:  Consumer将Rewriter传递给Matcher
+LACHandler(R) {
+
   StatementMatcher CallSiteMatcher =
           callExpr(
                   allOf(callee(functionDecl(unless(isVariadic())).bind("callee")),

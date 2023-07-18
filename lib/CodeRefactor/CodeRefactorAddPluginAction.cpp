@@ -84,6 +84,7 @@ public:
       RewriterForCodeRefactor.setSourceMgr(CI.getSourceManager(),
                                            CI.getLangOpts());
 
+      //Rewriter:3:  Action将Rewriter传递给Consumer
       return std::make_unique<CodeRefactorASTConsumer>(
               RewriterForCodeRefactor, ClassName, OldName, NewName);
     }

@@ -61,6 +61,8 @@ public:
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       RewriterForObfuscator->setSourceMgr(CI.getSourceManager(),
                                           CI.getLangOpts());
+
+      //Rewriter:3:  Action将Rewriter传递给Consumer
       return std::make_unique<ObfuscatorASTConsumer>(RewriterForObfuscator);
     }
 

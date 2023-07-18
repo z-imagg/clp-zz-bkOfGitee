@@ -17,9 +17,16 @@
 class CodeRefactorMatcher
         : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
+    //Rewriter:4:  Consumer将Rewriter传递给Matcher
     explicit CodeRefactorMatcher(clang::Rewriter &RewriterForCodeRefactor,
                                  std::string NewName)
-            : CodeRefactorRewriter(RewriterForCodeRefactor), NewName(NewName) {}
+
+    //Rewriter:5:  Consumer将Rewriter传递给Matcher, 并由Matcher.mRewriter接收
+    : CodeRefactorRewriter(RewriterForCodeRefactor),
+    NewName(NewName)
+    {
+
+    }
     void onEndOfTranslationUnit() override;
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &) override;
