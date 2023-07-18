@@ -18,13 +18,23 @@ bool shouldInsert(clang::Stmt::StmtClass & stmtClass){
   switch (stmtClass) {
     case clang::Stmt::CompoundStmtClass:
     case clang::Stmt::ImplicitCastExprClass: //隐式类型转换
+    case clang::Stmt::StringLiteralClass:
+    case clang::Stmt::IntegerLiteralClass:
+    case clang::Stmt::DeclRefExprClass://存疑,待找到实例以验证
       return false;
 
     case clang::Stmt::DeclStmtClass:
     case clang::Stmt::CallExprClass:
+    case clang::Stmt::ForStmtClass://for循环整体
+//    case clang::Stmt::UnaryOperatorClass://一元操作符语句,  这里 暂时不插入. 因为需要知道当前是在for循环第3位置 , 还是单独一条语句. for循环第3位置前插入 分割符只能是逗号, 单独一条语句前插入 分割符只能是分号.
+//    case clang::Stmt::BinaryOperatorClass://二元操作符语句，暂时不插入。 需要看其内部组成和外部包裹，比如若是被if()包裹 肯定其前肯定不能插入，如果是单独一条语句 其前可以插入。
+    case clang::Stmt::IfStmtClass://if语句整体
+    case clang::Stmt::ReturnStmtClass:
       return true;
   }
-  return true;
+
+  //默认不插入
+  return false;
 }
 
 /**遍历语句
