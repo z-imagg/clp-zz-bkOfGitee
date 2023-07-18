@@ -22,15 +22,6 @@ bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
 }
 
 bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
-  //这里在遍历函数声明，参考： https://stackoverflow.com/questions/39529480/is-there-a-way-to-get-source-code-with-macro-expanded-using-clang-api
-  //写出 打印出宏展开后的样子
-//    std::string s;
-//    llvm::raw_string_ostream sos(s);
-//    PrintingPolicy pp(compiler->getLangOpts());
-//    pp.adjustForCPlusPlus();
-//    /*DeclPrinter*/ DP(sos, pp, 0 /* indent */, true /* PrintInstantiation */);
-//    DP.Visit(functionDecl);
-
   // Skip user-defined conversion operators/functions:
   //    * https://en.cppreference.com/w/cpp/language/cast_operator
   if (isa<CXXConversionDecl>(Decl))
