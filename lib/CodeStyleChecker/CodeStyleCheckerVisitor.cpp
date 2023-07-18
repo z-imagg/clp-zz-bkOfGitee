@@ -7,6 +7,8 @@
 
 using namespace clang;
 
+#include <iostream>
+
 //-----------------------------------------------------------------------------
 // CodeStyleCheckerVisitor implementation
 //-----------------------------------------------------------------------------
@@ -17,6 +19,12 @@ using namespace clang;
  * @return
  */
 bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
+  auto range=S->getSourceRange();
+  auto cRange=CharSourceRange::getCharRange(range);
+  llvm::StringRef strRef=Lexer::getSourceText(cRange,mRewriter.getSourceMgr(),mRewriter.getLangOpts());
+
+  std::cout << strRef.str() << std::endl;
 
   mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
   return true;

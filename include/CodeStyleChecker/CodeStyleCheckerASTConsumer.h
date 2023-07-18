@@ -19,13 +19,13 @@ public:
             SM(SM), MainTUOnly(MainFileOnly) {}
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
-        Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
-/*        auto Decls = Ctx.getTranslationUnitDecl()->decls();
+//        Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
+        auto Decls = Ctx.getTranslationUnitDecl()->decls();
         for (auto &Decl : Decls) { //貌似不需要此循环
           if (!SM.isInMainFile(Decl->getLocation()))
             continue;
           Visitor.TraverseDecl(Decl);
-        }*/
+        }
 
       Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
               .write(llvm::outs());

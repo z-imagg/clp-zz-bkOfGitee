@@ -14,9 +14,9 @@ struct ClangTutorStruct {
 };
 
 #include <stdio.h>
-int main(int argc, char* argv){
+int main(int argc, char** argv){
   int age;
-  printf("input age:")
+  printf("input age:");
   scanf("%d",&age);
   printf("your age:%d\n",age);
 
