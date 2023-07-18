@@ -23,8 +23,16 @@ using namespace ast_matchers;
 //-----------------------------------------------------------------------------
 // ObfuscatorASTConsumer - implementation
 //-----------------------------------------------------------------------------
+//Rewriter:3:  Action将Rewriter传递给Consumer
 ObfuscatorASTConsumer::ObfuscatorASTConsumer(std::shared_ptr<Rewriter> R)
-        : AddHandler(R), SubHandler(R) {
+
+        //Rewriter:4:  Consumer将Rewriter传递给Matcher
+        : AddHandler(R),
+
+        //Rewriter:4:  Consumer将Rewriter传递给Matcher
+        SubHandler(R)
+
+{
   const auto MatcherAdd =
           binaryOperator(
                   hasOperatorName("+"),

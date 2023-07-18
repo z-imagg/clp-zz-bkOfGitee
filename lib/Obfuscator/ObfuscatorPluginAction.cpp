@@ -47,6 +47,7 @@ using namespace ast_matchers;
 class ObfuscatorPluginAction : public PluginASTAction {
 public:
     ObfuscatorPluginAction()
+            //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
             : RewriterForObfuscator{std::make_shared<Rewriter>()} {}
     // Our plugin can alter behavior based on the command line options
     bool ParseArgs(const CompilerInstance &,
@@ -57,8 +58,11 @@ public:
     // Returns our ASTConsumer per translation unit.
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                    StringRef file) override {
+      //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       RewriterForObfuscator->setSourceMgr(CI.getSourceManager(),
                                           CI.getLangOpts());
+
+      //Rewriter:3:  Action将Rewriter传递给Consumer
       return std::make_unique<ObfuscatorASTConsumer>(RewriterForObfuscator);
     }
 
@@ -70,6 +74,7 @@ public:
     }
 
 private:
+    //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     std::shared_ptr<Rewriter> RewriterForObfuscator;
 };
 

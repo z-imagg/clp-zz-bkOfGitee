@@ -17,9 +17,15 @@
 class ObfuscatorMatcherForAdd
         : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
+    //Rewriter:4:  Consumer将Rewriter传递给Matcher
     explicit ObfuscatorMatcherForAdd(
             std::shared_ptr<clang::Rewriter> RewriterForObfuscator)
-            : ObfuscatorRewriter{std::move(RewriterForObfuscator)} {}
+
+            //Rewriter:5:  Consumer将Rewriter传递给Matcher, 并由Matcher.mRewriter接收
+            : ObfuscatorRewriter{std::move(RewriterForObfuscator)}
+    {
+
+    }
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &) override;
 

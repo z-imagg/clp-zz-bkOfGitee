@@ -18,6 +18,7 @@
 //-----------------------------------------------------------------------------
 class CodeRefactorASTConsumer : public clang::ASTConsumer {
 public:
+    //Rewriter:3:  Action将Rewriter传递给Consumer
     CodeRefactorASTConsumer(clang::Rewriter &R, std::string ClassName,
                             std::string OldName, std::string NewName);
     void HandleTranslationUnit(clang::ASTContext &Ctx) override {

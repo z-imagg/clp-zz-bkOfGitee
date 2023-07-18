@@ -17,7 +17,14 @@
 class LACommenterMatcher
         : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
-    LACommenterMatcher(clang::Rewriter &LACRewriter) : LACRewriter(LACRewriter) {}
+    //Rewriter:4:  Consumer将Rewriter传递给Matcher
+    LACommenterMatcher(clang::Rewriter &LACRewriter) :
+
+    //Rewriter:5:  Consumer将Rewriter传递给Matcher, 并由Matcher.mRewriter接收
+    LACRewriter(LACRewriter)
+    {
+
+    }
     // Callback that's executed whenever the Matcher in LACommenterASTConsumer
     // matches.
     void run(const clang::ast_matchers::MatchFinder::MatchResult &) override;
