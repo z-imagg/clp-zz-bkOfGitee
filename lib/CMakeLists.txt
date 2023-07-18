@@ -21,7 +21,7 @@ set(UnusedForLoopVar_SOURCES
   UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)
 
 set(CodeRefactor_SOURCES
-  CodeRefactor.cpp)
+  CodeRefactor/CodeRefactorAddPluginAction.cpp CodeRefactor/CodeRefactorASTConsumer.cpp CodeRefactor/CodeRefactorMatcher.cpp )
 
 # CONFIGURE THE PLUGIN LIBRARIES
 # ==============================
