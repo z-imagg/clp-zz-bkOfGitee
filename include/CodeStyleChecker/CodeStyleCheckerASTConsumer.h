@@ -18,7 +18,7 @@ public:
             : Visitor(R, Context),
             SM(SM), MainTUOnly(MainFileOnly) {}
 
-    void HandleTranslationUnit(clang::ASTContext &Ctx) {
+    void HandleTranslationUnit(clang::ASTContext &Ctx) override{
       if (!MainTUOnly)
         Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
       else {
@@ -35,6 +35,10 @@ public:
           Visitor.TraverseDecl(Decl);
         }
       }
+
+
+      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
+              .write(llvm::outs());
     }
 
 private:

@@ -38,6 +38,7 @@ bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
 
   checkNameStartsWithLowerCase(Decl);
   checkNoUnderscoreInName(Decl);
+  mRewriter.InsertTextAfter(Decl->getEndLoc(),"/**/");
   return true;
 }
 

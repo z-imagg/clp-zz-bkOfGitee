@@ -23,8 +23,10 @@ public:
     bool VisitVarDecl(clang::VarDecl *Decl);
     bool VisitFieldDecl(clang::FieldDecl *Decl);
 
-private:
+public:
     clang::Rewriter mRewriter;
+
+private:
     clang::ASTContext *Ctx;
 
     // Checks whether the name in Decl contains any `_`. Issues a warnning if it
