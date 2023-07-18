@@ -15,7 +15,7 @@
 //
 // License: The Unlicense
 //==============================================================================
-#include "LACommenter.h"
+#include "LACommenter/LACommenterASTConsumer.h"
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
