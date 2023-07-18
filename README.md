@@ -118,10 +118,10 @@ find `pwd` -name "*.so"
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-refactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
 #虽然报错“Error while trying to load a compilation database:” ,但正常做了CodeRefactor
 
-#运行CodeRefactor插件
+#运行CodeStyleChecker插件
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
 
-#独立运行CodeRefactor
+#独立运行CodeStyleChecker
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
 #不知道为何，只是报错“Error while trying to load a compilation database:” 且没做事情
 ```
