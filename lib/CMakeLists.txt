@@ -18,7 +18,7 @@ set(Obfuscator_SOURCES
   Obfuscator/ObfuscatorASTConsumer.cpp Obfuscator/ObfuscatorMatcherForAdd.cpp  Obfuscator/ObfuscatorMatcherForSub.cpp  Obfuscator/ObfuscatorPluginAction.cpp)
 
 set(UnusedForLoopVar_SOURCES
-  UnusedForLoopVar.cpp)
+  UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)
 
 set(CodeRefactor_SOURCES
   CodeRefactor.cpp)
