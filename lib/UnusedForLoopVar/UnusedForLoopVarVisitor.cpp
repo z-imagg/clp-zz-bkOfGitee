@@ -1,4 +1,4 @@
-#include "UnusedForLoopVar.h"
+#include "UnusedForLoopVar/UnusedForLoopVarVisitor.h"
 
 #include "clang/AST/Decl.h"
 #include "clang/AST/RecursiveASTVisitor.h"
