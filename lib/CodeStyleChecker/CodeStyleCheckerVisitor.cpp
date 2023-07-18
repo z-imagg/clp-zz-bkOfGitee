@@ -10,6 +10,18 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // CodeStyleCheckerVisitor implementation
 //-----------------------------------------------------------------------------
+
+/**遍历语句
+ *
+ * @param S
+ * @return
+ */
+bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+
+  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
+  return true;
+}
+
 bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   // Skip anonymous records, e.g. unions:
   //    * https://en.cppreference.com/w/cpp/language/union
@@ -29,7 +41,6 @@ bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
 
   checkNameStartsWithLowerCase(Decl);
   checkNoUnderscoreInName(Decl);
-  mRewriter.InsertTextAfter(Decl->getEndLoc(),"/**/");
   return true;
 }
 

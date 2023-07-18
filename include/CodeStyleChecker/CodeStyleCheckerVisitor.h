@@ -2,6 +2,7 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
 
 //-----------------------------------------------------------------------------
@@ -18,6 +19,13 @@ public:
     {
 
     }
+
+    /**遍历语句
+     *
+     * @param S
+     * @return
+     */
+    virtual bool VisitStmt(clang::Stmt *S);
 
     //下面4个形如 bool VisitZzz(clang:Zzz *Decl)  的方法:, 其中Zzz的完整列表叙述 从 本文件第27行开始.
     bool VisitCXXRecordDecl(clang::CXXRecordDecl *Decl);

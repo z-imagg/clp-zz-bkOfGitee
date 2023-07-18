@@ -12,3 +12,25 @@ struct ClangTutorStruct {
   void ClangTutorMemberMethodBad();
   void clangTutorMemberMethodOK();
 };
+
+#include <stdio.h>
+int main(int argc, char* argv){
+  int age;
+  printf("input age:")
+  scanf("%d",&age);
+  printf("your age:%d\n",age);
+
+  int alive=false;
+  int secret[100];
+  for(int k =0; k <100; k++){
+    if (secret[k] < age){
+      alive=true;
+      break;
+    }
+  }
+
+  printf("are you still be alive?%d\n",alive);
+
+  return 0;
+
+}
