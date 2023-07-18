@@ -59,7 +59,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
   if(shouldInsert(stmtClass)){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-    mRewriter.InsertTextBefore(S->getBeginLoc(),"/**/");
+    mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
   }
   return true;
 }
