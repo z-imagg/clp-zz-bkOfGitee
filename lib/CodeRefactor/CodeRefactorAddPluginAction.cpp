@@ -80,14 +80,19 @@ public:
     // Returns our ASTConsumer per translation unit.
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                    StringRef file) override {
+      //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       RewriterForCodeRefactor.setSourceMgr(CI.getSourceManager(),
                                            CI.getLangOpts());
+
       return std::make_unique<CodeRefactorASTConsumer>(
               RewriterForCodeRefactor, ClassName, OldName, NewName);
     }
 
 private:
+    //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
+    //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
     Rewriter RewriterForCodeRefactor;
+
     std::string ClassName;
     std::string OldName;
     std::string NewName;
