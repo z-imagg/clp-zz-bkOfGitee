@@ -13,7 +13,7 @@
 //
 // License: The Unlicense
 //==============================================================================
-#include "CodeRefactor.h"
+#include "CodeRefactor/CodeRefactorASTConsumer.h"
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
