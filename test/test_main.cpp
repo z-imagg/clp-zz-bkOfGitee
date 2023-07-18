@@ -25,6 +25,7 @@ void funcRange(T start, T end, T step, T& result,  T const zero, T (*binaryFunc)
   }
   result=zero;
   for(T k=start; k<=end; k+=step){
+    char zzz;
     result=binaryFunc(result,k);
   }
   return  ;
