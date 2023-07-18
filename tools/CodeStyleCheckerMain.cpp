@@ -52,7 +52,7 @@ public:
     mRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    return std::make_unique<CodeStyleCheckerASTConsumer>(
+    return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
         &CI.getASTContext(), MainTuOnly, CI.getSourceManager());
   }
 

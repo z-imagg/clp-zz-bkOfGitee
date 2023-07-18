@@ -55,7 +55,9 @@ public:
                       llvm::StringRef InFile) override {
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       mRewriter.setSourceMgr(Compiler.getSourceManager(), Compiler.getLangOpts());
-      return std::make_unique<CodeStyleCheckerASTConsumer>(
+
+      //Rewriter:3:  Action将Rewriter传递给Consumer
+      return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
               &Compiler.getASTContext(), MainTuOnly, Compiler.getSourceManager());
     }
 

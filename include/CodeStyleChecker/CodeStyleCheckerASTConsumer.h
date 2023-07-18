@@ -1,3 +1,4 @@
+#include <clang/Rewrite/Core/Rewriter.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
@@ -10,10 +11,12 @@
 //-----------------------------------------------------------------------------
 class CodeStyleCheckerASTConsumer : public clang::ASTConsumer {
 public:
-    explicit CodeStyleCheckerASTConsumer(clang::ASTContext *Context,
-                                         bool MainFileOnly,
+    //Rewriter:3:  Action将Rewriter传递给Consumer
+    explicit CodeStyleCheckerASTConsumer(clang::Rewriter &R, clang::ASTContext *Context, bool MainFileOnly,
                                          clang::SourceManager &SM)
-            : Visitor(Context), SM(SM), MainTUOnly(MainFileOnly) {}
+            //Rewriter:4:  Consumer将Rewriter传递给Visitor
+            : Visitor(R, Context),
+            SM(SM), MainTUOnly(MainFileOnly) {}
 
     void HandleTranslationUnit(clang::ASTContext &Ctx) {
       if (!MainTUOnly)

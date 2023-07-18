@@ -1,4 +1,5 @@
 
+#include <clang/Rewrite/Core/Rewriter.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
@@ -9,13 +10,21 @@
 class CodeStyleCheckerVisitor
         : public clang::RecursiveASTVisitor<CodeStyleCheckerVisitor> {
 public:
-    explicit CodeStyleCheckerVisitor(clang::ASTContext *Ctx) : Ctx(Ctx) {}
+    //Rewriter:4:  Consumer将Rewriter传递给Visitor
+    explicit CodeStyleCheckerVisitor(clang::Rewriter &R, clang::ASTContext *Ctx)
+    //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
+    : mRewriter(R),
+    Ctx(Ctx)
+    {
+
+    }
     bool VisitCXXRecordDecl(clang::CXXRecordDecl *Decl);
     bool VisitFunctionDecl(clang::FunctionDecl *Decl);
     bool VisitVarDecl(clang::VarDecl *Decl);
     bool VisitFieldDecl(clang::FieldDecl *Decl);
 
 private:
+    clang::Rewriter mRewriter;
     clang::ASTContext *Ctx;
 
     // Checks whether the name in Decl contains any `_`. Issues a warnning if it
