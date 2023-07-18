@@ -14,7 +14,7 @@
 //
 // License: The Unlicense
 //==============================================================================
-#include "CodeStyleChecker.h"
+#include "CodeStyleChecker/CodeStyleCheckerASTConsumer.h"
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"

@@ -34,7 +34,7 @@
 //
 // License: The Unlicense
 //==============================================================================
-#include "CodeStyleChecker.h"
+#include "CodeStyleChecker/CodeStyleCheckerASTConsumer.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
