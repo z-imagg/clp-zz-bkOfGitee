@@ -20,7 +20,8 @@ set(ct-code-refactor_SOURCES
 
 set(ct-code-style-checker_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/CodeStyleCheckerMain.cpp"
- "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CodeStyleCheckerVisitor.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CSCASTAction.cpp"
 )
 
 # CONFIGURE THE TOOLS

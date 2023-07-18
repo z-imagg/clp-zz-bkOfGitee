@@ -12,7 +12,7 @@ set(LACommenter_SOURCES
   LACommenter/LACommenterASTConsumer.cpp LACommenter/LACommenterMatcher.cpp LACommenter/LACPluginAction.cpp )
 
 set(CodeStyleChecker_SOURCES
-  CodeStyleChecker.cpp)
+  CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
 
 set(Obfuscator_SOURCES
   Obfuscator/ObfuscatorASTConsumer.cpp Obfuscator/ObfuscatorMatcherForAdd.cpp  Obfuscator/ObfuscatorMatcherForSub.cpp  Obfuscator/ObfuscatorPluginAction.cpp)
