@@ -144,6 +144,8 @@ FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName)
     }
     return NULL;
 }
+
+
 /**遍历语句
  *
  * @param S
@@ -155,25 +157,24 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   //clockTickFuncDecl 不是NULL， 即确实能找到 时钟滴答 函数声明
 
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
-  auto range=S->getSourceRange();
-  auto cRange=CharSourceRange::getCharRange(range);
+  SourceRange range=S->getSourceRange();
+  CharSourceRange cRange=CharSourceRange::getCharRange(range);
   llvm::StringRef strRefStmt=Lexer::getSourceText(cRange, mRewriter.getSourceMgr(), mRewriter.getLangOpts());
 
-  auto strStmt=strRefStmt.str();
+  std::string strStmt=strRefStmt.str();
 
-  auto stmtClass = S->getStmtClass();
-  auto stmtClassName = S->getStmtClassName();
+  Stmt::StmtClass stmtClass = S->getStmtClass();
+  const char* stmtClassName = S->getStmtClassName();
 
 
 //  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
-  auto parentSSize=parentS.size();
+  size_t parentSSize=parentS.size();
   assert(parentSSize>0);
 //  if(parentSSize>0){
-    auto parent0=parentS[0].get<Stmt>();
+    const Stmt* parent0=parentS[0].get<Stmt>();
     ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
-    auto end=true;
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
 //  }else{
