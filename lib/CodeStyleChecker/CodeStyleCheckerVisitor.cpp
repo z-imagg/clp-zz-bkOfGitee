@@ -137,7 +137,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   auto stmtClassName = S->getStmtClassName();
 
 
-  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
+//  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
   auto parentSSize=parentS.size();
@@ -147,7 +147,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
     ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
     auto end=true;
 
-    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
+//    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
 //  }else{
 //    std::cout << std::endl;  //开发用打印
 //  }
