@@ -7,9 +7,163 @@
 
 using namespace clang;
 
+#include <iostream>
+
 //-----------------------------------------------------------------------------
 // CodeStyleCheckerVisitor implementation
 //-----------------------------------------------------------------------------
+
+
+bool shouldInsert(clang::Stmt::StmtClass & stmtClass){
+  switch (stmtClass) {
+    case clang::Stmt::CompoundStmtClass:
+    case clang::Stmt::ImplicitCastExprClass: //隐式类型转换
+    case clang::Stmt::StringLiteralClass:
+    case clang::Stmt::IntegerLiteralClass:
+    case clang::Stmt::DeclRefExprClass://存疑,待找到实例以验证
+      return false;
+
+    case clang::Stmt::DeclStmtClass:
+    case clang::Stmt::CallExprClass:
+    case clang::Stmt::ForStmtClass://for循环整体
+//    case clang::Stmt::UnaryOperatorClass://一元操作符语句,  这里 暂时不插入. 因为需要知道当前是在for循环第3位置 , 还是单独一条语句. for循环第3位置前插入 分割符只能是逗号, 单独一条语句前插入 分割符只能是分号.
+//    case clang::Stmt::BinaryOperatorClass://二元操作符语句，暂时不插入。 需要看其内部组成和外部包裹，比如若是被if()包裹 肯定其前肯定不能插入，如果是单独一条语句 其前可以插入。
+    case clang::Stmt::IfStmtClass://if语句整体
+    case clang::Stmt::ReturnStmtClass:
+      return true;
+  }
+
+  //默认不插入
+  return false;
+}
+
+/**遍历语句
+ *
+ * @param S
+ * @return
+ */
+bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
+  auto range=S->getSourceRange();
+  auto cRange=CharSourceRange::getCharRange(range);
+  llvm::StringRef strRefStmt=Lexer::getSourceText(cRange, mRewriter.getSourceMgr(), mRewriter.getLangOpts());
+
+  auto strStmt=strRefStmt.str();
+
+  auto stmtClass = S->getStmtClass();
+  auto stmtClassName = S->getStmtClassName();
+
+
+  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" << std::endl;
+
+  bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
+  if(shouldInsert(stmtClass)){
+//  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
+    mRewriter.InsertTextBefore(S->getBeginLoc(),"/**/");
+  }
+  return true;
+}
+
+/*
+[#{
+  int age;
+  printf("input age:");
+  scanf("%d",&age);
+  printf("your age:%d\n",age);
+
+  int alive=false;
+  int secret[100];
+  for(int k =0; k <100; k++){
+    if (secret[k] < age){
+      alive=true;
+      break;
+    }
+  }
+
+  printf("are you still be alive?%d\n",alive);
+
+  return 0;
+
+#]:{#CompoundStmt#}
+[#int age#]:{#DeclStmt#}
+[#printf("input age:"#]:{#CallExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#StringLiteral#}
+[#scanf("%d",&age#]:{#CallExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#StringLiteral#}
+[#&#]:{#UnaryOperator#}
+[##]:{#DeclRefExpr#}
+[#printf("your age:%d\n",age#]:{#CallExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#StringLiteral#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[#int alive=false#]:{#DeclStmt#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#CXXBoolLiteralExpr#}
+[#int secret[100]#]:{#DeclStmt#}
+[##]:{#IntegerLiteral#}
+[#for(int k =0; k <100; k++){
+    if (secret[k] < age){
+      alive=true;
+      break;
+    }
+  #]:{#ForStmt#}
+[#int k =0#]:{#DeclStmt#}
+[##]:{#IntegerLiteral#}
+[#k <#]:{#BinaryOperator#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#IntegerLiteral#}
+[#k#]:{#UnaryOperator#}
+[##]:{#DeclRefExpr#}
+[#{
+    if (secret[k] < age){
+      alive=true;
+      break;
+    }
+  #]:{#CompoundStmt#}
+[#if (secret[k] < age){
+      alive=true;
+      break;
+    #]:{#IfStmt#}
+[#secret[k] < #]:{#BinaryOperator#}
+[#secret[k#]:{#ImplicitCastExpr#}
+[#secret[k#]:{#ArraySubscriptExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[#{
+      alive=true;
+      break;
+    #]:{#CompoundStmt#}
+[#alive=#]:{#BinaryOperator#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#CXXBoolLiteralExpr#}
+[##]:{#BreakStmt#}
+[#printf("are you still be alive?%d\n",alive#]:{#CallExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#StringLiteral#}
+[##]:{#ImplicitCastExpr#}
+[##]:{#DeclRefExpr#}
+[#return #]:{#ReturnStmt#}
+[##]:{#IntegerLiteral#}
+ */
+
+
 bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   // Skip anonymous records, e.g. unions:
   //    * https://en.cppreference.com/w/cpp/language/union
@@ -22,15 +176,6 @@ bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
 }
 
 bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
-  //这里在遍历函数声明，参考： https://stackoverflow.com/questions/39529480/is-there-a-way-to-get-source-code-with-macro-expanded-using-clang-api
-  //写出 打印出宏展开后的样子
-//    std::string s;
-//    llvm::raw_string_ostream sos(s);
-//    PrintingPolicy pp(compiler->getLangOpts());
-//    pp.adjustForCPlusPlus();
-//    /*DeclPrinter*/ DP(sos, pp, 0 /* indent */, true /* PrintInstantiation */);
-//    DP.Visit(functionDecl);
-
   // Skip user-defined conversion operators/functions:
   //    * https://en.cppreference.com/w/cpp/language/cast_operator
   if (isa<CXXConversionDecl>(Decl))

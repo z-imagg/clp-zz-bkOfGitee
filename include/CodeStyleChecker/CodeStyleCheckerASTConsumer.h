@@ -18,23 +18,17 @@ public:
             : Visitor(R, Context),
             SM(SM), MainTUOnly(MainFileOnly) {}
 
-    void HandleTranslationUnit(clang::ASTContext &Ctx) {
-      if (!MainTUOnly)
-        Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
-      else {
-        // Only visit declarations declared in the input TU
+    virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
+//        Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
         auto Decls = Ctx.getTranslationUnitDecl()->decls();
-        for (auto &Decl : Decls) {
-          // Ignore declarations out of the main translation unit.
-          //
-          // SourceManager::isInMainFile method takes into account locations
-          // expansion like macro expansion scenario and checks expansion
-          // location instead if spelling location if required.
+        for (auto &Decl : Decls) { //貌似不需要此循环
           if (!SM.isInMainFile(Decl->getLocation()))
             continue;
           Visitor.TraverseDecl(Decl);
         }
-      }
+
+      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
+              .write(llvm::outs());
     }
 
 private:
