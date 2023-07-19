@@ -138,7 +138,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   auto cRange=CharSourceRange::getCharRange(range);
   llvm::StringRef strRefStmt=Lexer::getSourceText(cRange, mRewriter.getSourceMgr(), mRewriter.getLangOpts());
 
-  std::string strStmt=strRefStmt.str();
+  auto strStmt=strRefStmt.str();
 
   auto stmtClass = S->getStmtClass();
   auto stmtClassName = S->getStmtClassName();
@@ -161,15 +161,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
   if(shouldInsert(S,parent0NodeKind)){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-
     mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
-
-    /*std::string newStmt("t++;");//试图替换，问题： strStmt少了末尾字符、修改还是没有带入后续编译过程
-    newStmt.append(strStmt);
-    llvm::StringRef newStmtRef(newStmt);
-    mRewriter.ReplaceText(range,newStmtRef);*/
-
-//    mRewriter.overwriteChangedFiles();//修改会影响原始文件
   }
   return true;
 }
