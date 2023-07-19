@@ -191,14 +191,10 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
   size_t parentSSize=parentS.size();
   assert(parentSSize>0);
-//  if(parentSSize>0){
     const Stmt* parent0=parentS[0].get<Stmt>();
     ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
-//  }else{
-//    std::cout << std::endl;  //开发用打印
-//  }
   bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
   if(shouldInsert(S,parent0NodeKind)){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
