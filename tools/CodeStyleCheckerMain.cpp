@@ -68,7 +68,7 @@ private:
 //===----------------------------------------------------------------------===//
 int main(int Argc, const char **Argv) {
   Expected<tooling::CommonOptionsParser> eOptParser =
-      clang::tooling::CommonOptionsParser::create(Argc, Argv, CSCCategory);
+      clang::tooling::CommonOptionsParser::create(Argc, Argv, CSCCategory,cl::Optional);
   if (auto E = eOptParser.takeError()) {
     errs() << "Problem constructing CommonOptionsParser "
            << toString(std::move(E)) << '\n';
