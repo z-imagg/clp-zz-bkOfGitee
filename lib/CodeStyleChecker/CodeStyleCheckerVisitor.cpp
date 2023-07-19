@@ -38,6 +38,9 @@ using namespace clang;
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -fplugin=/pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so     /pubx/clang-tutor/test/test_main.cpp  -o test_main
  */
 
+bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
+
+}
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 //clang::Stmt::StmtClass & stmtClass
   clang::Stmt::StmtClass stmtClass = S->getStmtClass();
