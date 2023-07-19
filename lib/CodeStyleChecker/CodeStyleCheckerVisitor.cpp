@@ -169,11 +169,18 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
  */
 bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
 
+  SourceManager & sourceMgr = mRewriter.getSourceMgr();
+  const LangOptions & langOpts = mRewriter.getLangOpts();
+
+  //能找到 时钟滴答 函数声明
   FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,"X__t_clock_tick");
-  //clockTickFuncDecl 不是NULL， 即确实能找到 时钟滴答 函数声明
+
+  //获取 时钟滴答 函数声明 源码文本，人工确定 确实是 该函数。
+  std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), sourceMgr, langOpts);
+//  std::cout<<clockTickFuncSourceText<<std::endl;
 
   //获取当前语句S的源码文本
-  std::string stmtSourceText=getSourceTextBySourceRange(S->getSourceRange(), mRewriter.getSourceMgr(), mRewriter.getLangOpts());
+  std::string stmtSourceText=getSourceTextBySourceRange(S->getSourceRange(), sourceMgr, langOpts);
 
   Stmt::StmtClass stmtClass = S->getStmtClass();
   const char* stmtClassName = S->getStmtClassName();
