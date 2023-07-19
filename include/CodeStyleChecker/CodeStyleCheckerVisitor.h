@@ -34,7 +34,7 @@ public:
     bool VisitVarDecl(clang::VarDecl *Decl);
     bool VisitFieldDecl(clang::FieldDecl *Decl);
 /*  类 RecursiveASTVisitor 中 有大量 形如 bool VisitZzz(clang:Zzz *Decl) 的方法, 其中Zzz即是可以被Visit的语法节点, Zzz列表完整如下:
-grep DEF_TRAVERSE_STMT   '/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/include/clang/AST/RecursiveASTVisitor.h'
+grep DEF_TRAVERSE_STMT   '/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/include/clang/AST/RecursiveASTVisitor.h'
 DEF_TRAVERSE_STMT(GCCAsmStmt
 DEF_TRAVERSE_STMT(CXXCatchStmt
 DEF_TRAVERSE_STMT(DeclStmt
@@ -264,7 +264,7 @@ DEF_TRAVERSE_STMT(OMPTargetTeamsGenericLoopDirective
 DEF_TRAVERSE_STMT(OMPParallelGenericLoopDirective
 DEF_TRAVERSE_STMT(OMPTargetParallelGenericLoopDirective
 
-grep DEF_TRAVERSE_DECL   '/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/include/clang/AST/RecursiveASTVisitor.h'
+grep DEF_TRAVERSE_DECL   '/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/include/clang/AST/RecursiveASTVisitor.h'
 DEF_TRAVERSE_DECL(AccessSpecDecl
 DEF_TRAVERSE_DECL(BlockDecl
 DEF_TRAVERSE_DECL(CapturedDecl

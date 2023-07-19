@@ -15,27 +15,27 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 /*
 运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
-/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
+/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
 
 
 只运行了本插件CSC，没有运行编译过程:
 #参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html
-/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
 
 "-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
 #参考: https://www.ibm.com/docs/en/xl-c-and-cpp-linux/16.1.0?topic=cla-running-user-defined-actions-by-using-clang-plug-ins
-/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
 
 
 运行clang++带上本插件.so 且 运行编译、链接 全过程:
-/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
+/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
 但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
 
 #更简洁的命令:
 运行clang++带上本插件.so 且 运行编译、链接 全过程: 本插件自动运行（ 在MainAction后运行本插件）配合  -fplugin
 #本插件自动运行: 在MainAction后运行本插件:  Action.getActionType返回AddAfterMainAction
 #参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html#using-the-clang-command-line
-/llvm_release_home/clang+llvm-8.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++  -fplugin=/pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so     /pubx/clang-tutor/test/test_main.cpp  -o test_main
+/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++  -fplugin=/pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so     /pubx/clang-tutor/test/test_main.cpp  -o test_main
  */
 
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
