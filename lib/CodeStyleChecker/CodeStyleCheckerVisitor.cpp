@@ -19,6 +19,7 @@ using namespace clang;
 
 
 只运行了本插件CSC，没有运行编译过程:
+#参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
 
 "-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
