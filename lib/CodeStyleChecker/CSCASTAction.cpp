@@ -80,6 +80,11 @@ public:
       ros << "Help for CodeStyleChecker plugin goes here\n";
     }
 
+    PluginASTAction::ActionType getActionType() override {
+      //本插件自动运行:  在MainAction后运行本插件
+      return AddAfterMainAction;
+    }
+
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
