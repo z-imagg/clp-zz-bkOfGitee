@@ -80,6 +80,7 @@ int main(int argc, char** argv){
   printf("funcRange(%f,%f,%f,resultF3,%f,floatPower)=%f\n",startF,endF,stepF,zeroF,resultF3);
 
 
+  printf("main_end,t=%d\n",t);
   return 0;
 
 }

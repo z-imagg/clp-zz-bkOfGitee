@@ -13,7 +13,11 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // CodeStyleCheckerVisitor implementation
 //-----------------------------------------------------------------------------
+/*
+运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
 
+ */
 
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 //clang::Stmt::StmtClass & stmtClass
