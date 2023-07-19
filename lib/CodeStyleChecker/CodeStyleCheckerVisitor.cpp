@@ -145,6 +145,22 @@ FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName)
     return NULL;
 }
 
+/**
+ * 获取 给定 位置范围 的源码文本
+ * @param sourceRange
+ * @param sourceManager
+ * @param langOptions
+ * @return
+ */
+std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
+  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
+//  SourceRange sourceRange=S->getSourceRange();
+  CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
+  llvm::StringRef strRefSourceText=Lexer::getSourceText(charSourceRange, sourceManager, langOptions);
+
+  std::string strSourceText=strRefSourceText.str();
+  return strSourceText;
+}
 
 /**遍历语句
  *
@@ -156,18 +172,14 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,"X__t_clock_tick");
   //clockTickFuncDecl 不是NULL， 即确实能找到 时钟滴答 函数声明
 
-  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
-  SourceRange range=S->getSourceRange();
-  CharSourceRange cRange=CharSourceRange::getCharRange(range);
-  llvm::StringRef strRefStmt=Lexer::getSourceText(cRange, mRewriter.getSourceMgr(), mRewriter.getLangOpts());
-
-  std::string strStmt=strRefStmt.str();
+  //获取当前语句S的源码文本
+  std::string stmtSourceText=getSourceTextBySourceRange(S->getSourceRange(), mRewriter.getSourceMgr(), mRewriter.getLangOpts());
 
   Stmt::StmtClass stmtClass = S->getStmtClass();
   const char* stmtClassName = S->getStmtClassName();
 
 
-//  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
+//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
   size_t parentSSize=parentS.size();
