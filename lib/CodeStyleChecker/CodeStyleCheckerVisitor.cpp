@@ -17,6 +17,18 @@ using namespace clang;
 运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
 
+
+只运行了本插件CSC，没有运行编译过程:
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+
+"-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+
+
+运行clang++带上本插件.so 且 运行编译、链接 全过程:
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
+但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
+
  */
 
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
