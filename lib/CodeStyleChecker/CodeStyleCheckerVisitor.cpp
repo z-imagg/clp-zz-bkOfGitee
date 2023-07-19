@@ -8,13 +8,16 @@
 using namespace clang;
 
 #include <iostream>
+#include <clang/AST/ParentMapContext.h>
 
 //-----------------------------------------------------------------------------
 // CodeStyleCheckerVisitor implementation
 //-----------------------------------------------------------------------------
 
 
-bool shouldInsert(clang::Stmt::StmtClass & stmtClass){
+bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
+//clang::Stmt::StmtClass & stmtClass
+  clang::Stmt::StmtClass stmtClass = S->getStmtClass();
   switch (stmtClass) {
     case clang::Stmt::CompoundStmtClass:
     case clang::Stmt::ImplicitCastExprClass: //隐式类型转换
@@ -23,7 +26,13 @@ bool shouldInsert(clang::Stmt::StmtClass & stmtClass){
     case clang::Stmt::DeclRefExprClass://存疑,待找到实例以验证
       return false;
 
-    case clang::Stmt::DeclStmtClass:
+    case clang::Stmt::DeclStmtClass:{
+      auto forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
+      if(parent0NodeKind.isSame(forStmtAstNodeKind) ){
+        //如果当前语句S的父亲节点是for语句头，则不插入时钟语句.
+        return false;
+      }
+    }
     case clang::Stmt::CallExprClass:
     case clang::Stmt::ForStmtClass://for循环整体
 //    case clang::Stmt::UnaryOperatorClass://一元操作符语句,  这里 暂时不插入. 因为需要知道当前是在for循环第3位置 , 还是单独一条语句. for循环第3位置前插入 分割符只能是逗号, 单独一条语句前插入 分割符只能是分号.
@@ -54,12 +63,24 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   auto stmtClassName = S->getStmtClassName();
 
 
-  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" << std::endl;
+  std::cout << "[#" << strStmt << "#]:{#" << stmtClassName << "#}" ;
 
+  clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
+  auto parentSSize=parentS.size();
+  assert(parentSSize>0);
+//  if(parentSSize>0){
+    auto parent0=parentS[0].get<Stmt>();
+    ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+    auto end=true;
+
+    std::cout << parent0NodeKind.asStringRef().str() << std::endl;
+//  }else{
+//    std::cout << std::endl;
+//  }
   bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
-  if(shouldInsert(stmtClass)){
+  if(shouldInsert(S,parent0NodeKind)){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-    mRewriter.InsertTextBefore(S->getBeginLoc(),"/**/");
+    mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
   }
   return true;
 }
