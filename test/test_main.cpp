@@ -7,7 +7,10 @@
 
 int t;//时钟
 
-
+void X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt){
+  //
+  return;
+}
 
 bool maxFunc(int* pA, int* pB, int* pMax){
   if (pA==NULL || pB==NULL){

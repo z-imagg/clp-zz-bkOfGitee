@@ -131,8 +131,18 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-void findXXFuncDec(clang::ASTContext *Ctx){
-//  Ctx->
+FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
+//    std::string functionName = "calc";
+
+    TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
+    for(auto decl:translationUnitDecl->decls()){
+      if(FunctionDecl* funcDecl = dyn_cast<FunctionDecl>(decl)){
+        if(funcDecl->getNameAsString()==functionName){
+          return funcDecl;
+        }
+      }
+    }
+    return NULL;
 }
 /**遍历语句
  *
@@ -140,6 +150,10 @@ void findXXFuncDec(clang::ASTContext *Ctx){
  * @return
  */
 bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+
+  FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,"X__t_clock_tick");
+  //clockTickFuncDecl 不是NULL， 即确实能找到 时钟滴答 函数声明
+
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
   auto range=S->getSourceRange();
   auto cRange=CharSourceRange::getCharRange(range);
