@@ -2,6 +2,9 @@
 
 #define MAX_INT 9999
 
+#define DECLARE__K int _k=0;
+
+
 int t;//时钟
 
 
@@ -57,7 +60,8 @@ float floatPower(float a, float b){
   return power;
 }
 int main(int argc, char** argv){
-
+  DECLARE__K
+  
   int x, y, max=MAX_INT;
   printf("input x,y:");
   scanf("%d,%d",&x,&y);
