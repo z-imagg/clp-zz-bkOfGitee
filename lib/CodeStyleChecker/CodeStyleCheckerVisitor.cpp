@@ -162,6 +162,22 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
   return strSourceText;
 }
 
+
+const Stmt* getParentStmt(Stmt* stmt,ASTContext* Ctx) {
+  const Stmt* parent = nullptr;
+
+  DynTypedNodeList parents=Ctx->getParents(*stmt);
+  for(int k =0; k < parents.size(); k++){
+    const Stmt* parentK=parents[0].get<Stmt>();
+    if (isa<CompoundStmt>(parentK)) {
+      parent = parentK;
+      break;
+    }
+  }
+
+  return parent;
+}
+
 /**遍历语句
  *
  * @param S
@@ -172,8 +188,9 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   SourceManager & sourceMgr = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
+  std::string functionName = "X__t_clock_tick";
   //能找到 时钟滴答 函数声明
-  FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,"X__t_clock_tick");
+  FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,functionName);
 
   //获取 时钟滴答 函数声明 源码文本，人工确定 确实是 该函数。
   std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), sourceMgr, langOpts);
@@ -191,11 +208,86 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
   size_t parentSSize=parentS.size();
   assert(parentSSize>0);
-    const Stmt* parent0=parentS[0].get<Stmt>();
-    ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+  const Stmt* parent0=parentS[0].get<Stmt>();
+  ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
+  //////
+
+// Create an IdentifierInfo representing the function name
+//  IdentifierInfo &identifierInfo = Ctx->Idents.get(functionName);
+
+// Create a DeclarationName based on the IdentifierInfo
+//  DeclarationName declarationName(&identifierInfo);
+
+// Create a FunctionDecl based on the DeclarationName
+//  FunctionDecl *functionDecl = FunctionDecl::Create(context, /* The translation unit context */, /* The declaration context */, /* The location of the function declaration */, declarationName, /* The function type */, nullptr, SC_None);
+
+  SourceLocation funcNameLoc=S->getBeginLoc();///////
+  SourceLocation funcNameTemplateKWLoc=S->getBeginLoc();///////
+// Create an expression representing the function name
+  Expr *funcNameExpr = DeclRefExpr::Create(
+          *Ctx,
+          NestedNameSpecifierLoc(),
+          funcNameTemplateKWLoc,
+          clockTickFuncDecl,
+          false,
+          funcNameLoc ,
+          Ctx->VoidTy, ExprValueKind::VK_RValue );
+
+  //////
+  clang::Stmt *stmt=S;
+  ASTContext &context = *Ctx;
+
+  // Create expressions for the function call arguments
+  Expr *arg1 = NULL /* Your first argument expression */;
+  Expr *arg2 = NULL /* Your second argument expression */;
+  Expr *arg3 = NULL /* Your third argument expression */;
+
+  // Create expressions for the function call arguments list
+//    Expr *args[3] = { arg1, arg2, arg3 };
+  Expr *args={};
+
+  // Create the function name expression
+//  Expr *funcNameExpr =NULL /* Your function name expression */;
+
+  SourceLocation callExprRParenLoc=S->getBeginLoc();///////
+  // Create the function call expression
+  CallExpr *callExpr = CallExpr::Create(
+          context,
+          funcNameExpr,
+          args,
+          context.VoidTy,
+          ExprValueKind::VK_RValue ,
+          callExprRParenLoc
+          );//llvm15:  FPOptionsOverride()
+
+
+  // Create a new statement for the function call
+//  Stmt *callStmt = new clang::Expr(*callExpr);
+//  clang::Stmt::Create(*callExpr);
+//  new EvaluatedStmt(callExpr);
+  clang::Stmt *callFuncStmt = clang::ImplicitCastExpr::Create(
+          *Ctx,
+          context.VoidTy,
+          clang::CK_NoOp, //////
+          callExpr,
+          nullptr,   //////
+          ExprValueKind::VK_RValue);
+  //clang::CK_NoOp
+  /////////////插入调用语句 还没写
+
+  // Insert the function call statement as a sibling of the current statement
+//  const Stmt* parentStmt = getParentStmt(S,Ctx);
+//  if (parentStmt) {
+//    parentStmt->setStmt(stmt, incrementExpr);
+//    incrementExpr->setStmt(stmt);
+//  }
+
+//  Ctx->
+
+
+  //////
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
-  bool isCompoundStmtClass= ( stmtClass==clang::Stmt::CompoundStmtClass);
   if(shouldInsert(S,parent0NodeKind)){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
     mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
