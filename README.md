@@ -100,12 +100,7 @@ make
 #编译出的插件如下：
 find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so
 
-#运行hello world插件
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so -plugin hello-world /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
-#(clang-tutor)  file: /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
-#(clang-tutor)  count: 3
 
 #运行CodeRefactor插件
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeRefactor.so -plugin CodeRefactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
@@ -146,13 +141,6 @@ find `pwd` -name "*.so"
 ![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/clion2022.3.3-remote-development.png)
 
 ## 2.4 构建
-![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/compile_helloworld.png)
 
 ## 2.5 调试
-```bash
-#相当于:
-cd /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/cmake-build-debug
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang  -cc1 -load cmake-build-debug/lib/libHelloWorld.so -plugin hello-world test/HelloWorld-basic.cpp
-```
-![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/debug_helloworld.png)
 
