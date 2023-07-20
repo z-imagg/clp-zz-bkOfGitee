@@ -23,6 +23,9 @@ public:
 
       Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
               .write(llvm::outs());
+
+
+      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
     }
 
 private:

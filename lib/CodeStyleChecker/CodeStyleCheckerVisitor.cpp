@@ -213,8 +213,20 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   if(shouldInsert(S,parent0NodeKind)){
+    char cStr_X__t_clock_tick[256];
+
+    int stackVarAllocCnt=0;
+    int stackVarFreeCnt=0;
+    int heapObjAllocCnt=0;
+    int heapObjcFreeCnt=0;
+    //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
+    sprintf(cStr_X__t_clock_tick, "X__t_clock_tick(%d, %d, %d, %d)", stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
+    llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
+
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-    mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
+    mRewriter.InsertTextBefore(S->getBeginLoc(),strRef_X__t_clock_tick);
+
+    mRewriter.overwriteChangedFiles();//修改会影响原始文件
   }
   return true;
 }
