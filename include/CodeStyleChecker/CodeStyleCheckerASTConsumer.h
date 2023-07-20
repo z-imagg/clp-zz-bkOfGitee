@@ -22,7 +22,7 @@ public:
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
       auto filePath=SM.getFileEntryForID(SM.getMainFileID())->getName().str();
-      std::cout<<"__filepath:"<<filePath<<std::endl;
+      std::cout<<"HandleTranslationUnit__filepath:"<<filePath<<std::endl;
 
       clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
       Visitor.TraverseDecl(translationUnitDecl);

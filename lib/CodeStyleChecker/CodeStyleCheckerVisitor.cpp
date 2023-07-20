@@ -284,7 +284,8 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, this->Ctx->getSourceManager(), fn);
+  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, SM, fn);
+  std::string fnStr=fn.str();
   if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(stmt, parent0NodeKind)){
 
     int stackVarAllocCnt=0;
@@ -293,10 +294,11 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "INSERT X__t_clock_tick to __fn:" << fn.str() <<std::endl;
+    std::cout<< "INSERT X__t_clock_tick to __fn:" <<fnStr <<std::endl;
 
     if(fileInsertedIncludeStmt.count(fileId)==0){
       CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
+      std::cout<< "insertIncludeToFileStartByLoc to __fn:" << fnStr <<std::endl;
       fileInsertedIncludeStmt.insert(fileId);
     }
   }else{
