@@ -31,11 +31,8 @@ using namespace clang;
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
 但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
 
-#更简洁的命令:
-运行clang++带上本插件.so 且 运行编译、链接 全过程: 本插件自动运行（ 在MainAction后运行本插件）配合  -fplugin
-#本插件自动运行: 在MainAction后运行本插件:  Action.getActionType返回AddAfterMainAction
-#参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html#using-the-clang-command-line
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -fplugin=/pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so     /pubx/clang-tutor/test/test_main.cpp  -o test_main
+
+
  */
 
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
