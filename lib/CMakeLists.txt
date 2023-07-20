@@ -2,7 +2,6 @@
 # ======================================================
 set(CLANG_TUTOR_PLUGINS
     CodeStyleChecker
-    Obfuscator
     UnusedForLoopVar
     )
 
@@ -10,8 +9,6 @@ set(CLANG_TUTOR_PLUGINS
 set(CodeStyleChecker_SOURCES
   CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
 
-set(Obfuscator_SOURCES
-  Obfuscator/ObfuscatorASTConsumer.cpp Obfuscator/ObfuscatorMatcherForAdd.cpp  Obfuscator/ObfuscatorMatcherForSub.cpp  Obfuscator/ObfuscatorPluginAction.cpp)
 
 set(UnusedForLoopVar_SOURCES
   UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)

@@ -100,7 +100,6 @@ make
 #编译出的插件如下：
 find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libObfuscator.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libUnusedForLoopVar.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so
 
