@@ -8,7 +8,18 @@
 #define DECLARE__K int _k=0;
 
 
+int f111(){
+  return 11;
+}
+int f222(){
+  return /*BUG1*/ f111();//BUG1, 待修复
+}
+
 bool maxFunc(int* pA, int* pB, int* pMax){
+  if (pA == nullptr || /*BUG2*/ !f111()){//BUG1, 待修复
+
+  }
+
   int x=0;
   for(int zk=0; zk<10; zk++)
     if (zk%2==0) x+=zk;
