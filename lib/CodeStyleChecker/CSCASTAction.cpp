@@ -66,7 +66,7 @@ public:
       for (StringRef Arg : Args) {
         if (Arg.startswith("-main-tu-only="))
           MainTuOnly =
-                  Arg.substr(strlen("-main-tu-only=")).equals_insensitive("true");
+                  Arg.substr(strlen("-main-tu-only=")).equals_lower("true");
         else if (Arg.startswith("-help"))
           PrintHelp(llvm::errs());
         else
@@ -78,6 +78,11 @@ public:
 
     void PrintHelp(llvm::raw_ostream &ros) {
       ros << "Help for CodeStyleChecker plugin goes here\n";
+    }
+
+    PluginASTAction::ActionType getActionType() override {
+      //本插件自动运行:  在MainAction后运行本插件
+      return AddAfterMainAction;
     }
 
 private:
