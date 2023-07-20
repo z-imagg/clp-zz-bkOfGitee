@@ -64,9 +64,19 @@ void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::Sou
   rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);
 }
 
+static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::WhileStmt>();
+static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
+
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 //clang::Stmt::StmtClass & stmtClass
   clang::Stmt::StmtClass stmtClass = S->getStmtClass();
+
+  //无大括号循环内语句前不要插入， 若要插入，需要先加大括号。
+  if(parent0NodeKind.isSame(_forStmtAstNodeKind) || parent0NodeKind.isSame(_whileStmtAstNodeKind)){
+    //如果当前语句S的父亲节点是for语句头，则不插入时钟语句. 单行for语句包含 语句S， 语句S前肯定不能插入，否则 语义不对 甚至 可能语法错误 比如 变量没声明。
+    return false;
+  }
+
   switch (stmtClass) {//switch开始
     //{不插入时钟语句概率大的情况
     case clang::Stmt::CompoundStmtClass:{
@@ -88,8 +98,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 
     //{插入时钟语句概率大的情况
     case clang::Stmt::DeclStmtClass:{
-      auto forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
-      if(parent0NodeKind.isSame(forStmtAstNodeKind) ){
+      if(parent0NodeKind.isSame(_forStmtAstNodeKind) ){
         //如果当前语句S的父亲节点是for语句头，则不插入时钟语句.
         return false;
       }
