@@ -1,14 +1,7 @@
 set(CLANG_TUTOR_TOOLS
-    ct-la-commenter
     ct-code-style-checker
 )
 
-set(ct-la-commenter_SOURCES
- "${CMAKE_CURRENT_SOURCE_DIR}/LACommenterMain.cpp"
- "${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACommenterASTConsumer.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACommenterMatcher.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/LACommenter/LACPluginAction.cpp"
-)
 
 
 set(ct-code-style-checker_SOURCES

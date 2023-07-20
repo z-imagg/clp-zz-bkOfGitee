@@ -1,14 +1,11 @@
 # THE LIST OF PLUGINS AND THE CORRESPONDING SOURCE FILES
 # ======================================================
 set(CLANG_TUTOR_PLUGINS
-    LACommenter
     CodeStyleChecker
     Obfuscator
     UnusedForLoopVar
     )
 
-set(LACommenter_SOURCES
-  LACommenter/LACommenterASTConsumer.cpp LACommenter/LACommenterMatcher.cpp LACommenter/LACPluginAction.cpp )
 
 set(CodeStyleChecker_SOURCES
   CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
