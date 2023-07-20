@@ -58,20 +58,12 @@ public:
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
       return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-              &Compiler.getASTContext(), MainTuOnly, Compiler.getSourceManager());
+              &Compiler.getASTContext(), Compiler.getSourceManager());
     }
 
     bool ParseArgs(const CompilerInstance &CI,
                    const std::vector<std::string> &Args) override {
-      for (StringRef Arg : Args) {
-        if (Arg.startswith("-main-tu-only="))
-          MainTuOnly =
-                  Arg.substr(strlen("-main-tu-only=")).equals_insensitive("true");
-        else if (Arg.startswith("-help"))
-          PrintHelp(llvm::errs());
-        else
-          return false;
-      }
+
 
       return true;
     }
@@ -85,11 +77,18 @@ public:
       return AddAfterMainAction;
     }
 
+    void EndSourceFileAction() override {
+//      mRewriter
+//         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
+//         .write(llvm::outs());
+
+      mRewriter.overwriteChangedFiles();//修改会影响原始文件
+    }
+
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
     Rewriter mRewriter;
-    bool MainTuOnly = true;
 };
 
 //-----------------------------------------------------------------------------

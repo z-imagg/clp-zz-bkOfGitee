@@ -30,12 +30,6 @@ using namespace clang;
 //===----------------------------------------------------------------------===//
 static llvm::cl::OptionCategory CSCCategory("ct-code-style-checker options");
 
-static cl::opt<bool> MainTuOnly{
-    "main-tu-only",
-    cl::desc("Only run on the main translation unit "
-             "(e.g. ignore included header files)"),
-    cl::init(true), cl::cat(CSCCategory)};
-
 //===----------------------------------------------------------------------===//
 // PluginASTAction
 //===----------------------------------------------------------------------===//
@@ -53,7 +47,7 @@ public:
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
     return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-        &CI.getASTContext(), MainTuOnly, CI.getSourceManager());
+        &CI.getASTContext(),  CI.getSourceManager());
   }
 
 
