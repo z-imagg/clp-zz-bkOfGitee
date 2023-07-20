@@ -13,7 +13,8 @@
  */
 class CallExprMatcher : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
-    CallExprMatcher() {}
+    clang::FileID startFileId;
+    CallExprMatcher(clang::FileID _startFileId):startFileId(_startFileId) {}
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override {
     clang::SourceManager& SM=Result.Context->getSourceManager();
@@ -29,7 +30,9 @@ public:
       std::string funcName=callee->getNameInfo().getName().getAsString();
       //能找到 时钟滴答 函数调用
       //若已经有时钟函数调用
-      if(funcName==CodeStyleCheckerVisitor::funcName_TCTick){
+      if(funcName==CodeStyleCheckerVisitor::funcName_TCTick
+      //是否已处理 的 糟糕实现：匹配到CallExpr后看其FIleId时不是MainFileId, 若是 即为直接在本文件中，若不是则在间接包含的文件中
+      && fileId==startFileId){
         //若已经有时钟函数调用，则标记为已处理
         CodeStyleCheckerVisitor::fileInsertedIncludeStmt.insert(fileId);
       }
@@ -63,9 +66,23 @@ public:
       //所以说 有漏洞：如果一个客户源文件，没有包含时钟头文件，但是调用了时钟函数 ，是会每次都被插入时钟语句。
       {
         clang::ast_matchers::MatchFinder Finder;
-        CallExprMatcher Matcher;
+        CallExprMatcher Matcher(mainFileId);
         Finder.addMatcher(clang::ast_matchers::callExpr().bind("callExpr"), &Matcher);
 
+        //试图表达 本源文件  但 Options 放不进去
+//        const auto &AST = Ctx;
+////        const auto &SM = AST.getSourceManager();
+//        const auto &FID = SM.getMainFileID();
+//        const auto &FD = SM.getFileEntryForID(FID);
+//        const auto &FilePath = FD->getName();
+//
+//        clang::ast_matchers::MatchFinder::MatchCallback *Callbacks[] = {&Matcher};
+//        clang::ast_matchers::MatchFinder::MatchFinderOptions Options;
+//        Options.IncludedFile = FilePath;
+//        clang::ast_matchers::match(AST, Options, Callbacks, sizeof(Callbacks) / sizeof(Callbacks[0]));
+
+
+        ////
         Ctx.getTranslationUnitDecl();
         Finder.matchAST(Ctx);//这里应该会循环调完 CallExprMatcher.run
 
