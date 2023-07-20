@@ -168,7 +168,7 @@ const Stmt* getParentStmt(Stmt* stmt,ASTContext* Ctx) {
 
   DynTypedNodeList parents=Ctx->getParents(*stmt);
   for(int k =0; k < parents.size(); k++){
-    const Stmt* parentK=parents[0].get<Stmt>();
+    const Stmt* parentK=parents[k].get<Stmt>();
     if (isa<CompoundStmt>(parentK)) {
       parent = parentK;
       break;
@@ -226,7 +226,6 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
     mRewriter.InsertTextBefore(S->getBeginLoc(),strRef_X__t_clock_tick);
 
-    mRewriter.overwriteChangedFiles();//修改会影响原始文件
   }
   return true;
 }
