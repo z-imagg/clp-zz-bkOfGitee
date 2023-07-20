@@ -2,6 +2,7 @@
 # ======================================================
 set(CLANG_TUTOR_PLUGINS
     CodeStyleChecker
+    CodeRefactor
     )
 
 
@@ -10,6 +11,8 @@ set(CodeStyleChecker_SOURCES
 
 
 
+set(CodeRefactor_SOURCES
+  CodeRefactor/CodeRefactorAddPluginAction.cpp CodeRefactor/CodeRefactorASTConsumer.cpp CodeRefactor/CodeRefactorMatcher.cpp )
 
 # CONFIGURE THE PLUGIN LIBRARIES
 # ==============================
