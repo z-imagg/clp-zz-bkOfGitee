@@ -253,16 +253,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
-  {
-  std::string functionName = "X__t_clock_tick";
-  //能找到 时钟滴答 函数声明
-  FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,functionName);
-  if(clockTickFuncDecl!=NULL){
-  //获取 时钟滴答 函数声明 源码文本，人工确定 确实是 该函数。
-  std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), SM, langOpts);
-//  std::cout<<clockTickFuncSourceText<<std::endl;
-  }
-  }
+
 
   //获取当前语句S的源码文本
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
