@@ -30,7 +30,7 @@ public:
     static bool getSourceFilePathOfStmt(const clang::Stmt *S, const clang::SourceManager &SM,clang::StringRef& fn);
 
     static clang::FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName);
-    std::string getSourceTextBySourceRange(clang::SourceRange sourceRange, clang::SourceManager & sourceManager, const clang::LangOptions & langOptions);
+    static std::string getSourceTextBySourceRange(clang::SourceRange sourceRange, clang::SourceManager & sourceManager, const clang::LangOptions & langOptions);
 
     /**遍历语句
      *
