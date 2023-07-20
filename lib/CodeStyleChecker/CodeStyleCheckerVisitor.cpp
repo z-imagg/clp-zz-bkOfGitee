@@ -163,20 +163,6 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
 }
 
 
-const Stmt* getParentStmt(Stmt* stmt,ASTContext* Ctx) {
-  const Stmt* parent = nullptr;
-
-  DynTypedNodeList parents=Ctx->getParents(*stmt);
-  for(int k =0; k < parents.size(); k++){
-    const Stmt* parentK=parents[k].get<Stmt>();
-    if (isa<CompoundStmt>(parentK)) {
-      parent = parentK;
-      break;
-    }
-  }
-
-  return parent;
-}
 
 /**遍历语句
  *
