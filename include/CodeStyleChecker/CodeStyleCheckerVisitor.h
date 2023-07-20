@@ -20,7 +20,8 @@ public:
 
     }
 
-    static void insertIncludeToMainFile(clang::ASTContext &Context, clang::Rewriter& rewriter);
+    static const std::string IncludeStmt_t_clock_tick ; // = "#include \"t_clock_tick.h\"\n";
+    static void insertIncludeToFileStart(clang::FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter);
     static bool getSourceFilePathAtLoc(clang::SourceLocation Loc, const clang::SourceManager &SM,clang::StringRef& fn);
     static bool getSourceFilePathOfStmt(const clang::Stmt *S, const clang::SourceManager &SM,clang::StringRef& fn);
     /**遍历语句

@@ -35,26 +35,26 @@ using namespace clang;
 
  */
 
+
+const std::string CodeStyleCheckerVisitor::IncludeStmt_t_clock_tick = "#include \"t_clock_tick.h\"\n";
+
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
 }
 
-void CodeStyleCheckerVisitor::insertIncludeToMainFile(clang::ASTContext &Context, clang::Rewriter& rewriter)   {
-  clang::SourceManager &SM = Context.getSourceManager();
-  clang::FileID MainFileID = SM.getMainFileID();
-  clang::SourceLocation Loc = SM.getLocForStartOfFile(MainFileID);
+void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter)   {
+//  clang::SourceManager &SM = Context.getSourceManager();
+//  clang::FileID MainFileID = SM.getMainFileID();
 
-  // Get the rewritten buffer for the main file
-  const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(MainFileID);
+//  FileID fileId = SM.getFileID(Loc);
+  clang::SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
+
+  const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
   if (!RewriteBuf)
     return;
 
-  // Find the location to insert the include directive
-//      unsigned Offset = Lexer::MeasureIndentation(SM.getBufferData(MainFileID), Loc, SM);
-  std::string IncludeCode = "#include \"t_clock_tick.h\"\n";
 
-  // Insert the include directive
-  rewriter.InsertText(Loc, IncludeCode, true, true);
+  rewriter.InsertText(startLoc, IncludeStmt_t_clock_tick, true, true);
 }
 
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
