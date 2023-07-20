@@ -2,7 +2,6 @@
 # ======================================================
 set(CLANG_TUTOR_PLUGINS
     CodeStyleChecker
-    UnusedForLoopVar
     )
 
 
@@ -10,8 +9,6 @@ set(CodeStyleChecker_SOURCES
   CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
 
 
-set(UnusedForLoopVar_SOURCES
-  UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)
 
 
 # CONFIGURE THE PLUGIN LIBRARIES
