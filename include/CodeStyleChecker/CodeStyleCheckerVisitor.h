@@ -20,6 +20,7 @@ public:
 
     }
 
+    static void insertInclude(clang::ASTContext &Context, clang::Rewriter& rewriter);
     /**遍历语句
      *
      * @param S

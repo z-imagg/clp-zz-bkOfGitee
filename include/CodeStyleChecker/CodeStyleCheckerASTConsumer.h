@@ -19,23 +19,6 @@ public:
             : Visitor(R, Context),
             SM(SM)  {}
 
-    void insertInclude(clang::ASTContext &Context, clang::Rewriter& rewriter)   {
-      clang::SourceManager &SM = Context.getSourceManager();
-      clang::FileID MainFileID = SM.getMainFileID();
-      clang::SourceLocation Loc = SM.getLocForStartOfFile(MainFileID);
-
-      // Get the rewritten buffer for the main file
-      const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(MainFileID);
-      if (!RewriteBuf)
-        return;
-
-      // Find the location to insert the include directive
-//      unsigned Offset = Lexer::MeasureIndentation(SM.getBufferData(MainFileID), Loc, SM);
-      std::string IncludeCode = "#include \"t_clock_tick.h\"\n";
-
-      // Insert the include directive
-      rewriter.InsertText(Loc, IncludeCode, true, true);
-    }
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
       auto filePath=SM.getFileEntryForID(SM.getMainFileID())->getName().str();
@@ -44,7 +27,7 @@ public:
       clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
       Visitor.TraverseDecl(translationUnitDecl);
 
-      insertInclude(Ctx, Visitor.mRewriter);
+      CodeStyleCheckerVisitor::insertInclude(Ctx, Visitor.mRewriter);
 
 //      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
 //              .write(llvm::outs());

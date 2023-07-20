@@ -38,6 +38,25 @@ using namespace clang;
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
 }
+
+void CodeStyleCheckerVisitor::insertInclude(clang::ASTContext &Context, clang::Rewriter& rewriter)   {
+  clang::SourceManager &SM = Context.getSourceManager();
+  clang::FileID MainFileID = SM.getMainFileID();
+  clang::SourceLocation Loc = SM.getLocForStartOfFile(MainFileID);
+
+  // Get the rewritten buffer for the main file
+  const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(MainFileID);
+  if (!RewriteBuf)
+    return;
+
+  // Find the location to insert the include directive
+//      unsigned Offset = Lexer::MeasureIndentation(SM.getBufferData(MainFileID), Loc, SM);
+  std::string IncludeCode = "#include \"t_clock_tick.h\"\n";
+
+  // Insert the include directive
+  rewriter.InsertText(Loc, IncludeCode, true, true);
+}
+
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 //clang::Stmt::StmtClass & stmtClass
   clang::Stmt::StmtClass stmtClass = S->getStmtClass();
