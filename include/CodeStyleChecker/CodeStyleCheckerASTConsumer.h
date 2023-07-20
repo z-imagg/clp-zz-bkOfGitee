@@ -21,6 +21,8 @@ public:
 
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
+      //若已经有时钟函数调用，则直接返回，不做任何处理。
+
       auto filePath=SM.getFileEntryForID(SM.getMainFileID())->getName().str();
       std::cout<<"HandleTranslationUnit__filepath:"<<filePath<<std::endl;
 

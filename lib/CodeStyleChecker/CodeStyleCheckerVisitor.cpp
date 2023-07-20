@@ -153,7 +153,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
+FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
 //    std::string functionName = "calc";
 
     TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
@@ -174,7 +174,7 @@ FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName)
  * @param langOptions
  * @return
  */
-std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
+std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
 //  SourceRange sourceRange=S->getSourceRange();
   CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
