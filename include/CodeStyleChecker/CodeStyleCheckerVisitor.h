@@ -20,7 +20,7 @@ public:
 
     }
 
-    static void insertInclude(clang::ASTContext &Context, clang::Rewriter& rewriter);
+    static void insertIncludeToMainFile(clang::ASTContext &Context, clang::Rewriter& rewriter);
     static bool getSourceFilePathAtLoc(clang::SourceLocation Loc, const clang::SourceManager &SM,clang::StringRef& fn);
     static bool getSourceFilePathOfStmt(const clang::Stmt *S, const clang::SourceManager &SM,clang::StringRef& fn);
     /**遍历语句

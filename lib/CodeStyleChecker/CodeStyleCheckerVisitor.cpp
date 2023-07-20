@@ -39,7 +39,7 @@ bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
 }
 
-void CodeStyleCheckerVisitor::insertInclude(clang::ASTContext &Context, clang::Rewriter& rewriter)   {
+void CodeStyleCheckerVisitor::insertIncludeToMainFile(clang::ASTContext &Context, clang::Rewriter& rewriter)   {
   clang::SourceManager &SM = Context.getSourceManager();
   clang::FileID MainFileID = SM.getMainFileID();
   clang::SourceLocation Loc = SM.getLocForStartOfFile(MainFileID);
