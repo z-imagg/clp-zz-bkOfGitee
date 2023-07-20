@@ -209,7 +209,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
     //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-    sprintf(cStr_X__t_clock_tick, "X__t_clock_tick(%d, %d, %d, %d);", stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
+    sprintf(cStr_X__t_clock_tick, "X__t_clock_tick(%d, %d, %d, %d);\n", stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
     llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");

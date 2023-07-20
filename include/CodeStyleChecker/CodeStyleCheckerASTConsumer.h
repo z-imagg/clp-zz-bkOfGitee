@@ -30,7 +30,7 @@ public:
 
       // Find the location to insert the include directive
 //      unsigned Offset = Lexer::MeasureIndentation(SM.getBufferData(MainFileID), Loc, SM);
-      std::string IncludeCode = "#include <t_clock_tick.h>\n";
+      std::string IncludeCode = "#include \"t_clock_tick.h\"\n";
 
       // Insert the include directive
       rewriter.InsertText(Loc, IncludeCode, true, true);

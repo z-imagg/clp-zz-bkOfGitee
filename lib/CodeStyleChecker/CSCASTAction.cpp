@@ -77,13 +77,7 @@ public:
       return AddAfterMainAction;
     }
 
-    void EndSourceFileAction() override {
-//      mRewriter
-//         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
-//         .write(llvm::outs());
-
-      mRewriter.overwriteChangedFiles();//修改会影响原始文件
-    }
+//    void EndSourceFileAction() override { }  //   貌似有时候并没有调用EndSourceFileAction，因此去掉
 
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
