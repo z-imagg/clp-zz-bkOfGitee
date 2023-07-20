@@ -267,8 +267,9 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
-  assert(parentSSize>0);
-  const Stmt* parent0=parentS[0].get<Stmt>();
+  if(parentSSize<=0){
+    return true;
+  }
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
   clang::SourceLocation beginLoc=stmt->getBeginLoc();
