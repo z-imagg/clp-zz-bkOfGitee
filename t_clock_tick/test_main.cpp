@@ -9,6 +9,13 @@
 
 
 bool maxFunc(int* pA, int* pB, int* pMax){
+  int x=0;
+  for(int zk=0; zk<10; zk++)
+    if (zk%2==0) x+=zk;
+
+  while(false)
+    x--;
+  
   if (pA==NULL || pB==NULL){
     return false;
   }
