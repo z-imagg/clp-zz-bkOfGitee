@@ -245,12 +245,12 @@ void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int s
 }
 /**遍历语句
  *
- * @param S
+ * @param stmt
  * @return
  */
-bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
-  SourceManager & sourceMgr = mRewriter.getSourceMgr();
+  SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
   {
@@ -259,44 +259,44 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,functionName);
   if(clockTickFuncDecl!=NULL){
   //获取 时钟滴答 函数声明 源码文本，人工确定 确实是 该函数。
-  std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), sourceMgr, langOpts);
+  std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), SM, langOpts);
 //  std::cout<<clockTickFuncSourceText<<std::endl;
   }
   }
 
   //获取当前语句S的源码文本
-  std::string stmtSourceText=getSourceTextBySourceRange(S->getSourceRange(), sourceMgr, langOpts);
+  std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
-  Stmt::StmtClass stmtClass = S->getStmtClass();
-  const char* stmtClassName = S->getStmtClassName();
+  Stmt::StmtClass stmtClass = stmt->getStmtClass();
+  const char* stmtClassName = stmt->getStmtClassName();
 
 
 //  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
+  clang::DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
   assert(parentSSize>0);
   const Stmt* parent0=parentS[0].get<Stmt>();
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
-  clang::SourceLocation beginLoc=S->getBeginLoc();
-  FileID fileId = sourceMgr.getFileID(beginLoc);
+  clang::SourceLocation beginLoc=stmt->getBeginLoc();
+  FileID fileId = SM.getFileID(beginLoc);
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(S, this->Ctx->getSourceManager(), fn);
-  if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(S,parent0NodeKind)){
+  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, this->Ctx->getSourceManager(), fn);
+  if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(stmt, parent0NodeKind)){
 
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
-    insert_X__t_clock_tick(mRewriter,S,stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
+    insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
     std::cout<< "INSERT X__t_clock_tick to __fn:" << fn.str() <<std::endl;
 
     if(fileInsertedIncludeStmt.count(fileId)==0){
-      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, sourceMgr,mRewriter);
+      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
       fileInsertedIncludeStmt.insert(fileId);
     }
   }else{

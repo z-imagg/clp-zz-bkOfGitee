@@ -29,10 +29,10 @@ public:
     static bool getSourceFilePathOfStmt(const clang::Stmt *S, const clang::SourceManager &SM,clang::StringRef& fn);
     /**遍历语句
      *
-     * @param S
+     * @param stmt
      * @return
      */
-    virtual bool VisitStmt(clang::Stmt *S);
+    virtual bool VisitStmt(clang::Stmt *stmt);
     virtual bool VisitCallExpr(clang::CallExpr *callExpr);
 
     //下面4个形如 bool VisitZzz(clang:Zzz *Decl)  的方法:, 其中Zzz的完整列表叙述 从 本文件第27行开始.
