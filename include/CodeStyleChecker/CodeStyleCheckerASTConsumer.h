@@ -21,10 +21,10 @@ public:
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
         Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
 
-      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
-              .write(llvm::outs());
+//      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
+//              .write(llvm::outs());
 
-
+        //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
 //      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
     }
 

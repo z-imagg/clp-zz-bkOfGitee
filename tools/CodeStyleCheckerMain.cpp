@@ -51,6 +51,13 @@ public:
   }
 
 
+    void EndSourceFileAction() override {
+//      mRewriter
+//         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
+//         .write(llvm::outs());
+
+      mRewriter.overwriteChangedFiles();//修改会影响原始文件
+    }
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
