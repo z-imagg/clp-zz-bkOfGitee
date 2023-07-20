@@ -25,7 +25,7 @@ public:
               .write(llvm::outs());
 
 
-      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
+//      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
     }
 
 private:

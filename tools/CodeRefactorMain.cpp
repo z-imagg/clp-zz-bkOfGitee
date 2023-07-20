@@ -54,11 +54,13 @@ public:
   }
 
   // Output the edit buffer for this translation unit
-  // void EndSourceFileAction() override {
-  //   RewriterForCodeRefactor
-  //       .getEditBuffer(RewriterForCodeRefactor.getSourceMgr().getMainFileID())
-  //       .write(llvm::outs());
-  // }
+   void EndSourceFileAction() override {
+//     RewriterForCodeRefactor
+//         .getEditBuffer(RewriterForCodeRefactor.getSourceMgr().getMainFileID())
+//         .write(llvm::outs());
+
+    RewriterForCodeRefactor.overwriteChangedFiles();//修改会影响原始文件
+   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                  StringRef file) override {
