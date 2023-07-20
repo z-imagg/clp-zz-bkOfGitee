@@ -19,7 +19,12 @@ public:
             SM(SM)  {}
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
-        Visitor.TraverseDecl(Ctx.getTranslationUnitDecl());
+        clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
+
+       //尝试在头部插入#include语句
+        Visitor.mRewriter.InsertTextBefore(translationUnitDecl->getBeginLoc(),"#include t_clock_tick.h");
+
+        Visitor.TraverseDecl(translationUnitDecl);
 
 //      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
 //              .write(llvm::outs());
