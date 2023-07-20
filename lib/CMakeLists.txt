@@ -5,7 +5,6 @@ set(CLANG_TUTOR_PLUGINS
     CodeStyleChecker
     Obfuscator
     UnusedForLoopVar
-    CodeRefactor
     )
 
 set(LACommenter_SOURCES
@@ -20,8 +19,6 @@ set(Obfuscator_SOURCES
 set(UnusedForLoopVar_SOURCES
   UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)
 
-set(CodeRefactor_SOURCES
-  CodeRefactor/CodeRefactorAddPluginAction.cpp CodeRefactor/CodeRefactorASTConsumer.cpp CodeRefactor/CodeRefactorMatcher.cpp )
 
 # CONFIGURE THE PLUGIN LIBRARIES
 # ==============================

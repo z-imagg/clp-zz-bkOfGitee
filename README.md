@@ -104,7 +104,6 @@ find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libObfuscator.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libUnusedForLoopVar.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeRefactor.so
 
 #运行hello world插件
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so -plugin hello-world /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
