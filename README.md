@@ -114,7 +114,9 @@ find `pwd` -name "*.so"
 
 #独立运行CodeStyleChecker
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
-#不知道为何，只是报错“Error while trying to load a compilation database:” 且没做事情
+# 报错“Error while trying to load a compilation database:” 且没做事情, 仔细看，有发现 段错误导致崩溃了 ， gdb调试可以发现：
+# 是因为 我写的代码中有空指针异常，导致段错误崩溃，后续才出现报错“Error while trying to load a compilation database:”。 
+# 可以这个报错并没什么意义。修复完bug，不再报错。
 ```
 
 
