@@ -76,12 +76,24 @@ public:
 
       }
 
-      auto filePath=SM.getFileEntryForID(SM.getMainFileID())->getName().str();
-      std::cout<<"HandleTranslationUnit__filepath:"<<filePath<<std::endl;
+      auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
+      std::cout<<"HandleTranslationUnit__filepath:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
+
+      //{这样能遍历到本源文件间接包含的文件
       clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
       Visitor.TraverseDecl(translationUnitDecl);
+      //}
 
+      //{本循环能遍历到直接在本源文件中的函数定义中
+      auto Decls = Ctx.getTranslationUnitDecl()->decls();
+      for (auto &Decl : Decls) {
+        if (!SM.isInMainFile(Decl->getLocation())){
+          continue;
+        }
+        Visitor.TraverseDecl(Decl);
+      }
+      //}
 
 //      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
 //              .write(llvm::outs());

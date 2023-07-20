@@ -255,6 +255,12 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
 
+  clang::SourceLocation beginLoc=stmt->getBeginLoc();
+  clang::SourceRange sourceRange=stmt->getSourceRange();
+  FileID fileId = SM.getFileID(beginLoc);
+
+  clang::FileID mainFileId = SM.getMainFileID();
+
 
   //获取当前语句S的源码文本
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
@@ -272,14 +278,17 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
   }
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
-  clang::SourceLocation beginLoc=stmt->getBeginLoc();
-  FileID fileId = SM.getFileID(beginLoc);
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
   CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
-  if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(stmt, parent0NodeKind)){
+
+  bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
+  bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
+  std::cout <<  sourceRange.printToString(SM) <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+
+  if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
