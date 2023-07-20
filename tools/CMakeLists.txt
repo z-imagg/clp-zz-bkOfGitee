@@ -1,15 +1,8 @@
 set(CLANG_TUTOR_TOOLS
-    ct-code-refactor
     ct-code-style-checker
 )
 
 
-set(ct-code-refactor_SOURCES
- "${CMAKE_CURRENT_SOURCE_DIR}/CodeRefactorMain.cpp"
- "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeRefactor/CodeRefactorAddPluginAction.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeRefactor/CodeRefactorASTConsumer.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeRefactor/CodeRefactorMatcher.cpp"
-)
 
 set(ct-code-style-checker_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/CodeStyleCheckerMain.cpp"
