@@ -97,9 +97,10 @@ public:
       std::cout<<"HandleTranslationUnit__filepath:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 
+      //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
-      clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
-      Visitor.TraverseDecl(translationUnitDecl);
+//      clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
+//      Visitor.TraverseDecl(translationUnitDecl);
       //}
 
       //{本循环能遍历到直接在本源文件中的函数定义中
