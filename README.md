@@ -2,11 +2,11 @@
 
 ```bash
 #https://github.com/llvm/llvm-project/releases?page=2
-wget https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.0/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10.tar.xz
-xz -d clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10.tar.xz
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.0/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar.xz
+xz -d clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar.xz
 sudo mkdir /llvm_release_home/
 sudo chown -R z.z /llvm_release_home
-tar -xvf clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10.tar -C /llvm_release_home/
+tar -xvf clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4.tar -C /llvm_release_home/
 
 ```
 
@@ -89,7 +89,7 @@ ldconfig -p | grep curse
 ```bash
 cd /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/
 rm -fr build; mkdir build ; cd build
-cmake -DCT_Clang_INSTALL_DIR=/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/  -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCURSES_LIBRARY=/lib64/libncurses.so.6 -DCURSES_INCLUDE_PATH=/usr/include/   -DCMAKE_EXPORT_COMPILE_COMMANDS=True   -DCMAKE_C_COMPILER=/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang -DCMAKE_CXX_COMPILER=/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang++    -DLLVM_DIR=/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10 ..
+cmake -DCT_Clang_INSTALL_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/  -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCURSES_LIBRARY=/lib64/libncurses.so.6 -DCURSES_INCLUDE_PATH=/usr/include/   -DCMAKE_EXPORT_COMPILE_COMMANDS=True   -DCMAKE_C_COMPILER=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -DCMAKE_CXX_COMPILER=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++    -DLLVM_DIR=/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4 ..
 
 #或:
 #cmake -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake ..
@@ -107,19 +107,19 @@ find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeRefactor.so
 
 #运行hello world插件
-/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang -cc1 -load /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so -plugin hello-world /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so -plugin hello-world /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
 #(clang-tutor)  file: /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
 #(clang-tutor)  count: 3
 
 #运行CodeRefactor插件
-/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeRefactor.so -plugin CodeRefactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeRefactor.so -plugin CodeRefactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
 
 #独立运行CodeRefactor
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-refactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
 #虽然报错“Error while trying to load a compilation database:” ,但正常做了CodeRefactor
 
 #运行CodeStyleChecker插件
-/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
 
 #独立运行CodeStyleChecker
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
@@ -156,7 +156,7 @@ find `pwd` -name "*.so"
 ```bash
 #相当于:
 cd /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/cmake-build-debug
-/llvm_release_home/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin/clang  -cc1 -load cmake-build-debug/lib/libHelloWorld.so -plugin hello-world test/HelloWorld-basic.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang  -cc1 -load cmake-build-debug/lib/libHelloWorld.so -plugin hello-world test/HelloWorld-basic.cpp
 ```
 ![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/debug_helloworld.png)
 
