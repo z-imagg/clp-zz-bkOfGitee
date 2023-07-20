@@ -37,7 +37,8 @@ using namespace clang;
 
 
 std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};
-const std::string CodeStyleCheckerVisitor::IncludeStmt_t_clock_tick = "#include \"t_clock_tick.h\"\n";
+const std::string CodeStyleCheckerVisitor::funcName_TCTick = "X__t_clock_tick";
+const std::string CodeStyleCheckerVisitor::IncludeStmt_TCTick = "#include \"t_clock_tick.h\"\n";
 
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
@@ -60,7 +61,7 @@ void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::Sou
     return;
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_t_clock_tick, true, true);
+  rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);
 }
 
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
@@ -236,7 +237,7 @@ void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int s
   char cStr_X__t_clock_tick[256];
 
   //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "X__t_clock_tick(%d, %d, %d, %d);\n", stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
+  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CodeStyleCheckerVisitor::funcName_TCTick.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");

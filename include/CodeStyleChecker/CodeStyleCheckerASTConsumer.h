@@ -28,9 +28,8 @@ public:
       //包含了时钟头文件 会有时钟函数声明。 其实是想问 是否有 时钟函数调用，但函数调用 比 声明 难找。
       //所以说 有漏洞：如果一个客户源文件，没有包含时钟头文件，但是调用了时钟函数 ，是会每次都被插入时钟语句。
       {
-        std::string functionName = "X__t_clock_tick";
         //能找到 时钟滴答 函数声明
-        clang::FunctionDecl* clockTickFuncDecl = CodeStyleCheckerVisitor::findFuncDecByName(&Ctx,functionName);
+        clang::FunctionDecl* clockTickFuncDecl = CodeStyleCheckerVisitor::findFuncDecByName(&Ctx,CodeStyleCheckerVisitor::funcName_TCTick);//"X__t_clock_tick";
 
         //若已经有时钟函数声明
         if(clockTickFuncDecl!=NULL){
