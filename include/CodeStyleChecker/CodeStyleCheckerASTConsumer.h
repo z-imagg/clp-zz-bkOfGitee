@@ -1,4 +1,5 @@
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <iostream>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
@@ -37,6 +38,9 @@ public:
     }
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
+      auto filePath=SM.getFileEntryForID(SM.getMainFileID())->getName().str();
+      std::cout<<"__filepath:"<<filePath<<std::endl;
+
       clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
       Visitor.TraverseDecl(translationUnitDecl);
 
