@@ -159,7 +159,45 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
   return strSourceText;
 }
 
+/**
+ * 获取语句所属源文件路径
+ * code by chatgpt on : https://chat.chatgptdemo.net/
+ * @param S
+ * @param SM
+ * @param fn
+ * @return
+ */
+bool getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+  SourceLocation Loc = S->getBeginLoc();
+  if (Loc.isValid()) {
+    FileID File = SM.getFileID(Loc);
+    const FileEntry *FE = SM.getFileEntryForID(File);
+    if (FE) {
+      fn=FE->getName();
+//      llvm::outs() << "Source File Path: " << FE->getName() << "\n";
+      return true;
+    }
+  }
+  return false;
+}
 
+/**给定源文件路径是否系统源文件
+ * 系统源文件路径举例：
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h
+
+/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
+ * @param fn
+ * @return
+ */
+bool isInternalSysSourceFile(StringRef fn) {
+  bool startWithUsr=fn.startswith("/usr/");
+  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
+  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
+  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
+  return isInternal;
+}
 void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int stackVarAllocCnt,int stackVarFreeCnt,int heapObjAllocCnt,int heapObjcFreeCnt){
   char cStr_X__t_clock_tick[256];
 
@@ -208,13 +246,19 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
-  if(shouldInsert(S,parent0NodeKind)){
+  StringRef fn;
+  getSourceFilePathOfStmt(S, this->Ctx->getSourceManager(), fn);
+  if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(S,parent0NodeKind)){
+
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter,S,stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
 
+    std::cout<< "INSERT X__t_clock_tick to __fn:" << fn.str() <<std::endl;
+  }else{
+//    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
   }
   return true;
 }
