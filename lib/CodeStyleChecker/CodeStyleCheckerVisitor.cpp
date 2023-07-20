@@ -36,12 +36,18 @@ using namespace clang;
  */
 
 
+std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};
 const std::string CodeStyleCheckerVisitor::IncludeStmt_t_clock_tick = "#include \"t_clock_tick.h\"\n";
 
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
 }
 
+void CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(clang::SourceLocation Loc, clang::SourceManager &SM, clang::Rewriter& rewriter){
+  FileID fileId = SM.getFileID(Loc);
+
+  insertIncludeToFileStart(fileId,SM,rewriter);
+}
 void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter)   {
 //  clang::SourceManager &SM = Context.getSourceManager();
 //  clang::FileID MainFileID = SM.getMainFileID();
@@ -273,6 +279,9 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
   const Stmt* parent0=parentS[0].get<Stmt>();
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
+  clang::SourceLocation beginLoc=S->getBeginLoc();
+  FileID fileId = sourceMgr.getFileID(beginLoc);
+
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
   CodeStyleCheckerVisitor::getSourceFilePathOfStmt(S, this->Ctx->getSourceManager(), fn);
@@ -285,6 +294,11 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
     insert_X__t_clock_tick(mRewriter,S,stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);
 
     std::cout<< "INSERT X__t_clock_tick to __fn:" << fn.str() <<std::endl;
+
+    if(fileInsertedIncludeStmt.count(fileId)==0){
+      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, sourceMgr,mRewriter);
+      fileInsertedIncludeStmt.insert(fileId);
+    }
   }else{
 //    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
   }

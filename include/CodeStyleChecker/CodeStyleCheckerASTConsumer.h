@@ -27,7 +27,6 @@ public:
       clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
       Visitor.TraverseDecl(translationUnitDecl);
 
-      CodeStyleCheckerVisitor::insertIncludeToFileStart(SM.getMainFileID(), SM,Visitor.mRewriter);
 
 //      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
 //              .write(llvm::outs());

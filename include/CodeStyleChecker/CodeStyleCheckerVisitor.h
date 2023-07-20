@@ -1,5 +1,6 @@
 
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <set>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
@@ -21,7 +22,9 @@ public:
     }
 
     static const std::string IncludeStmt_t_clock_tick ; // = "#include \"t_clock_tick.h\"\n";
+    static std::set<clang::FileID> fileInsertedIncludeStmt;
     static void insertIncludeToFileStart(clang::FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter);
+    static void insertIncludeToFileStartByLoc(clang::SourceLocation Loc, clang::SourceManager &SM, clang::Rewriter& rewriter);
     static bool getSourceFilePathAtLoc(clang::SourceLocation Loc, const clang::SourceManager &SM,clang::StringRef& fn);
     static bool getSourceFilePathOfStmt(const clang::Stmt *S, const clang::SourceManager &SM,clang::StringRef& fn);
     /**遍历语句
