@@ -102,21 +102,11 @@ find `pwd` -name "*.so"
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
 
 
-#运行CodeRefactor插件
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeRefactor.so -plugin CodeRefactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
-
-#独立运行CodeRefactor
-/pubx/clang-tutor/cmake-build-debug/bin/ct-code-refactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
-#虽然报错“Error while trying to load a compilation database:” ,但正常做了CodeRefactor
-
 #运行CodeStyleChecker插件
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
 
-#独立运行CodeStyleChecker
+#不再独立运行CodeStyleChecker： 由于要像一个正常clang一样设置头文件路径等 很多事情要做，因此不再独立运行
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
-# 报错“Error while trying to load a compilation database:” 且没做事情, 仔细看，有发现 段错误导致崩溃了 ， gdb调试可以发现：
-# 是因为 我写的代码中有空指针异常，导致段错误崩溃，后续才出现报错“Error while trying to load a compilation database:”。 
-# 可以这个报错并没什么意义。修复完bug，不再报错。
 ```
 
 
