@@ -180,14 +180,23 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
 
 /**
  * 获取语句所属源文件路径
+ */
+bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+  SourceLocation Loc = S->getBeginLoc();
+  CodeStyleCheckerVisitor::getSourceFilePathAtLoc(Loc,SM,fn);
+}
+
+/**
+ * 获取位置所属源文件路径
+ * 获取语句所属源文件路径
  * code by chatgpt on : https://chat.chatgptdemo.net/
  * @param S
  * @param SM
  * @param fn
  * @return
  */
-bool getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
-  SourceLocation Loc = S->getBeginLoc();
+bool CodeStyleCheckerVisitor::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
+//  SourceLocation Loc = S->getBeginLoc();
   if (Loc.isValid()) {
     FileID File = SM.getFileID(Loc);
     const FileEntry *FE = SM.getFileEntryForID(File);
@@ -266,7 +275,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  getSourceFilePathOfStmt(S, this->Ctx->getSourceManager(), fn);
+  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(S, this->Ctx->getSourceManager(), fn);
   if( ( !isInternalSysSourceFile(fn) ) && shouldInsert(S,parent0NodeKind)){
 
     int stackVarAllocCnt=0;
