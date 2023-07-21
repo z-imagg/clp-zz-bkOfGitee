@@ -31,19 +31,65 @@ using namespace clang;
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
 但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
 
-#更简洁的命令:
-运行clang++带上本插件.so 且 运行编译、链接 全过程: 本插件自动运行（ 在MainAction后运行本插件）配合  -fplugin
-#本插件自动运行: 在MainAction后运行本插件:  Action.getActionType返回AddAfterMainAction
-#参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html#using-the-clang-command-line
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -fplugin=/pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so     /pubx/clang-tutor/test/test_main.cpp  -o test_main
+
+
  */
+
+
+std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};
+const std::string CodeStyleCheckerVisitor::funcName_TCTick = "X__t_clock_tick";
+const std::string CodeStyleCheckerVisitor::IncludeStmt_TCTick = "#include \"t_clock_tick.h\"\n";
 
 bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
 
 }
+
+void CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(clang::SourceLocation Loc, clang::SourceManager &SM, clang::Rewriter& rewriter){
+  FileID fileId = SM.getFileID(Loc);
+
+  insertIncludeToFileStart(fileId,SM,rewriter);
+}
+void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter)   {
+//  clang::SourceManager &SM = Context.getSourceManager();
+//  clang::FileID MainFileID = SM.getMainFileID();
+
+//  FileID fileId = SM.getFileID(Loc);
+  clang::SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
+
+  const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
+  if (!RewriteBuf)
+    return;
+
+
+  rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);
+}
+
+static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::WhileStmt>();
+static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
+static auto _returnStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ReturnStmt>();
+static auto _unaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<clang::UnaryOperator>();
+static auto _implicitCaseExprAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ImplicitCastExpr>();
+
 bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 //clang::Stmt::StmtClass & stmtClass
   clang::Stmt::StmtClass stmtClass = S->getStmtClass();
+
+  ////{
+  //{内部 不可扩展 的 语法节点 内 是不能插入更多语法结构的 否则语法错误
+  //无大括号循环内语句前不要插入， 若要插入，需要先加大括号。
+  if(parent0NodeKind.isSame(_forStmtAstNodeKind) || parent0NodeKind.isSame(_whileStmtAstNodeKind)
+  //return语句内的语句前不要插入，否则语法错误。
+  ||parent0NodeKind.isSame(_returnStmtAstNodeKind)
+  //非操作符内的语句前不要插入，否则语法错误。
+  ||parent0NodeKind.isSame(_unaryOperatorAstNodeKind)
+  //隐式类型转换内的语句前不要插入，否则语法错误。
+  ||parent0NodeKind.isSame(_implicitCaseExprAstNodeKind)
+  ){
+    //如果当前语句S的父亲节点是for语句头，则不插入时钟语句. 单行for语句包含 语句S， 语句S前肯定不能插入，否则 语义不对 甚至 可能语法错误 比如 变量没声明。
+    return false;
+  }
+  ////}
+
   switch (stmtClass) {//switch开始
     //{不插入时钟语句概率大的情况
     case clang::Stmt::CompoundStmtClass:{
@@ -65,8 +111,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 
     //{插入时钟语句概率大的情况
     case clang::Stmt::DeclStmtClass:{
-      auto forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
-      if(parent0NodeKind.isSame(forStmtAstNodeKind) ){
+      if(parent0NodeKind.isSame(_forStmtAstNodeKind) ){
         //如果当前语句S的父亲节点是for语句头，则不插入时钟语句.
         return false;
       }
@@ -131,7 +176,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
+FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
 //    std::string functionName = "calc";
 
     TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
@@ -152,7 +197,7 @@ FunctionDecl* findFuncDecByName(clang::ASTContext *Ctx,std::string functionName)
  * @param langOptions
  * @return
  */
-std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
+std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
 //  SourceRange sourceRange=S->getSourceRange();
   CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
@@ -162,275 +207,154 @@ std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & 
   return strSourceText;
 }
 
-
-const Stmt* getParentStmt(Stmt* stmt,ASTContext* Ctx) {
-  const Stmt* parent = nullptr;
-
-  DynTypedNodeList parents=Ctx->getParents(*stmt);
-  for(int k =0; k < parents.size(); k++){
-    const Stmt* parentK=parents[0].get<Stmt>();
-    if (isa<CompoundStmt>(parentK)) {
-      parent = parentK;
-      break;
-    }
-  }
-
-  return parent;
+/**
+ * 获取语句所属源文件路径
+ */
+bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+  SourceLocation Loc = S->getBeginLoc();
+  CodeStyleCheckerVisitor::getSourceFilePathAtLoc(Loc,SM,fn);
 }
 
-/**遍历语句
- *
+/**
+ * 获取位置所属源文件路径
+ * 获取语句所属源文件路径
+ * code by chatgpt on : https://chat.chatgptdemo.net/
  * @param S
+ * @param SM
+ * @param fn
  * @return
  */
-bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *S){
+bool CodeStyleCheckerVisitor::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
+//  SourceLocation Loc = S->getBeginLoc();
+  if (Loc.isValid()) {
+    FileID File = SM.getFileID(Loc);
+    const FileEntry *FE = SM.getFileEntryForID(File);
+    if (FE) {
+      fn=FE->getName();
+//      llvm::outs() << "Source File Path: " << FE->getName() << "\n";
+      return true;
+    }
+  }
+  return false;
+}
 
-  SourceManager & sourceMgr = mRewriter.getSourceMgr();
+/**给定源文件路径是否系统源文件
+ * 系统源文件路径举例：
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h
+
+/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
+ * @param fn
+ * @return
+ */
+bool isInternalSysSourceFile(StringRef fn) {
+  bool startWithUsr=fn.startswith("/usr/");
+  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
+  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
+  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
+  return isInternal;
+}
+void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int stackVarAllocCnt,int stackVarFreeCnt,int heapObjAllocCnt,int heapObjcFreeCnt){
+  char cStr_X__t_clock_tick[256];
+
+  //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
+  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CodeStyleCheckerVisitor::funcName_TCTick.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
+  llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
+
+//  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
+  rewriter.InsertTextBefore(stmt->getBeginLoc(),strRef_X__t_clock_tick);
+
+}
+/**遍历语句
+ *
+ * @param stmt
+ * @return
+ */
+bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
+
+  SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
-  std::string functionName = "X__t_clock_tick";
-  //能找到 时钟滴答 函数声明
-  FunctionDecl* clockTickFuncDecl = findFuncDecByName(Ctx,functionName);
 
-  //获取 时钟滴答 函数声明 源码文本，人工确定 确实是 该函数。
-  std::string clockTickFuncSourceText = getSourceTextBySourceRange(clockTickFuncDecl->getSourceRange(), sourceMgr, langOpts);
-//  std::cout<<clockTickFuncSourceText<<std::endl;
+  clang::SourceLocation beginLoc=stmt->getBeginLoc();
+  clang::SourceRange sourceRange=stmt->getSourceRange();
+  FileID fileId = SM.getFileID(beginLoc);
+
+  clang::FileID mainFileId = SM.getMainFileID();
+
+  std::string stmtFileAndRange=sourceRange.printToString(SM);
 
   //获取当前语句S的源码文本
-  std::string stmtSourceText=getSourceTextBySourceRange(S->getSourceRange(), sourceMgr, langOpts);
+  std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
-  Stmt::StmtClass stmtClass = S->getStmtClass();
-  const char* stmtClassName = S->getStmtClassName();
+  Stmt::StmtClass stmtClass = stmt->getStmtClass();
+  const char* stmtClassName = stmt->getStmtClassName();
 
 
 //  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  clang::DynTypedNodeList parentS=this->Ctx->getParents(*S);
+  //{开发用，条件断点
+//  bool shouldBreakPointer=stmtSourceText=="f111(";
+//  bool shouldBreakPointer2=stmtSourceText=="!f111(";
+  //}
+
+  clang::DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
-  assert(parentSSize>0);
-  const Stmt* parent0=parentS[0].get<Stmt>();
+  if(parentSSize>1){
+    std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
+  }
+  if(parentSSize<=0){
+    return true;
+  }
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
+
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
-  if(shouldInsert(S,parent0NodeKind)){
-//  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-    mRewriter.InsertTextBefore(S->getBeginLoc(),"t++;");
+  StringRef fn;
+  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, SM, fn);
+  std::string fnStr=fn.str();
+
+  bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
+  bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
+//  std::cout <<  stmtFileAndRange <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+
+  if( ( !_isInternalSysSourceFile ) && _shouldInsert){
+
+    int stackVarAllocCnt=0;
+    int stackVarFreeCnt=0;
+    int heapObjAllocCnt=0;
+    int heapObjcFreeCnt=0;
+    insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
+
+    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
+
+    if(fileInsertedIncludeStmt.count(fileId)==0){
+      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
+      std::cout<< "插入'包含时钟'语句到文件头部:" << fnStr <<std::endl;
+      fileInsertedIncludeStmt.insert(fileId);
+    }
+  }else{
+//    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
   }
   return true;
 }
 
-/*
-[#{
-  int age;
-  printf("input age:");
-  scanf("%d",&age);
-  printf("your age:%d\n",age);
-
-  int alive=false;
-  int secret[100];
-  for(int k =0; k <100; k++){
-    if (secret[k] < age){
-      alive=true;
-      break;
-    }
-  }
-
-  printf("are you still be alive?%d\n",alive);
-
-  return 0;
-
-#]:{#CompoundStmt#}
-[#int age#]:{#DeclStmt#}
-[#printf("input age:"#]:{#CallExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#StringLiteral#}
-[#scanf("%d",&age#]:{#CallExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#StringLiteral#}
-[#&#]:{#UnaryOperator#}
-[##]:{#DeclRefExpr#}
-[#printf("your age:%d\n",age#]:{#CallExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#StringLiteral#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[#int alive=false#]:{#DeclStmt#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#CXXBoolLiteralExpr#}
-[#int secret[100]#]:{#DeclStmt#}
-[##]:{#IntegerLiteral#}
-[#for(int k =0; k <100; k++){
-    if (secret[k] < age){
-      alive=true;
-      break;
-    }
-  #]:{#ForStmt#}
-[#int k =0#]:{#DeclStmt#}
-[##]:{#IntegerLiteral#}
-[#k <#]:{#BinaryOperator#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#IntegerLiteral#}
-[#k#]:{#UnaryOperator#}
-[##]:{#DeclRefExpr#}
-[#{
-    if (secret[k] < age){
-      alive=true;
-      break;
-    }
-  #]:{#CompoundStmt#}
-[#if (secret[k] < age){
-      alive=true;
-      break;
-    #]:{#IfStmt#}
-[#secret[k] < #]:{#BinaryOperator#}
-[#secret[k#]:{#ImplicitCastExpr#}
-[#secret[k#]:{#ArraySubscriptExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[#{
-      alive=true;
-      break;
-    #]:{#CompoundStmt#}
-[#alive=#]:{#BinaryOperator#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#CXXBoolLiteralExpr#}
-[##]:{#BreakStmt#}
-[#printf("are you still be alive?%d\n",alive#]:{#CallExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#StringLiteral#}
-[##]:{#ImplicitCastExpr#}
-[##]:{#DeclRefExpr#}
-[#return #]:{#ReturnStmt#}
-[##]:{#IntegerLiteral#}
- */
 
 
 bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
-  // Skip anonymous records, e.g. unions:
-  //    * https://en.cppreference.com/w/cpp/language/union
-  if (0 == Decl->getNameAsString().size())
-    return true;
-
-  checkNameStartsWithUpperCase(Decl);
-  checkNoUnderscoreInName(Decl);
   return true;
 }
 
 bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
-  // Skip user-defined conversion operators/functions:
-  //    * https://en.cppreference.com/w/cpp/language/cast_operator
-  if (isa<CXXConversionDecl>(Decl))
-    return true;
-
-  checkNameStartsWithLowerCase(Decl);
-  checkNoUnderscoreInName(Decl);
   return true;
 }
 
 bool CodeStyleCheckerVisitor::VisitVarDecl(VarDecl *Decl) {
-  // Skip anonymous function parameter declarations
-  if (isa<ParmVarDecl>(Decl) && (0 == Decl->getNameAsString().size()))
-    return true;
-
-  checkNameStartsWithUpperCase(Decl);
-  checkNoUnderscoreInName(Decl);
   return true;
 }
 
 bool CodeStyleCheckerVisitor::VisitFieldDecl(FieldDecl *Decl) {
-  // Skip anonymous bit-fields:
-  //  * https://en.cppreference.com/w/c/language/bit_field
-  if (0 == Decl->getNameAsString().size())
-    return true;
-
-  checkNameStartsWithUpperCase(Decl);
-  checkNoUnderscoreInName(Decl);
 
   return true;
-}
-
-void CodeStyleCheckerVisitor::checkNoUnderscoreInName(NamedDecl *Decl) {
-  auto Name = Decl->getNameAsString();
-  size_t underscorePos = Name.find('_');
-
-  if (underscorePos == StringRef::npos)
-    return;
-
-  std::string Hint = Name;
-  auto end_pos = std::remove(Hint.begin(), Hint.end(), '_');
-  Hint.erase(end_pos, Hint.end());
-
-  FixItHint FixItHint = FixItHint::CreateReplacement(
-          SourceRange(Decl->getLocation(),
-                      Decl->getLocation().getLocWithOffset(Name.size())),
-          Hint);
-
-  DiagnosticsEngine &DiagEngine = Ctx->getDiagnostics();
-  unsigned DiagID = DiagEngine.getCustomDiagID(DiagnosticsEngine::Warning,
-                                               "`_` in names is not allowed");
-  SourceLocation UnderscoreLoc =
-          Decl->getLocation().getLocWithOffset(underscorePos);
-  DiagEngine.Report(UnderscoreLoc, DiagID).AddFixItHint(FixItHint);
-}
-
-void CodeStyleCheckerVisitor::checkNameStartsWithLowerCase(NamedDecl *Decl) {
-  auto Name = Decl->getNameAsString();
-  char FirstChar = Name[0];
-
-  // The actual check
-  if (isLowercase(FirstChar))
-    return;
-
-  // Construct the hint
-  std::string Hint = Name;
-  Hint[0] = toLowercase(FirstChar);
-  FixItHint FixItHint = FixItHint::CreateReplacement(
-          SourceRange(Decl->getLocation(),
-                      Decl->getLocation().getLocWithOffset(Name.size())),
-          Hint);
-
-  // Construct the diagnostic
-  DiagnosticsEngine &DiagEngine = Ctx->getDiagnostics();
-  unsigned DiagID = DiagEngine.getCustomDiagID(
-          DiagnosticsEngine::Warning,
-          "Function names should start with lower-case letter");
-  DiagEngine.Report(Decl->getLocation(), DiagID) << FixItHint;
-}
-
-void CodeStyleCheckerVisitor::checkNameStartsWithUpperCase(NamedDecl *Decl) {
-  auto Name = Decl->getNameAsString();
-  char FirstChar = Name[0];
-
-  // The actual check
-  if (isUppercase(FirstChar))
-    return;
-
-  // Construct the hint
-  std::string Hint = Name;
-  Hint[0] = toUppercase(FirstChar);
-  FixItHint FixItHint = FixItHint::CreateReplacement(
-          SourceRange(Decl->getLocation(),
-                      Decl->getLocation().getLocWithOffset(Name.size())),
-          Hint);
-
-  // Construct the diagnostic
-  DiagnosticsEngine &DiagEngine = Ctx->getDiagnostics();
-  unsigned DiagID = DiagEngine.getCustomDiagID(
-          DiagnosticsEngine::Warning,
-          "Type and variable names should start with upper-case letter");
-  DiagEngine.Report(Decl->getLocation(), DiagID) << FixItHint;
 }

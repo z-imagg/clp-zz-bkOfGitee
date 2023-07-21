@@ -1,27 +1,15 @@
 # THE LIST OF PLUGINS AND THE CORRESPONDING SOURCE FILES
 # ======================================================
 set(CLANG_TUTOR_PLUGINS
-    LACommenter
     CodeStyleChecker
-    Obfuscator
-    UnusedForLoopVar
-    CodeRefactor
     )
 
-set(LACommenter_SOURCES
-  LACommenter/LACommenterASTConsumer.cpp LACommenter/LACommenterMatcher.cpp LACommenter/LACPluginAction.cpp )
 
 set(CodeStyleChecker_SOURCES
   CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
 
-set(Obfuscator_SOURCES
-  Obfuscator/ObfuscatorASTConsumer.cpp Obfuscator/ObfuscatorMatcherForAdd.cpp  Obfuscator/ObfuscatorMatcherForSub.cpp  Obfuscator/ObfuscatorPluginAction.cpp)
 
-set(UnusedForLoopVar_SOURCES
-  UnusedForLoopVar/UFLVMatcherPluginAction.cpp UnusedForLoopVar/UnusedForLoopVarASTConsumer.cpp UnusedForLoopVar/UnusedForLoopVarMatcher.cpp UnusedForLoopVar/UnusedForLoopVarVisitor.cpp)
 
-set(CodeRefactor_SOURCES
-  CodeRefactor/CodeRefactorAddPluginAction.cpp CodeRefactor/CodeRefactorASTConsumer.cpp CodeRefactor/CodeRefactorMatcher.cpp )
 
 # CONFIGURE THE PLUGIN LIBRARIES
 # ==============================

@@ -30,12 +30,6 @@ using namespace clang;
 //===----------------------------------------------------------------------===//
 static llvm::cl::OptionCategory CSCCategory("ct-code-style-checker options");
 
-static cl::opt<bool> MainTuOnly{
-    "main-tu-only",
-    cl::desc("Only run on the main translation unit "
-             "(e.g. ignore included header files)"),
-    cl::init(true), cl::cat(CSCCategory)};
-
 //===----------------------------------------------------------------------===//
 // PluginASTAction
 //===----------------------------------------------------------------------===//
@@ -53,10 +47,17 @@ public:
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
     return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-        &CI.getASTContext(), MainTuOnly, CI.getSourceManager());
+        &CI.getASTContext(),  CI.getSourceManager());
   }
 
 
+    void EndSourceFileAction() override {
+//      mRewriter
+//         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
+//         .write(llvm::outs());
+
+      mRewriter.overwriteChangedFiles();//修改会影响原始文件
+    }
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.

@@ -99,31 +99,14 @@ make
 
 #编译出的插件如下：
 find `pwd` -name "*.so"
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libLACommenter.so
 #/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libObfuscator.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libUnusedForLoopVar.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeRefactor.so
 
-#运行hello world插件
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libHelloWorld.so -plugin hello-world /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
-#(clang-tutor)  file: /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/test/HelloWorld-basic.cpp
-#(clang-tutor)  count: 3
-
-#运行CodeRefactor插件
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeRefactor.so -plugin CodeRefactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
-
-#独立运行CodeRefactor
-/pubx/clang-tutor/cmake-build-debug/bin/ct-code-refactor /pubx/clang-tutor/test/CodeRefactor_Class.cpp
-#虽然报错“Error while trying to load a compilation database:” ,但正常做了CodeRefactor
 
 #运行CodeStyleChecker插件
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
 
-#独立运行CodeStyleChecker
+#不再独立运行CodeStyleChecker： 由于要像一个正常clang一样设置头文件路径等 很多事情要做，因此不再独立运行
 /pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
-#不知道为何，只是报错“Error while trying to load a compilation database:” 且没做事情
 ```
 
 
@@ -150,13 +133,6 @@ find `pwd` -name "*.so"
 ![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/clion2022.3.3-remote-development.png)
 
 ## 2.4 构建
-![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/compile_helloworld.png)
 
 ## 2.5 调试
-```bash
-#相当于:
-cd /pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/cmake-build-debug
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang  -cc1 -load cmake-build-debug/lib/libHelloWorld.so -plugin hello-world test/HelloWorld-basic.cpp
-```
-![](https://gitcode.net/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/-/raw/main/doc/debug_helloworld.png)
 
