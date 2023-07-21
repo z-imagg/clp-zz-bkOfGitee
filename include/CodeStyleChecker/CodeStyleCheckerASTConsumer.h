@@ -10,14 +10,17 @@
 #include "CodeStyleChecker/CodeStyleCheckerVisitor.h"
 #include "FindTClkCall_ReadOnly_Visitor.h"
 
+using namespace llvm;
+using namespace clang;
+
 //-----------------------------------------------------------------------------
 // ASTConsumer
 //-----------------------------------------------------------------------------
-class CodeStyleCheckerASTConsumer : public clang::ASTConsumer {
+class CodeStyleCheckerASTConsumer : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CodeStyleCheckerASTConsumer(clang::CompilerInstance &_CI, clang::Rewriter &R, clang::ASTContext *Context,
-                                         clang::SourceManager &SM, clang::LangOptions &langOptions)
+    explicit CodeStyleCheckerASTConsumer(CompilerInstance &_CI, Rewriter &R, ASTContext *Context,
+                                         SourceManager &SM, LangOptions &langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
@@ -26,14 +29,14 @@ public:
             SM(SM)  {}
 
 
-    virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
+    virtual void HandleTranslationUnit(ASTContext &Ctx) override{
 
       //作为clang插件运行时， HandleTranslationUnit 被调用一次.
       //独立运行时，         HandleTranslationUnit 被调用两次.
 
-//      clang::TranslationUnitKind Kind = CI.getFrontendOpts().ProgramAction;
-//      clang::frontend::ActionKind actionKind = CI.getFrontendOpts().ProgramAction;
-      clang::FrontendOptions &frontendOptions = CI.getFrontendOpts();
+//      TranslationUnitKind Kind = CI.getFrontendOpts().ProgramAction;
+//      frontend::ActionKind actionKind = CI.getFrontendOpts().ProgramAction;
+      FrontendOptions &frontendOptions = CI.getFrontendOpts();
       std::cout << "frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << std::endl;
       //作为clang插件运行时, frontendOptions.ProgramAction 值是 13:EmitObj  ;
       //独立运行时, frontendOptions.ProgramAction 值是 25:ParseSyntaxOnly  ;
@@ -42,8 +45,8 @@ public:
 
       //作为clang插件运行时, 两次调用 HandleTranslationUnit  ,  frontendOptions.ProgramAction  的两次值相同，  Ctx.TUKind 的两次值相同。
 
-      clang::FileID mainFileId = SM.getMainFileID();
-      const clang::LangOptions & langOpts = Visitor.mRewriter.getLangOpts();
+      FileID mainFileId = SM.getMainFileID();
+      const LangOptions & langOpts = Visitor.mRewriter.getLangOpts();
 
       //时钟函数只插入一次，不重复插入：
       //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
@@ -73,7 +76,7 @@ public:
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
-//      clang::TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
+//      TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
 //      Visitor.TraverseDecl(translationUnitDecl);
       //}
 
@@ -100,8 +103,8 @@ public:
     }
 
 private:
-    clang::CompilerInstance &CI;
+    CompilerInstance &CI;
     CodeStyleCheckerVisitor Visitor;
     FindTClkCall_ReadOnly_Visitor findTCCallROVisitor;
-    clang::SourceManager &SM;
+    SourceManager &SM;
 };

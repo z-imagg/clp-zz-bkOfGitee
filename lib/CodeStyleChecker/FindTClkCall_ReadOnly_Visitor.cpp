@@ -5,6 +5,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 
+using namespace llvm;
 using namespace clang;
 
 #include <iostream>
@@ -12,9 +13,9 @@ using namespace clang;
 
 
 
-bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
+bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(CallExpr *callExpr){
   //{开发用
-  clang::SourceRange sourceRange = callExpr->getSourceRange();
+  SourceRange sourceRange = callExpr->getSourceRange();
   std::string sourceText = CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
   //}
 

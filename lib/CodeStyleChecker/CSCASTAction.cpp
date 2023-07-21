@@ -42,8 +42,8 @@
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 
+using namespace llvm;
 using namespace clang;
-
 
 //-----------------------------------------------------------------------------
 // FrontendAction
@@ -88,7 +88,7 @@ private:
 //-----------------------------------------------------------------------------
 // Registration
 //-----------------------------------------------------------------------------
-static clang::FrontendPluginRegistry::Add<CSCASTAction>
+static FrontendPluginRegistry::Add<CSCASTAction>
         X(/*Name=*/"CSC",
         /*Description=*/"Checks whether class, variable and function names "
                         "adhere to LLVM's guidelines");
