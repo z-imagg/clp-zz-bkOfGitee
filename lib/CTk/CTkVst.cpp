@@ -293,7 +293,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
   if(mainFileId!=fileId){
-    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
+//    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl; //开发用打印
     return true;
   }
 
