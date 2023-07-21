@@ -73,13 +73,26 @@ static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ForStmt>();
 static auto _returnStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ReturnStmt>();
 static auto _unaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<UnaryOperator>();
 static auto _implicitCaseExprAstNodeKind=ASTNodeKind::getFromNodeKind<ImplicitCastExpr>();
+static auto _CXXStaticCastExprAstNodeKind=ASTNodeKind::getFromNodeKind<CXXStaticCastExpr>();
+static auto _ExprAstNodeKind=ASTNodeKind::getFromNodeKind<Expr>();
+static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>();
 
 bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 //Stmt::StmtClass & stmtClass
   Stmt::StmtClass stmtClass = S->getStmtClass();
 
-  ////{
-  //{内部 不可扩展 的 语法节点 内 是不能插入更多语法结构的 否则语法错误
+  //父亲0节点 若不是组合语句，则不插入
+  //   只在组合语句内插入
+  if(!parent0NodeKind.isSame(_CompoundStmtAstNodeKind)){
+    return false;
+  }
+
+  //父亲0节点是表达式的子类吗？
+  bool parent0IsAKindExpr=_ExprAstNodeKind.isBaseOf(parent0NodeKind);
+
+
+  ////{这一组条件，估计不起作用了，都被 条件 "只在组合语句内插入" 屏蔽了。所以这些条件可以暂时去掉了
+/*  //{内部 不可扩展 的 语法节点 内 是不能插入更多语法结构的 否则语法错误
   //无大括号循环内语句前不要插入， 若要插入，需要先加大括号。
   if(parent0NodeKind.isSame(_forStmtAstNodeKind) || parent0NodeKind.isSame(_whileStmtAstNodeKind)
   //return语句内的语句前不要插入，否则语法错误。
@@ -88,10 +101,15 @@ bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
   ||parent0NodeKind.isSame(_unaryOperatorAstNodeKind)
   //隐式类型转换内的语句前不要插入，否则语法错误。
   ||parent0NodeKind.isSame(_implicitCaseExprAstNodeKind)
+  //static_cast静态类型转换内的语句前不要插入，否则语法错误。
+  ||parent0NodeKind.isSame(_CXXStaticCastExprAstNodeKind)
+  //若父亲0节点是表达式的子类吗，则肯定其内肯定不能插入语句的。
+  //    即 所有的表达式内都不能插入 语句，否则语法报错。
+  || parent0IsAKindExpr
   ){
     //如果当前语句S的父亲节点是for语句头，则不插入时钟语句. 单行for语句包含 语句S， 语句S前肯定不能插入，否则 语义不对 甚至 可能语法错误 比如 变量没声明。
     return false;
-  }
+  }*/
   ////}
 
   switch (stmtClass) {//switch开始
@@ -306,6 +324,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   //{开发用，条件断点
 //  bool shouldBreakPointer=stmtSourceText=="f111(";
 //  bool shouldBreakPointer2=stmtSourceText=="!f111(";
+  bool BUG04= (stmtSourceText=="malloc(AllocSize");//BUG04出现条件
   //}
 
   DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
@@ -316,6 +335,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   if(parentSSize<=0){
     return true;
   }
+  auto parent0 = parentS[0];
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
 

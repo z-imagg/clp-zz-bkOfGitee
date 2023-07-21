@@ -26,7 +26,7 @@ bool maxFunc(int* pA, int* pB, int* pMax){
 
   while(false)
     x--;
-  
+
   if (pA==NULL || pB==NULL){
     return false;
   }
@@ -78,7 +78,7 @@ float floatPower(float a, float b){
 }
 int main(int argc, char** argv){
   DECLARE__K
-  
+
   int x, y, max=MAX_INT;
   printf("input x,y:");
   scanf("%d,%d",&x,&y);
