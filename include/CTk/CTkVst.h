@@ -20,10 +20,12 @@ class CTkVst
         : public RecursiveASTVisitor<CTkVst> {
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit CTkVst(Rewriter &R, ASTContext *Ctx)
+    explicit CTkVst(Rewriter &R, ASTContext *Ctx, CompilerInstance &CI, SourceManager& SM)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     : mRewriter(R),
-    Ctx(Ctx)
+    Ctx(Ctx),
+    CI(CI),
+    SM(SM)
     {
 
     }
@@ -75,6 +77,8 @@ public:
 
 private:
     ASTContext *Ctx;
+    CompilerInstance& CI;
+    SourceManager& SM;
 
 };
 

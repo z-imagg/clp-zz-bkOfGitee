@@ -294,7 +294,6 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
  * @return
  */
 bool CTkVst::VisitStmt(Stmt *stmt){
-
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
@@ -371,6 +370,10 @@ bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
 }
 
 bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
+  FileID mainFileId = CI.getSourceManager().getMainFileID();
+  const FileID &fileId = SM.getFileID(Decl->getBeginLoc());
+  /*开发用*/ const std::tuple<std::string, std::string> & frst = CTkVst::get_FileAndRange_SourceText(Decl->getSourceRange(), CI);
+  std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<  ",源码:" << std::get<1>(frst) << ",mainFileId:" << mainFileId.getHashValue() <<  ",fileId:" << fileId.getHashValue() << std::endl;
   return true;
 }
 

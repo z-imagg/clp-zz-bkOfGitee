@@ -24,7 +24,7 @@ public:
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            Visitor(R, Context),
+            Visitor(R, Context,_CI,SM),
             findTCCallROVisitor(SM,langOptions,Context),
             SM(SM)  {}
 
@@ -70,24 +70,40 @@ public:
       //}
 
       //{本循环能遍历到直接在本源文件中的函数定义中
-      auto Decls = Ctx.getTranslationUnitDecl()->decls();
-      for (auto &Decl : Decls) {
-        /*开发用*/ const std::tuple<std::string, std::string> & fileAndRange_sourceText = CTkVst::get_FileAndRange_SourceText(Decl->getSourceRange(), CI);
-        if (!SM.isInMainFile(Decl->getLocation())){
+//      Ctx.getTranslationUnitDecl()->
+      const DeclContext::decl_range &Decls = Ctx.getTranslationUnitDecl()->decls();
+      //const DeclContext::decl_iterator::value_type &declK
+      for (clang::Decl* declK : Decls) {
+        if (!SM.isInMainFile(declK->getLocation())){
           continue;
         }
-        FunctionDecl *functionDecl = Decl->getAsFunction();
+
+        const char *kKindName = declK->getDeclKindName();
+        Decl::Kind kKind = declK->getKind();
+        const Decl::redecl_range &kReDeclRange = declK->redecls();
+
+        FileID fileId = SM.getFileID(declK->getLocation());
+        /*开发用*/ const std::tuple<std::string, std::string> & frst = CTkVst::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
+        std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<   ",kKindName:" << kKindName<<  ",kKind:" << kKind <<
+//                ",源码:" << std::get<1>(frst) <<
+                        ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
+
+        FunctionDecl *functionDecl = declK->getAsFunction();
+        printf("functionDecl:%d,\n",functionDecl);
+//        TemplateDecl *xxx = getAsTypeTemplateDecl(declK);
         if(functionDecl){
 //          bool _isConstexpr = functionDecl->isConstexpr();
           ConstexprSpecKind constexprKind = functionDecl->getConstexprKind();
+          printf("constexprKind:%d,",constexprKind);
           if(ConstexprSpecKind::Constexpr==constexprKind){
             //跳过constexpr修饰的函数
             //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
+            std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<  ",源码:" << std::get<1>(frst) << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
             break;
           }
         }
-        Visitor.TraverseDecl(Decl);
-        //直到第一次调用过 Visitor.TraverseDecl(Decl) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
+        Visitor.TraverseDecl(declK);
+        //直到第一次调用过 Visitor.TraverseDecl(declK) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
       //}
 //////////////////3.插入包含语句

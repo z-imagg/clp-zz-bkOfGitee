@@ -24,14 +24,14 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
 
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
   if(dirtCallee==NULL){
-    std::cout << "学习用,callExpr->getDirectCallee()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+//    std::cout << "学习用,callExpr->getDirectCallee()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
     return true;
   }
 
   IdentifierInfo *identifierInfo = dirtCallee->getIdentifier();
   if(identifierInfo==NULL){
     //sourceText 可以 为 ++, 此时 identifierInfo 为NULL， 即 这是 操作符函数，自然是没有函数名字的，此时 dirtCallee->getName() 一定会出错。忽略即可。
-    std::cout << "学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+//    std::cout << "学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
     return true;
   }
 
