@@ -326,11 +326,11 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "INSERT X__t_clock_tick to __fn:" <<fnStr <<std::endl;
+    std::cout<< "在文件位置:" << sourceRange.printToString(SM) << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
 
     if(fileInsertedIncludeStmt.count(fileId)==0){
       CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
-      std::cout<< "insertIncludeToFileStartByLoc to __fn:" << fnStr <<std::endl;
+      std::cout<< "插入'包含时钟'语句到文件头部:" << fnStr <<std::endl;
       fileInsertedIncludeStmt.insert(fileId);
     }
   }else{
