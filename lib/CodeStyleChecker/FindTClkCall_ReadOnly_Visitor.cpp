@@ -17,19 +17,23 @@ bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
   if(dirtCallee){
     //取函数名字
-    std::string fn = dirtCallee->getNameInfo().getName().getAsString();
+    std::string funcName = dirtCallee->getNameInfo().getName().getAsString();
     //记录 该函数 是否 时钟调用语句
-    bool is_TCTickCall=fn==CodeStyleCheckerVisitor::funcName_TCTick;
+    bool is_TCTickCall= funcName == CodeStyleCheckerVisitor::funcName_TCTick;
     this->curMainFileHas_TCTickCall=is_TCTickCall;
 
     //{开发打日志
-    if(is_TCTickCall){
-      clang::SourceRange sourceRange=callExpr->getSourceRange();
-      std::string sourceText=CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
-      std::string fileAndRange=sourceRange.printToString(SM);
-      std::cout<< "发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText   <<std::endl;
+    {
+    clang::SourceRange sourceRange = callExpr->getSourceRange();
+    std::string sourceText = CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
+    std::string fileAndRange = sourceRange.printToString(SM);
+    std::cout << "调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+    if (is_TCTickCall) {
+      std::cout << "发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+    }
     }
     //}
+
   }
 
   return true;
