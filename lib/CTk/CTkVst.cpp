@@ -75,13 +75,21 @@ static auto _unaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<UnaryOperator
 static auto _implicitCaseExprAstNodeKind=ASTNodeKind::getFromNodeKind<ImplicitCastExpr>();
 static auto _CXXStaticCastExprAstNodeKind=ASTNodeKind::getFromNodeKind<CXXStaticCastExpr>();
 static auto _ExprAstNodeKind=ASTNodeKind::getFromNodeKind<Expr>();
+static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>();
 
 bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 //Stmt::StmtClass & stmtClass
   Stmt::StmtClass stmtClass = S->getStmtClass();
 
+  //父亲0节点 若不是组合语句，则不插入
+  //   只在组合语句内插入
+  if(!parent0NodeKind.isSame(_CompoundStmtAstNodeKind)){
+    return false;
+  }
+
   //父亲0节点是表达式的子类吗？
   bool parent0IsAKindExpr=_ExprAstNodeKind.isBaseOf(parent0NodeKind);
+
 
   ////{
   //{内部 不可扩展 的 语法节点 内 是不能插入更多语法结构的 否则语法错误
