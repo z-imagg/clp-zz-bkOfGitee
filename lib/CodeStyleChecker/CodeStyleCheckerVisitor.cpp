@@ -57,8 +57,9 @@ void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::Sou
   clang::SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
 
   const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
-  if (!RewriteBuf)
+  if (!RewriteBuf){
     return;
+  }
 
 
   rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);

@@ -52,8 +52,6 @@ public:
       std::cout<<"处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 //      Ctx.getTranslationUnitDecl()->getBeginLoc() 的 FileId 居然==0?  而mainFileId==1
-//      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  rewriter.getRewriteBufferFor(fileId)  == NULL
-//      std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
@@ -68,12 +66,13 @@ public:
           continue;
         }
         Visitor.TraverseDecl(Decl);
+        //直到第一次调用过 Visitor.TraverseDecl(Decl) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
       //}
 
 
 
-      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  rewriter.getRewriteBufferFor(fileId)  == NULL
+      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
       std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
