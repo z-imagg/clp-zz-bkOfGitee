@@ -31,9 +31,10 @@ public:
 
     virtual void HandleTranslationUnit(ASTContext &Ctx) override{
 
+      LangOptions &langOptions = CI.getLangOpts();
       //作为clang插件运行时， HandleTranslationUnit 被调用一次.
       //独立运行时，         HandleTranslationUnit 被调用两次.
-
+      
 //      TranslationUnitKind Kind = CI.getFrontendOpts().ProgramAction;
 //      frontend::ActionKind actionKind = CI.getFrontendOpts().ProgramAction;
       FrontendOptions &frontendOptions = CI.getFrontendOpts();
@@ -86,6 +87,22 @@ public:
         if (!SM.isInMainFile(Decl->getLocation())){
           continue;
         }
+        FunctionDecl *functionDecl = Decl->getAsFunction();
+        if(functionDecl){
+//          bool _isConstexpr = functionDecl->isConstexpr();
+          ConstexprSpecKind constexprKind = functionDecl->getConstexprKind();
+          if(ConstexprSpecKind::Constexpr==constexprKind){
+            //跳过constexpr修饰的函数
+            //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
+            break;
+          }
+        }
+        //{开发用
+//        Stmt *body = Decl->getBody();
+        const SourceRange &sourceRange = Decl->getSourceRange();
+        std::string fileAndRange = sourceRange.printToString(SM);
+        std::string sourceText = CTkVst::getSourceTextBySourceRange(sourceRange, SM, langOptions);
+        //}
         Visitor.TraverseDecl(Decl);
         //直到第一次调用过 Visitor.TraverseDecl(Decl) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
