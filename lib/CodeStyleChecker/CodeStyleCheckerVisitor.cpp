@@ -291,7 +291,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
   const char* stmtClassName = stmt->getStmtClassName();
 
 
-  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
+//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
   //{开发用，条件断点
 //  bool shouldBreakPointer=stmtSourceText=="f111(";
@@ -316,7 +316,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
-  std::cout <<  sourceRange.printToString(SM) <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+//  std::cout <<  sourceRange.printToString(SM) <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
