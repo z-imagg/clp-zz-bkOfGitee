@@ -69,20 +69,6 @@ public:
         CallExprMatcher Matcher(mainFileId);
         Finder.addMatcher(clang::ast_matchers::callExpr().bind("callExpr"), &Matcher);
 
-        //试图表达 本源文件  但 Options 放不进去
-//        const auto &AST = Ctx;
-////        const auto &SM = AST.getSourceManager();
-//        const auto &FID = SM.getMainFileID();
-//        const auto &FD = SM.getFileEntryForID(FID);
-//        const auto &FilePath = FD->getName();
-//
-//        clang::ast_matchers::MatchFinder::MatchCallback *Callbacks[] = {&Matcher};
-//        clang::ast_matchers::MatchFinder::MatchFinderOptions Options;
-//        Options.IncludedFile = FilePath;
-//        clang::ast_matchers::match(AST, Options, Callbacks, sizeof(Callbacks) / sizeof(Callbacks[0]));
-
-
-        ////
         Ctx.getTranslationUnitDecl();
         Finder.matchAST(Ctx);//这里应该会循环调完 CallExprMatcher.run
 
@@ -113,8 +99,6 @@ public:
       }
       //}
 
-//      Visitor.mRewriter.getEditBuffer(SM.getMainFileID())
-//              .write(llvm::outs());
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
       Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
@@ -125,5 +109,4 @@ public:
 private:
     CodeStyleCheckerVisitor Visitor;
     clang::SourceManager &SM;
-    // Should this plugin be only run on the main translation unit?
 };
