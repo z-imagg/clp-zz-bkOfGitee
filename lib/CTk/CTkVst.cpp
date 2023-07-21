@@ -292,6 +292,11 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   //获取当前语句S的源码文本
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
+  if(mainFileId!=fileId){
+    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
+    return true;
+  }
+
   Stmt::StmtClass stmtClass = stmt->getStmtClass();
   const char* stmtClassName = stmt->getStmtClassName();
 
@@ -331,7 +336,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
+    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句,mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
 
   }else{
 //    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
