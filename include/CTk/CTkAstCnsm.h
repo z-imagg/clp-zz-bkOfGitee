@@ -84,6 +84,7 @@ public:
       //{本循环能遍历到直接在本源文件中的函数定义中
       auto Decls = Ctx.getTranslationUnitDecl()->decls();
       for (auto &Decl : Decls) {
+        /*开发用*/ const std::tuple<std::string, std::string> & fileAndRange_sourceText = CTkVst::get_FileAndRange_SourceText(Decl->getSourceRange(), CI);
         if (!SM.isInMainFile(Decl->getLocation())){
           continue;
         }
@@ -97,12 +98,6 @@ public:
             break;
           }
         }
-        //{开发用
-//        Stmt *body = Decl->getBody();
-        const SourceRange &sourceRange = Decl->getSourceRange();
-        std::string fileAndRange = sourceRange.printToString(SM);
-        std::string sourceText = CTkVst::getSourceTextBySourceRange(sourceRange, SM, langOptions);
-        //}
         Visitor.TraverseDecl(Decl);
         //直到第一次调用过 Visitor.TraverseDecl(Decl) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }

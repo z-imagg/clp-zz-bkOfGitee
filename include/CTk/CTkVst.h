@@ -4,6 +4,7 @@
 
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <set>
+#include <clang/Frontend/CompilerInstance.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
@@ -36,6 +37,23 @@ public:
 
     static FunctionDecl* findFuncDecByName(ASTContext *Ctx,std::string functionName);
     static std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions);
+
+    /**开发用工具 get_FileAndRange_SourceText ： 获得SourceRange的 文件路径、文件中的坐标、源码文本
+     *
+     * @param sourceRange
+     * @param CI
+     * @return
+     */
+    static std::tuple<std::string,std::string>  get_FileAndRange_SourceText(const SourceRange &sourceRange,CompilerInstance& CI){
+      //{开发用
+      SourceManager &SM = CI.getSourceManager();
+      LangOptions &langOpts = CI.getLangOpts();
+//      const SourceRange &sourceRange = Decl->getSourceRange();
+      std::string fileAndRange = sourceRange.printToString(SM);
+      std::string sourceText = CTkVst::getSourceTextBySourceRange(sourceRange, SM, langOpts);
+      return std::tuple<std::string,std::string>(fileAndRange,sourceText);
+      //}
+    }
 
     /**遍历语句
      *
