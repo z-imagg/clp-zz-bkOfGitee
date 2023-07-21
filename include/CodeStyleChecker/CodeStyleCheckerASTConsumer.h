@@ -51,6 +51,9 @@ public:
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
       std::cout<<"处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
+//      Ctx.getTranslationUnitDecl()->getBeginLoc() 的 FileId 居然==0?  而mainFileId==1
+//      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  rewriter.getRewriteBufferFor(fileId)  == NULL
+//      std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
@@ -68,6 +71,10 @@ public:
       }
       //}
 
+
+
+      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  rewriter.getRewriteBufferFor(fileId)  == NULL
+      std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
       Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件

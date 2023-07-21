@@ -36,7 +36,7 @@ using namespace clang;
  */
 
 
-std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};
+//std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
 const std::string CodeStyleCheckerVisitor::funcName_TCTick = "X__t_clock_tick";
 const std::string CodeStyleCheckerVisitor::IncludeStmt_TCTick = "#include \"t_clock_tick.h\"\n";
 
@@ -329,11 +329,6 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
     std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
 
-    if(fileInsertedIncludeStmt.count(fileId)==0){
-      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
-      std::cout<< "插入'包含时钟'语句到文件头部:" << fnStr <<std::endl;
-      fileInsertedIncludeStmt.insert(fileId);
-    }
   }else{
 //    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
   }

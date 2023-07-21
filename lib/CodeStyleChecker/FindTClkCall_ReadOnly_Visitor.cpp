@@ -13,7 +13,13 @@ using namespace clang;
 
 
 bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
-//  std::string fn=callExpr->getDirectCallee()->getNameInfo().getName().getAsString();
+  //{开发用
+  clang::SourceRange sourceRange = callExpr->getSourceRange();
+  std::string sourceText = CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
+  //}
+
+//  std::string fn=callExpr->getDirectCallee()->getNameInfo().getName().getAsString(); //备忘
+
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
   if(dirtCallee){
     //取函数名字
@@ -24,12 +30,11 @@ bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
 
     //{开发打日志
     {
-    clang::SourceRange sourceRange = callExpr->getSourceRange();
-    std::string sourceText = CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
     std::string fileAndRange = sourceRange.printToString(SM);
     std::cout << "调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
     if (is_TCTickCall) {
       std::cout << "发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+//      return false;//注意：返回false并不能结束上层的循环调用自己
     }
     }
     //}

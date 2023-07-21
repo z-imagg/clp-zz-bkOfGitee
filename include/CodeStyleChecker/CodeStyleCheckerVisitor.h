@@ -26,7 +26,6 @@ public:
 
     static const std::string funcName_TCTick ;//= "X__t_clock_tick";
     static const std::string IncludeStmt_TCTick ; // = "#include \"t_clock_tick.h\"\n";
-    static std::set<clang::FileID> fileInsertedIncludeStmt;
     static void insertIncludeToFileStart(clang::FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter);
     static void insertIncludeToFileStartByLoc(clang::SourceLocation Loc, clang::SourceManager &SM, clang::Rewriter& rewriter);
     static bool getSourceFilePathAtLoc(clang::SourceLocation Loc, const clang::SourceManager &SM,clang::StringRef& fn);
