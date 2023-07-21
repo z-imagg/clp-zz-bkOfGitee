@@ -1,5 +1,6 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <iostream>
+#include <clang/Frontend/CompilerInstance.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -15,15 +16,32 @@
 class CodeStyleCheckerASTConsumer : public clang::ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CodeStyleCheckerASTConsumer(clang::Rewriter &R, clang::ASTContext *Context,
-                                         clang::SourceManager &SM,clang::LangOptions &langOptions)
+    explicit CodeStyleCheckerASTConsumer(clang::CompilerInstance &_CI, clang::Rewriter &R, clang::ASTContext *Context,
+                                         clang::SourceManager &SM, clang::LangOptions &langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
-            : Visitor(R, Context),
+            :
+            CI(_CI),
+            Visitor(R, Context),
             findTCCallROVisitor(SM,langOptions,Context),
             SM(SM)  {}
 
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
+
+      //作为clang插件运行时， HandleTranslationUnit 被调用一次.
+      //独立运行时，         HandleTranslationUnit 被调用两次.
+
+//      clang::TranslationUnitKind Kind = CI.getFrontendOpts().ProgramAction;
+//      clang::frontend::ActionKind actionKind = CI.getFrontendOpts().ProgramAction;
+      clang::FrontendOptions &frontendOptions = CI.getFrontendOpts();
+      std::cout << "frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << std::endl;
+      //作为clang插件运行时, frontendOptions.ProgramAction 值是 13:EmitObj  ;
+      //独立运行时, frontendOptions.ProgramAction 值是 25:ParseSyntaxOnly  ;
+      std::cout << "Ctx.TUKind:" << Ctx.TUKind << std::endl;
+      //作为clang插件运行时、 独立运行时 , Ctx.TUKind 值是 0: TU_Complete  ;
+
+      //作为clang插件运行时, 两次调用 HandleTranslationUnit  ,  frontendOptions.ProgramAction  的两次值相同，  Ctx.TUKind 的两次值相同。
+
       clang::FileID mainFileId = SM.getMainFileID();
       const clang::LangOptions & langOpts = Visitor.mRewriter.getLangOpts();
 
@@ -82,6 +100,7 @@ public:
     }
 
 private:
+    clang::CompilerInstance &CI;
     CodeStyleCheckerVisitor Visitor;
     FindTClkCall_ReadOnly_Visitor findTCCallROVisitor;
     clang::SourceManager &SM;

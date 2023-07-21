@@ -51,14 +51,17 @@ using namespace clang;
 class CSCASTAction : public PluginASTAction {
 public:
     std::unique_ptr<ASTConsumer>
-    CreateASTConsumer(CompilerInstance &Compiler,
-                      llvm::StringRef InFile) override {
+    CreateASTConsumer(CompilerInstance &CI,
+                      llvm::StringRef inFile) override {
+      SourceManager &SM = CI.getSourceManager();
+      LangOptions &langOptions = CI.getLangOpts();
+      ASTContext &astContext = CI.getASTContext();
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
-      mRewriter.setSourceMgr(Compiler.getSourceManager(), Compiler.getLangOpts());
+      mRewriter.setSourceMgr(SM, langOptions);
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
-      return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-              &Compiler.getASTContext(), Compiler.getSourceManager(),Compiler.getLangOpts());
+      return std::make_unique<CodeStyleCheckerASTConsumer>(CI,mRewriter,
+                                                           &astContext, SM, langOptions);
     }
 
     bool ParseArgs(const CompilerInstance &CI,

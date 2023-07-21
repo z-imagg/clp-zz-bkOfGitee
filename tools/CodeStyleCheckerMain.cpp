@@ -49,7 +49,7 @@ public:
     mRewriter.setSourceMgr(SM, langOpts);
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
+    return std::make_unique<CodeStyleCheckerASTConsumer>(CI,mRewriter,
         &astContext,  SM, langOpts);
   }
 
