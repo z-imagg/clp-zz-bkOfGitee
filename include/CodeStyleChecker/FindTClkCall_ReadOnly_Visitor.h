@@ -16,10 +16,12 @@ class FindTClkCall_ReadOnly_Visitor
         : public clang::RecursiveASTVisitor<FindTClkCall_ReadOnly_Visitor> {
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit FindTClkCall_ReadOnly_Visitor(clang::Rewriter &rewriter, clang::ASTContext *Ctx)
+    explicit FindTClkCall_ReadOnly_Visitor(clang::SourceManager &_SM, clang::LangOptions &_langOptions,clang::ASTContext *_Ctx)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     :
-    Ctx(Ctx),
+    SM(_SM),
+    langOptions(_langOptions),
+    Ctx(_Ctx),
     curMainFileHas_TCTickCall(false)
     {
 
@@ -30,7 +32,9 @@ public:
 
 
 public:
+    clang::SourceManager &SM;
     clang::ASTContext *Ctx;
+    clang::LangOptions &langOptions;
     bool curMainFileHas_TCTickCall;
 
 };

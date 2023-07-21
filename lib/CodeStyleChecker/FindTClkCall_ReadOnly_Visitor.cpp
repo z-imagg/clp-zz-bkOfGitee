@@ -24,15 +24,10 @@ bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
 
     //{开发打日志
     if(is_TCTickCall){
-
-//      clang::SourceLocation beginLoc=callExpr->getBeginLoc();
-//      clang::SourceRange sourceRange=callExpr->getSourceRange();
-//      FileID fileId = SM.getFileID(beginLoc);
-//
-//      clang::FileID mainFileId = SM.getMainFileID();
-//
-//      std::string stmtFileAndRange=sourceRange.printToString(SM);
-      std::cout<< "" << std::endl;
+      clang::SourceRange sourceRange=callExpr->getSourceRange();
+      std::string sourceText=CodeStyleCheckerVisitor::getSourceTextBySourceRange(sourceRange, SM, langOptions);
+      std::string fileAndRange=sourceRange.printToString(SM);
+      std::cout<< "发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText   <<std::endl;
     }
     //}
   }

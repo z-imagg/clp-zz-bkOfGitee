@@ -42,12 +42,15 @@ public:
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                  StringRef file) override {
+    SourceManager& SM=CI.getSourceManager();
+    LangOptions &langOpts=CI.getLangOpts();
+    ASTContext& astContext=CI.getASTContext();
     //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
-    mRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+    mRewriter.setSourceMgr(SM, langOpts);
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
     return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-        &CI.getASTContext(),  CI.getSourceManager());
+        &astContext,  SM, langOpts);
   }
 
 

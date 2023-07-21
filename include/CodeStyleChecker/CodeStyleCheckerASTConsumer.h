@@ -16,10 +16,10 @@ class CodeStyleCheckerASTConsumer : public clang::ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
     explicit CodeStyleCheckerASTConsumer(clang::Rewriter &R, clang::ASTContext *Context,
-                                         clang::SourceManager &SM)
+                                         clang::SourceManager &SM,clang::LangOptions &langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             : Visitor(R, Context),
-            findTCCallROVisitor(R,Context),
+            findTCCallROVisitor(SM,langOptions,Context),
             SM(SM)  {}
 
 

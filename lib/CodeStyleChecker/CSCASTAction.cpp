@@ -58,7 +58,7 @@ public:
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
       return std::make_unique<CodeStyleCheckerASTConsumer>(mRewriter,
-              &Compiler.getASTContext(), Compiler.getSourceManager());
+              &Compiler.getASTContext(), Compiler.getSourceManager(),Compiler.getLangOpts());
     }
 
     bool ParseArgs(const CompilerInstance &CI,
