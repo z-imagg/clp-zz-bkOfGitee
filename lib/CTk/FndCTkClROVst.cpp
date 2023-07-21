@@ -16,14 +16,34 @@ using namespace clang;
 bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
   //{开发用
   SourceRange sourceRange = callExpr->getSourceRange();
+  std::string fileAndRange = sourceRange.printToString(SM);
   std::string sourceText = CTkVst::getSourceTextBySourceRange(sourceRange, SM, langOptions);
   //}
 
 //  std::string fn=callExpr->getDirectCallee()->getNameInfo().getName().getAsString(); //备忘
 
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
-  if(dirtCallee){
+  if(dirtCallee==NULL){
+    std::cout << "学习用,callExpr->getDirectCallee()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+    return true;
+  }
+
+  IdentifierInfo *identifierInfo = dirtCallee->getIdentifier();
+  if(identifierInfo==NULL){
+    //sourceText 可以 为 ++, 此时 identifierInfo 为NULL， 即 这是 操作符函数，自然是没有函数名字的，此时 dirtCallee->getName() 一定会出错。忽略即可。
+    std::cout << "学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+    /*
+学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:</pubx/clang-ctk/err_fix/err2.cxx:6:3, col:5>,调用语句++
+学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:</pubx/clang-ctk/err_fix/err2.cxx:7:3, col:5>,调用语句++
+学习用,callExpr->getDirectCallee()->getIdentifier()==NULL： 在文件位置:</pubx/clang-ctk/err_fix/err2.cxx:8:10, col:12>,调用语句++
+     */
+    return true;
+  }
+
+//  if(dirtCallee){
+//    const StringRef &name = dirtCallee->getName();
     std::string funcName = dirtCallee->getName().str();
+//    const DeclarationNameInfo &nameInfo = dirtCallee->getNameInfo();
     bool isTCTkCall= (funcName==CTkVst::funcName_TCTk);
     //记录 该函数调用 是否 时钟调用语句
 //    bool isStartWithTCTkCall=funcName.rfind( CTkVst::funcName_TCTk,0)==0;
@@ -31,7 +51,6 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
 
       //{开发打日志
       if (!this->curMainFileHas_TCTkCall) {//只在第一次找到 时钟调用语句 时，打印日志
-        std::string fileAndRange = sourceRange.printToString(SM);
         std::cout << "此文件已处理,发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
       }
       //}
@@ -41,7 +60,7 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
     }
 
 
-  }
+//  }
 
   return true;
 }
