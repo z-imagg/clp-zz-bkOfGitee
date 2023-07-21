@@ -36,9 +36,9 @@ bool FindTClkCall_ReadOnly_Visitor::VisitCallExpr(clang::CallExpr *callExpr){
     //{开发打日志
     {
     std::string fileAndRange = sourceRange.printToString(SM);
-    std::cout << "调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
-    if (isTCTickCall) {
-      std::cout << "发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+//    std::cout << "调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl; //开发打印日志
+    if (isTCTickCall && !this->curMainFileHas_TCTickCall) {
+      std::cout << "此文件已处理,发现时钟调用语句： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
 //      return false;//注意：返回false并不能结束上层的循环调用自己
     }
     }
