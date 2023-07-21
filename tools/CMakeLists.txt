@@ -7,6 +7,7 @@ set(CLANG_TUTOR_TOOLS
 set(ct-code-style-checker_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/CodeStyleCheckerMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CodeStyleCheckerVisitor.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/FindTClkCall_ReadOnly_Visitor.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CSCASTAction.cpp"
 )
 

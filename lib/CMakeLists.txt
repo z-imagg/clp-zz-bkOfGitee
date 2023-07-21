@@ -6,7 +6,7 @@ set(CLANG_TUTOR_PLUGINS
 
 
 set(CodeStyleChecker_SOURCES
-  CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp)
+  CodeStyleChecker/CSCASTAction.cpp CodeStyleChecker/CodeStyleCheckerVisitor.cpp CodeStyleChecker/FindTClkCall_ReadOnly_Visitor.cpp)
 
 
 
