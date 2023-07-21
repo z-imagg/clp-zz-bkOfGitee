@@ -283,6 +283,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
   clang::FileID mainFileId = SM.getMainFileID();
 
+  std::string stmtFileAndRange=sourceRange.printToString(SM);
 
   //获取当前语句S的源码文本
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
@@ -301,7 +302,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
   clang::DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
   if(parentSSize>1){
-    std::cout << "注意:父节点个数大约1, 为:" << parentSSize << ",语句是:" << stmtSourceText << std::endl;
+    std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
   }
   if(parentSSize<=0){
     return true;
@@ -316,7 +317,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
-//  std::cout <<  sourceRange.printToString(SM) <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+//  std::cout <<  stmtFileAndRange <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
@@ -326,7 +327,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "在文件位置:" << sourceRange.printToString(SM) << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
+    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
 
     if(fileInsertedIncludeStmt.count(fileId)==0){
       CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
