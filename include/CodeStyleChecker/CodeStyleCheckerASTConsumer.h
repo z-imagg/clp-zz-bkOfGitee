@@ -7,7 +7,7 @@
 
 
 #include "CodeStyleChecker/CodeStyleCheckerVisitor.h"
-#include "CallExprMatcher.h"
+#include "FindTClkCall_ReadOnly_Visitor.h"
 
 //-----------------------------------------------------------------------------
 // ASTConsumer
@@ -19,33 +19,37 @@ public:
                                          clang::SourceManager &SM)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             : Visitor(R, Context),
+            findTCCallROVisitor(R,Context),
             SM(SM)  {}
 
 
     virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override{
       clang::FileID mainFileId = SM.getMainFileID();
       const clang::LangOptions & langOpts = Visitor.mRewriter.getLangOpts();
+
       //时钟函数只插入一次，不重复插入：
-      //若已经有时钟函数声明，则标记为已处理，且直接返回，不做任何处理。
-      //包含了时钟头文件 会有时钟函数声明。 其实是想问 是否有 时钟函数调用，但函数调用 比 声明 难找。
-      //所以说 有漏洞：如果一个客户源文件，没有包含时钟头文件，但是调用了时钟函数 ，是会每次都被插入时钟语句。
+      //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
       {
-        clang::ast_matchers::MatchFinder Finder;
-        CallExprMatcher Matcher(mainFileId);
-        Finder.addMatcher(clang::ast_matchers::callExpr().bind("callExpr"), &Matcher);
-
-        Ctx.getTranslationUnitDecl();
-        Finder.matchAST(Ctx);//这里应该会循环调完 CallExprMatcher.run
-
-        if(CodeStyleCheckerVisitor::fileInsertedIncludeStmt.count(mainFileId)>0){
-          //若已经有时钟函数声明，则标记为已处理，且直接返回，不做任何处理。
-          return;
+      //{本循环遍历直接在本源文件中的函数调用们
+      auto Decls = Ctx.getTranslationUnitDecl()->decls();
+      for (auto &Decl : Decls) {
+        if (!SM.isInMainFile(Decl->getLocation())){
+          continue;
         }
+        findTCCallROVisitor.TraverseDecl(Decl);
+      }
+      //}
 
+      if(findTCCallROVisitor.curMainFileHas_TCTickCall){
+        //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
+        return;
+      }
       }
 
+
+
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
-      std::cout<<"HandleTranslationUnit__filepath:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      std::cout<<"处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
@@ -73,5 +77,6 @@ public:
 
 private:
     CodeStyleCheckerVisitor Visitor;
+    FindTClkCall_ReadOnly_Visitor findTCCallROVisitor;
     clang::SourceManager &SM;
 };
