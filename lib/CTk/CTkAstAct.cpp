@@ -1,40 +1,4 @@
-//==============================================================================
-// FILE:
-//    CodeStyleChecker.cpp
-//
-// DESCRIPTION:
-//    Checks whether function, variable and type names follow the LLVM's coding
-//    style guide. If not, issue a warning and generate a FixIt hint. The
-//    following items are exempt from the above rules and are ignored:
-//      * anonymous fields in classes and structs
-//      * anonymous unions
-//      * anonymous function parameters
-//      * conversion operators
-//    These exemptions are further documented in the source code below.
-//
-//    This plugin is complete in the sense that it successfully processes
-//    vector.h from STL. Also, note that it implements only a small subset of
-//    LLVM's coding guidelines.
-//
-//    By default this plugin will only run on the main translation unit. Use
-//    `-main-tu-only=false` to make it run on e.g. included header files too.
-//
-// USAGE:
-//    1. As a loadable Clang plugin:
-//    Main TU only:
-//      * clang -cc1 -load <BUILD_DIR>/lib/libCodeStyleChecker.dylib -plugin '\'
-//        CSC test/CodeStyleCheckerVector.cpp
-//    All TUs (the main file and the #includ-ed header files)
-//      * clang -cc1 -load <BUILD_DIR>/lib/libCodeStyleChecker.dylib '\'
-//        -plugin CSC -plugin-arg-CSC -main-tu-only=false '\'
-//        test/CodeStyleCheckerVector.cpp
-//    2. As a standalone tool:
-//        <BUILD_DIR>/bin/ct-code-style-checker '\'
-//        test/ct-code-style-checker-basic.cpp
-//
-// License: The Unlicense
-//==============================================================================
-#include "CodeStyleChecker/CodeStyleCheckerASTConsumer.h"
+#include "CTk/CTkAstCnsm.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -48,7 +12,7 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // FrontendAction
 //-----------------------------------------------------------------------------
-class CSCASTAction : public PluginASTAction {
+class CTkAstAct : public PluginASTAction {
 public:
     std::unique_ptr<ASTConsumer>
     CreateASTConsumer(CompilerInstance &CI,
@@ -60,7 +24,7 @@ public:
       mRewriter.setSourceMgr(SM, langOptions);
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
-      return std::make_unique<CodeStyleCheckerASTConsumer>(CI,mRewriter,
+      return std::make_unique<CTkAstCnsm>(CI,mRewriter,
                                                            &astContext, SM, langOptions);
     }
 
@@ -88,7 +52,7 @@ private:
 //-----------------------------------------------------------------------------
 // Registration
 //-----------------------------------------------------------------------------
-static FrontendPluginRegistry::Add<CSCASTAction>
-        X(/*Name=*/"CSC",
+static FrontendPluginRegistry::Add<CTkAstAct>
+        X(/*Name=*/"CTk",
         /*Description=*/"Checks whether class, variable and function names "
                         "adhere to LLVM's guidelines");

@@ -7,8 +7,8 @@
 #include "clang/Basic/SourceManager.h"
 
 
-#include "CodeStyleChecker/CodeStyleCheckerVisitor.h"
-#include "FindTClkCall_ReadOnly_Visitor.h"
+#include "CTk/CTkVst.h"
+#include "FndCTkClROVst.h"
 
 using namespace llvm;
 using namespace clang;
@@ -16,11 +16,11 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // ASTConsumer
 //-----------------------------------------------------------------------------
-class CodeStyleCheckerASTConsumer : public ASTConsumer {
+class CTkAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CodeStyleCheckerASTConsumer(CompilerInstance &_CI, Rewriter &R, ASTContext *Context,
-                                         SourceManager &SM, LangOptions &langOptions)
+    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter &R, ASTContext *Context,
+                        SourceManager &SM, LangOptions &langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
@@ -61,7 +61,7 @@ public:
       }
       //}
 
-      if(findTCCallROVisitor.curMainFileHas_TCTickCall){
+      if(findTCCallROVisitor.curMainFileHas_TCTkCall){
         //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
         return;
       }
@@ -93,7 +93,7 @@ public:
 
 
 
-      CodeStyleCheckerVisitor::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+      CTkVst::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
       std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
@@ -104,7 +104,7 @@ public:
 
 private:
     CompilerInstance &CI;
-    CodeStyleCheckerVisitor Visitor;
-    FindTClkCall_ReadOnly_Visitor findTCCallROVisitor;
+    CTkVst Visitor;
+    FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
 };

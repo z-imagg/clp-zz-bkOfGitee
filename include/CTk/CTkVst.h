@@ -1,5 +1,5 @@
-#ifndef CLANG_TUTOR_CodeStyleCheckerVisitor_H
-#define CLANG_TUTOR_CodeStyleCheckerVisitor_H
+#ifndef CTkVst_H
+#define CTkVst_H
 
 
 #include <clang/Rewrite/Core/Rewriter.h>
@@ -15,11 +15,11 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // RecursiveASTVisitor
 //-----------------------------------------------------------------------------
-class CodeStyleCheckerVisitor
-        : public RecursiveASTVisitor<CodeStyleCheckerVisitor> {
+class CTkVst
+        : public RecursiveASTVisitor<CTkVst> {
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit CodeStyleCheckerVisitor(Rewriter &R, ASTContext *Ctx)
+    explicit CTkVst(Rewriter &R, ASTContext *Ctx)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     : mRewriter(R),
     Ctx(Ctx)
@@ -27,8 +27,8 @@ public:
 
     }
 
-    static const std::string funcName_TCTick ;//= "X__t_clock_tick";
-    static const std::string IncludeStmt_TCTick ; // = "#include \"t_clock_tick.h\"\n";
+    static const std::string funcName_TCTk ;//= "X__t_clock_tick";
+    static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
     static void insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter);
     static void insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter);
     static bool getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn);

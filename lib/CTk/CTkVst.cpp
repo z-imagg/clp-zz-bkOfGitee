@@ -1,4 +1,4 @@
-#include "CodeStyleChecker/CodeStyleCheckerVisitor.h"
+#include "CTk/CTkVst.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -14,24 +14,24 @@ using namespace llvm;
 using namespace clang;
 
 //-----------------------------------------------------------------------------
-// CodeStyleCheckerVisitor implementation
+// CTkVst implementation
 //-----------------------------------------------------------------------------
 /*
 运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so   -plugin CTk   test_main.cpp
 
 
-只运行了本插件CSC，没有运行编译过程:
+只运行了本插件CTk，没有运行编译过程:
 #参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
 
 "-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
 #参考: https://www.ibm.com/docs/en/xl-c-and-cpp-linux/16.1.0?topic=cla-running-user-defined-actions-by-using-clang-plug-ins
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
 
 
 运行clang++带上本插件.so 且 运行编译、链接 全过程:
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/t_clock_tick/test_main.cpp  -o test_main
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk   /pubx/clang-tutor/t_clock_tick/test_main.cpp  -o test_main
 但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
 
 
@@ -39,20 +39,20 @@ using namespace clang;
  */
 
 
-//std::set<FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
-const std::string CodeStyleCheckerVisitor::funcName_TCTick = "X__t_clock_tick";
-const std::string CodeStyleCheckerVisitor::IncludeStmt_TCTick = "#include \"t_clock_tick.h\"\n";
+//std::set<FileID> CTkVst::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
+const std::string CTkVst::funcName_TCTk = "X__t_clock_tick";
+const std::string CTkVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
 
-bool CodeStyleCheckerVisitor::VisitCallExpr(CallExpr *callExpr){
+bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-void CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
+void CTkVst::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
   FileID fileId = SM.getFileID(Loc);
 
   insertIncludeToFileStart(fileId,SM,rewriter);
 }
-void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
+void CTkVst::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
 //  SourceManager &SM = Context.getSourceManager();
 //  FileID MainFileID = SM.getMainFileID();
 
@@ -65,7 +65,7 @@ void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, SourceMana
   }
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);
+  rewriter.InsertText(startLoc, IncludeStmt_TCTk, true, true);
 }
 
 static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
@@ -180,7 +180,7 @@ bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(ASTContext *Ctx,std::string functionName){
+FunctionDecl* CTkVst::findFuncDecByName(ASTContext *Ctx,std::string functionName){
 //    std::string functionName = "calc";
 
     TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
@@ -201,7 +201,7 @@ FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(ASTContext *Ctx,std::st
  * @param langOptions
  * @return
  */
-std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
+std::string CTkVst::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
 //  SourceRange sourceRange=S->getSourceRange();
   CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
@@ -214,9 +214,9 @@ std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sour
 /**
  * 获取语句所属源文件路径
  */
-bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+bool CTkVst::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
   SourceLocation Loc = S->getBeginLoc();
-  CodeStyleCheckerVisitor::getSourceFilePathAtLoc(Loc,SM,fn);
+  CTkVst::getSourceFilePathAtLoc(Loc,SM,fn);
 }
 
 /**
@@ -228,7 +228,7 @@ bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const Sourc
  * @param fn
  * @return
  */
-bool CodeStyleCheckerVisitor::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
+bool CTkVst::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
 //  SourceLocation Loc = S->getBeginLoc();
   if (Loc.isValid()) {
     FileID File = SM.getFileID(Loc);
@@ -263,7 +263,7 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
   char cStr_X__t_clock_tick[256];
 
   //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CodeStyleCheckerVisitor::funcName_TCTick.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
+  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
@@ -275,7 +275,7 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
  * @param stmt
  * @return
  */
-bool CodeStyleCheckerVisitor::VisitStmt(Stmt *stmt){
+bool CTkVst::VisitStmt(Stmt *stmt){
 
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
@@ -316,7 +316,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(Stmt *stmt){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, SM, fn);
+  CTkVst::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
@@ -341,19 +341,19 @@ bool CodeStyleCheckerVisitor::VisitStmt(Stmt *stmt){
 
 
 
-bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
+bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
+bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitVarDecl(VarDecl *Decl) {
+bool CTkVst::VisitVarDecl(VarDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitFieldDecl(FieldDecl *Decl) {
+bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
 
   return true;
 }

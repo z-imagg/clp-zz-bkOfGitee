@@ -1,5 +1,5 @@
-#ifndef X__FindTClkCall_ReadOnly_Visitor_H
-#define X__FindTClkCall_ReadOnly_Visitor_H
+#ifndef FndCTkClROVst_H
+#define FndCTkClROVst_H
 
 
 #include <clang/Rewrite/Core/Rewriter.h>
@@ -15,17 +15,17 @@ using namespace clang;
 /**
  * 只读CallExpr遍历器,  找时钟调用语句
  */
-class FindTClkCall_ReadOnly_Visitor
-        : public RecursiveASTVisitor<FindTClkCall_ReadOnly_Visitor> {
+class FndCTkClROVst
+        : public RecursiveASTVisitor<FndCTkClROVst> {
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit FindTClkCall_ReadOnly_Visitor(SourceManager &_SM, LangOptions &_langOptions,ASTContext *_Ctx)
+    explicit FndCTkClROVst(SourceManager &_SM, LangOptions &_langOptions, ASTContext *_Ctx)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     :
     SM(_SM),
     langOptions(_langOptions),
     Ctx(_Ctx),
-    curMainFileHas_TCTickCall(false)
+    curMainFileHas_TCTkCall(false)
     {
 
     }
@@ -38,7 +38,7 @@ public:
     SourceManager &SM;
     ASTContext *Ctx;
     LangOptions &langOptions;
-    bool curMainFileHas_TCTickCall;
+    bool curMainFileHas_TCTkCall;
 
 };
 

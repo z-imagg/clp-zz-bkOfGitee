@@ -1,3 +1,44 @@
+# 简写约定
+## 单词
+- CTk: 时钟滴答
+> CTk: C_Tk : Clock_Tick
+> thread_clock_tick 该线程的源码级时钟滴答， 这里省略了thread，写成 clock_tick
+
+- Cnsm : 消费者
+> Cnsm : Consumer
+
+- Fnd: 找
+> Fnd: Find
+
+- Cl: 调用
+> Cl: Call
+
+- RO: 只读
+> RO : R_O : Read_Only
+
+- Vst: 访问/遍历
+> Vst : Visit
+
+- Ast: 抽象语法树
+> Ast: A_s_t : Abstract_syntax_tree
+
+## 短语
+- CTkAstCnsm
+> CTkAstCnsm : CTk__Ast__Cnsm : Clock_Tick__Abstract_syntax_tree__Consumer : 时钟滴答 抽象语法树 消费者
+
+- CTkVst
+> CTkVst : CTk__Vst:  Clock_Tick__Visit :  时钟滴答 遍历
+
+- FndCTkClROVst
+> FndCTkClROVst : Fnd__CTk__Cl__RO__Vst : Find__Clock_Tick__Call__Read_Only__Visit: 找时钟调用 只读遍历
+> 为了 找到 时钟调用语句 而对 抽象语法树 进行  只读遍历
+
+- CTkAstAct
+> CTkAstAct : CTk__Ast__Act : ClockTick__Abstract_syntax_tree__Action
+
+- t_clock_tick
+> t_clock_tick: thread_clock_tick
+
 # 步骤1. opensuse/leap:15.4 命令行下编译
 
 ```bash
@@ -99,14 +140,14 @@ make
 
 #编译出的插件如下：
 find `pwd` -name "*.so"
-#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCodeStyleChecker.so
+#/pubx/source_code_rewrite/clang_plugin_demo/clang-tutor/build/lib/libCTk.so
 
 
-#运行CodeStyleChecker插件
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so -plugin CSC /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
+#运行CTk插件
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang -cc1 -load   /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so -plugin CTk /pubx/clang-tutor/test/CTkVector.cpp
 
-#不再独立运行CodeStyleChecker： 由于要像一个正常clang一样设置头文件路径等 很多事情要做，因此不再独立运行
-/pubx/clang-tutor/cmake-build-debug/bin/ct-code-style-checker /pubx/clang-tutor/test/CodeStyleCheckerVector.cpp
+#不再独立运行CTk： 由于要像一个正常clang一样设置头文件路径等 很多事情要做，因此不再独立运行
+/pubx/clang-tutor/cmake-build-debug/bin/CTkAlone /pubx/clang-tutor/test/CTkVector.cpp
 ```
 
 
