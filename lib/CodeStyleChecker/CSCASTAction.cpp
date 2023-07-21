@@ -68,9 +68,6 @@ public:
       return true;
     }
 
-    void PrintHelp(llvm::raw_ostream &ros) {
-      ros << "Help for CodeStyleChecker plugin goes here\n";
-    }
 
     PluginASTAction::ActionType getActionType() override {
       //本插件自动运行:  在MainAction后运行本插件

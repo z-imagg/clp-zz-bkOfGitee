@@ -1,3 +1,6 @@
+#ifndef CLANG_TUTOR_CodeStyleCheckerVisitor_H
+#define CLANG_TUTOR_CodeStyleCheckerVisitor_H
+
 
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <set>
@@ -54,3 +57,6 @@ private:
     clang::ASTContext *Ctx;
 
 };
+
+
+#endif
