@@ -1,4 +1,4 @@
-#include "CodeStyleChecker/CodeStyleCheckerVisitor.h"
+#include "CTk/CTkVst.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -10,25 +10,28 @@ using namespace clang;
 #include <iostream>
 #include <clang/AST/ParentMapContext.h>
 
+using namespace llvm;
+using namespace clang;
+
 //-----------------------------------------------------------------------------
-// CodeStyleCheckerVisitor implementation
+// CTkVst implementation
 //-----------------------------------------------------------------------------
 /*
 运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so   -plugin CSC   test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so   -plugin CTk   test_main.cpp
 
 
-只运行了本插件CSC，没有运行编译过程:
+只运行了本插件CTk，没有运行编译过程:
 #参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
 
 "-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
 #参考: https://www.ibm.com/docs/en/xl-c-and-cpp-linux/16.1.0?topic=cla-running-user-defined-actions-by-using-clang-plug-ins
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC  -c  /pubx/clang-tutor/test/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
 
 
 运行clang++带上本插件.so 且 运行编译、链接 全过程:
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCodeStyleChecker.so  -Xclang   -add-plugin -Xclang  CSC   /pubx/clang-tutor/test/test_main.cpp  -o test_main
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk   /pubx/clang-tutor/t_clock_tick/test_main.cpp  -o test_main
 但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
 
 
@@ -36,43 +39,44 @@ using namespace clang;
  */
 
 
-std::set<clang::FileID> CodeStyleCheckerVisitor::fileInsertedIncludeStmt;//={};
-const std::string CodeStyleCheckerVisitor::funcName_TCTick = "X__t_clock_tick";
-const std::string CodeStyleCheckerVisitor::IncludeStmt_TCTick = "#include \"t_clock_tick.h\"\n";
+//std::set<FileID> CTkVst::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
+const std::string CTkVst::funcName_TCTk = "X__t_clock_tick";
+const std::string CTkVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
 
-bool CodeStyleCheckerVisitor::VisitCallExpr(clang::CallExpr *callExpr){
+bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-void CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(clang::SourceLocation Loc, clang::SourceManager &SM, clang::Rewriter& rewriter){
+void CTkVst::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
   FileID fileId = SM.getFileID(Loc);
 
   insertIncludeToFileStart(fileId,SM,rewriter);
 }
-void CodeStyleCheckerVisitor::insertIncludeToFileStart(FileID fileId, clang::SourceManager &SM, clang::Rewriter& rewriter)   {
-//  clang::SourceManager &SM = Context.getSourceManager();
-//  clang::FileID MainFileID = SM.getMainFileID();
+void CTkVst::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
+//  SourceManager &SM = Context.getSourceManager();
+//  FileID MainFileID = SM.getMainFileID();
 
 //  FileID fileId = SM.getFileID(Loc);
-  clang::SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
+  SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
 
-  const clang::RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
-  if (!RewriteBuf)
+  const RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
+  if (!RewriteBuf){
     return;
+  }
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_TCTick, true, true);
+  rewriter.InsertText(startLoc, IncludeStmt_TCTk, true, true);
 }
 
-static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::WhileStmt>();
-static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ForStmt>();
-static auto _returnStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ReturnStmt>();
-static auto _unaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<clang::UnaryOperator>();
-static auto _implicitCaseExprAstNodeKind=ASTNodeKind::getFromNodeKind<clang::ImplicitCastExpr>();
+static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
+static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ForStmt>();
+static auto _returnStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ReturnStmt>();
+static auto _unaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<UnaryOperator>();
+static auto _implicitCaseExprAstNodeKind=ASTNodeKind::getFromNodeKind<ImplicitCastExpr>();
 
-bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
-//clang::Stmt::StmtClass & stmtClass
-  clang::Stmt::StmtClass stmtClass = S->getStmtClass();
+bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
+//Stmt::StmtClass & stmtClass
+  Stmt::StmtClass stmtClass = S->getStmtClass();
 
   ////{
   //{内部 不可扩展 的 语法节点 内 是不能插入更多语法结构的 否则语法错误
@@ -92,34 +96,34 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 
   switch (stmtClass) {//switch开始
     //{不插入时钟语句概率大的情况
-    case clang::Stmt::CompoundStmtClass:{
+    case Stmt::CompoundStmtClass:{
       return false;
     }
-    case clang::Stmt::ImplicitCastExprClass:{ //隐式类型转换
+    case Stmt::ImplicitCastExprClass:{ //隐式类型转换
       return false;
     }
-    case clang::Stmt::StringLiteralClass:{
+    case Stmt::StringLiteralClass:{
       return false;
     }
-    case clang::Stmt::IntegerLiteralClass:{
+    case Stmt::IntegerLiteralClass:{
       return false;
     }
-    case clang::Stmt::DeclRefExprClass:{//存疑,待找到实例以验证
+    case Stmt::DeclRefExprClass:{//存疑,待找到实例以验证
       return false;
     }
     //}
 
     //{插入时钟语句概率大的情况
-    case clang::Stmt::DeclStmtClass:{
+    case Stmt::DeclStmtClass:{
       if(parent0NodeKind.isSame(_forStmtAstNodeKind) ){
         //如果当前语句S的父亲节点是for语句头，则不插入时钟语句.
         return false;
       }
       return true;
     }
-    case clang::Stmt::CallExprClass:{
+    case Stmt::CallExprClass:{
       {
-      ASTNodeKind compoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::CompoundStmt>();
+      ASTNodeKind compoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>();
       if(parent0NodeKind.isSame(compoundStmtAstNodeKind)){
         //如果调用语句CallExpr的父亲节点是组合语句CompoundStmt，则插入时钟语句. 举例如下:
         // 组合语句CompoundStmt: "{ int age; func1();}" , 其中 "func1();" 是调用语句CallExpr.
@@ -128,7 +132,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
       }
 
       {
-      ASTNodeKind varDeclAstNodeKind=ASTNodeKind::getFromNodeKind<clang::VarDecl>();
+      ASTNodeKind varDeclAstNodeKind=ASTNodeKind::getFromNodeKind<VarDecl>();
       if(parent0NodeKind.isSame(varDeclAstNodeKind)){
         //如果调用语句CallExpr的父亲节点是变量声明语句VarDecl，则不插入时钟语句. 举例如下:
         // 变量声明语句VarDecl: "float cost=calcCost(3,false);" , 其中 "calcCost(3,false)" 是调用语句CallExpr.
@@ -137,7 +141,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
       }
 
       {
-      ASTNodeKind binaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<clang::BinaryOperator>();
+      ASTNodeKind binaryOperatorAstNodeKind=ASTNodeKind::getFromNodeKind<BinaryOperator>();
       if(parent0NodeKind.isSame(binaryOperatorAstNodeKind)){
         //如果调用语句CallExpr的父亲节点是 二元操作符BinaryOperator，则不插入时钟语句. 举例如下:
         // 二元操作符BinaryOperator 语句: "name=getName(true);" , 其中 "getName(true)" 是调用语句CallExpr, 二元操作符BinaryOperator 这里是指 赋值号"="
@@ -146,7 +150,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
       }
 
       {
-      ASTNodeKind ifStmtAstNodeKind=ASTNodeKind::getFromNodeKind<clang::IfStmt>();
+      ASTNodeKind ifStmtAstNodeKind=ASTNodeKind::getFromNodeKind<IfStmt>();
       if(parent0NodeKind.isSame(ifStmtAstNodeKind)){
         //如果调用语句CallExpr的父亲节点是 判断语句IfStmt，则不插入时钟语句，否则破坏了原来意思. 举例如下:
         // 判断语句IfStmt  : "if(done) do_job();" , 其中 "do_job()" 是调用语句CallExpr
@@ -156,15 +160,15 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 
       return true;
     }
-    case clang::Stmt::ForStmtClass: {//for循环整体
+    case Stmt::ForStmtClass: {//for循环整体
       return true;
     }
-//    case clang::Stmt::UnaryOperatorClass://一元操作符语句,  这里 暂时不插入. 因为需要知道当前是在for循环第3位置 , 还是单独一条语句. for循环第3位置前插入 分割符只能是逗号, 单独一条语句前插入 分割符只能是分号.
-//    case clang::Stmt::BinaryOperatorClass://二元操作符语句，暂时不插入。 需要看其内部组成和外部包裹，比如若是被if()包裹 肯定其前肯定不能插入，如果是单独一条语句 其前可以插入。
-    case clang::Stmt::IfStmtClass: {//if语句整体
+//    case Stmt::UnaryOperatorClass://一元操作符语句,  这里 暂时不插入. 因为需要知道当前是在for循环第3位置 , 还是单独一条语句. for循环第3位置前插入 分割符只能是逗号, 单独一条语句前插入 分割符只能是分号.
+//    case Stmt::BinaryOperatorClass://二元操作符语句，暂时不插入。 需要看其内部组成和外部包裹，比如若是被if()包裹 肯定其前肯定不能插入，如果是单独一条语句 其前可以插入。
+    case Stmt::IfStmtClass: {//if语句整体
       return true;
     }
-    case clang::Stmt::ReturnStmtClass:{
+    case Stmt::ReturnStmtClass:{
       return true;
     }
     //}
@@ -176,7 +180,7 @@ bool shouldInsert(clang::Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(clang::ASTContext *Ctx,std::string functionName){
+FunctionDecl* CTkVst::findFuncDecByName(ASTContext *Ctx,std::string functionName){
 //    std::string functionName = "calc";
 
     TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
@@ -197,7 +201,7 @@ FunctionDecl* CodeStyleCheckerVisitor::findFuncDecByName(clang::ASTContext *Ctx,
  * @param langOptions
  * @return
  */
-std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
+std::string CTkVst::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
   //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
 //  SourceRange sourceRange=S->getSourceRange();
   CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
@@ -210,9 +214,9 @@ std::string CodeStyleCheckerVisitor::getSourceTextBySourceRange(SourceRange sour
 /**
  * 获取语句所属源文件路径
  */
-bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+bool CTkVst::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
   SourceLocation Loc = S->getBeginLoc();
-  CodeStyleCheckerVisitor::getSourceFilePathAtLoc(Loc,SM,fn);
+  CTkVst::getSourceFilePathAtLoc(Loc,SM,fn);
 }
 
 /**
@@ -224,7 +228,7 @@ bool CodeStyleCheckerVisitor::getSourceFilePathOfStmt(const Stmt *S, const Sourc
  * @param fn
  * @return
  */
-bool CodeStyleCheckerVisitor::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
+bool CTkVst::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
 //  SourceLocation Loc = S->getBeginLoc();
   if (Loc.isValid()) {
     FileID File = SM.getFileID(Loc);
@@ -255,11 +259,11 @@ bool isInternalSysSourceFile(StringRef fn) {
   bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
   return isInternal;
 }
-void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int stackVarAllocCnt,int stackVarFreeCnt,int heapObjAllocCnt,int heapObjcFreeCnt){
+void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCnt,int stackVarFreeCnt,int heapObjAllocCnt,int heapObjcFreeCnt){
   char cStr_X__t_clock_tick[256];
 
   //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CodeStyleCheckerVisitor::funcName_TCTick.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
+  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
@@ -271,22 +275,27 @@ void insert_X__t_clock_tick(clang::Rewriter &rewriter, clang::Stmt * stmt, int s
  * @param stmt
  * @return
  */
-bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
+bool CTkVst::VisitStmt(Stmt *stmt){
 
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
 
-  clang::SourceLocation beginLoc=stmt->getBeginLoc();
-  clang::SourceRange sourceRange=stmt->getSourceRange();
+  SourceLocation beginLoc=stmt->getBeginLoc();
+  SourceRange sourceRange=stmt->getSourceRange();
   FileID fileId = SM.getFileID(beginLoc);
 
-  clang::FileID mainFileId = SM.getMainFileID();
+  FileID mainFileId = SM.getMainFileID();
 
   std::string stmtFileAndRange=sourceRange.printToString(SM);
 
   //获取当前语句S的源码文本
   std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+
+  if(mainFileId!=fileId){
+//    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl; //开发用打印
+    return true;
+  }
 
   Stmt::StmtClass stmtClass = stmt->getStmtClass();
   const char* stmtClassName = stmt->getStmtClassName();
@@ -299,7 +308,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 //  bool shouldBreakPointer2=stmtSourceText=="!f111(";
   //}
 
-  clang::DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
+  DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
   if(parentSSize>1){
     std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
@@ -312,7 +321,7 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CodeStyleCheckerVisitor::getSourceFilePathOfStmt(stmt, SM, fn);
+  CTkVst::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
@@ -327,13 +336,8 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句" <<std::endl;
+    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句,mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
 
-    if(fileInsertedIncludeStmt.count(fileId)==0){
-      CodeStyleCheckerVisitor::insertIncludeToFileStartByLoc(beginLoc, SM, mRewriter);
-      std::cout<< "插入'包含时钟'语句到文件头部:" << fnStr <<std::endl;
-      fileInsertedIncludeStmt.insert(fileId);
-    }
   }else{
 //    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
   }
@@ -342,19 +346,19 @@ bool CodeStyleCheckerVisitor::VisitStmt(clang::Stmt *stmt){
 
 
 
-bool CodeStyleCheckerVisitor::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
+bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitFunctionDecl(FunctionDecl *Decl) {
+bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitVarDecl(VarDecl *Decl) {
+bool CTkVst::VisitVarDecl(VarDecl *Decl) {
   return true;
 }
 
-bool CodeStyleCheckerVisitor::VisitFieldDecl(FieldDecl *Decl) {
+bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
 
   return true;
 }

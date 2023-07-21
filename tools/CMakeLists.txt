@@ -1,13 +1,14 @@
 set(CLANG_TUTOR_TOOLS
-    ct-code-style-checker
+CTkAlone
 )
 
 
 
-set(ct-code-style-checker_SOURCES
- "${CMAKE_CURRENT_SOURCE_DIR}/CodeStyleCheckerMain.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CodeStyleCheckerVisitor.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CodeStyleChecker/CSCASTAction.cpp"
+set(CTkAlone_SOURCES
+ "${CMAKE_CURRENT_SOURCE_DIR}/CTkMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstAct.cpp"
 )
 
 # CONFIGURE THE TOOLS
