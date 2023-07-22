@@ -258,8 +258,9 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
   if(parentSSize>1){
-    std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
-//    Util::printExpr(CI,"查看","此文件已处理,发现时钟调用语句",callExpr, true);
+    char msg[128];
+    sprintf(msg,"注意:父节点个数大于1, 为:%d",parentSSize);
+    Util::printStmt(CI,"查看",msg,stmt, true);
   }
   if(parentSSize<=0){
     return true;
@@ -268,14 +269,16 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
 
-//    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
-//  std::cout <<  stmtFileAndRange <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+
+//  char msg[256];
+//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKind,_isInternalSysSourceFile,_shouldInsert);
+//  Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
