@@ -143,7 +143,7 @@ public:
         const Decl::redecl_range &kReDeclRange = declJ->redecls();
         FileID fileId = SM.getFileID(declJ->getLocation());
 
-        Util::printDecl(CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
+        Util::printDecl(Ctx,CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
 
 
         Visitor.TraverseDecl(declJ);
