@@ -87,7 +87,7 @@ public:
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            Visitor(_rewriter, _astContext, _CI, _SM),
+            insertVst(_rewriter, _astContext, _CI, _SM),
             findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
             SM(_SM)  {
       //构造函数
@@ -129,7 +129,7 @@ public:
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
 //      TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
-//      Visitor.TraverseDecl(translationUnitDecl);
+//      insertVst.TraverseDecl(translationUnitDecl);
       //}
 
       //{本循环能遍历到直接在本源文件中的函数定义中
@@ -146,27 +146,35 @@ public:
         Util::printDecl(Ctx,CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
 
 
-        Visitor.TraverseDecl(declJ);
-        //直到第一次调用过 Visitor.TraverseDecl(declJ) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
+        if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(declJ)) {
+          NameSpaceVst namespaceVisitor(insertVst);
+          namespaceVisitor.TraverseDecl(ND);
+        }else{
+          //试图在这里处理 不在命名空间中的 顶层c++方法体、c函数体 ： 但没成功
+          Zzz::zzz(insertVst,declJ);
+        }
+
+//        insertVst.TraverseDecl(declJ);
+        //直到第一次调用过 insertVst.TraverseDecl(declJ) 之后， insertVst.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 insertVst.mRewriter 做插入动作？这是为何？
       }
       //}
 //////////////////3.插入包含语句
 
 
-      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk,mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk, mainFileId, SM, insertVst.mRewriter);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
       std::cout<< "插入include, 插入 include时钟语句 到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 //////////////////4.应用修改到源文件
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
-      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
+      insertVst.mRewriter.overwriteChangedFiles();//修改会影响原始文件
 
 
     }
 
 private:
     CompilerInstance &CI;
-    CTkVst Visitor;
+    CTkVst insertVst;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
 };
