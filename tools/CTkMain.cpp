@@ -24,6 +24,7 @@ public:
     return true;
   }
 
+  //本方法是override的 即 上层定的，只能返回 std::unique_ptr<ASTConsumer>，因此只能每次新创建CTkAstCnsm， 而不能每次给一个固定的CTkAstCnsm对象
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                  StringRef file) override {
     SourceManager& SM=CI.getSourceManager();
@@ -33,6 +34,7 @@ public:
     mRewriter.setSourceMgr(SM, langOpts);
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
+    //Act中 是 每次都是 新创建 CTkAstCnsm
     return std::make_unique<CTkAstCnsm>(CI, mRewriter,
                                         &astContext, SM, langOpts);
   }

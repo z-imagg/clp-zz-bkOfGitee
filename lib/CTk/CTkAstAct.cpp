@@ -24,6 +24,7 @@ public:
       mRewriter.setSourceMgr(SM, langOptions);
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
+      //Act中 是 每次都是 新创建 CTkAstCnsm
       return std::make_unique<CTkAstCnsm>(CI,mRewriter,
                                                            &astContext, SM, langOptions);
     }

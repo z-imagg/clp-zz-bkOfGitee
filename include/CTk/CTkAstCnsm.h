@@ -69,7 +69,8 @@ public:
 
 //////////////////2. 插入时钟语句
 
-      std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",CTkAstConsumer:" << this << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。
       mainFileProcessed=true;
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
