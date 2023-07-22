@@ -11,11 +11,14 @@
 namespace myNs1{
 namespace myNs2{
 
+struct User{
 int f111(){
 return 11;
 }
 int f222(){
 return  f111(); 
+}
+
 }
 
 
