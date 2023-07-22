@@ -1,3 +1,6 @@
+#ifndef CTkAstCnsm_H
+#define CTkAstCnsm_H
+
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <iostream>
 #include <clang/Frontend/CompilerInstance.h>
@@ -70,8 +73,6 @@ public:
 //////////////////2. 插入时钟语句
 
       std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",CTkAstConsumer:" << this << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
-      //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。
-      mainFileProcessed=true;
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
@@ -115,12 +116,19 @@ public:
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
       insertVst.mRewriter.overwriteChangedFiles();//修改会影响原始文件
 
+
+      //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。
+      mainFileProcessed=true;
     }
 
-private:
+public:
     CompilerInstance &CI;
     CTkVst insertVst;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
-    bool mainFileProcessed=false;
+    //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
+    static bool mainFileProcessed;
 };
+
+
+#endif
