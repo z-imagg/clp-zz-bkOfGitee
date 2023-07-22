@@ -267,7 +267,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   }
   auto parent0 = parentS[0];
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
-  StringRef parent0NodeKindStrRef=parent0NodeKind.asStringRef();
+  const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
 
 
   StringRef fn;
@@ -278,7 +278,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
 
   char msg[256];
-  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindStrRef,_isInternalSysSourceFile,_shouldInsert);
+  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
   Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
