@@ -62,7 +62,7 @@ public:
 public:
     Rewriter mRewriter;
 
-private:
+public:
     ASTContext *Ctx;
     CompilerInstance& CI;
     SourceManager& SM;
