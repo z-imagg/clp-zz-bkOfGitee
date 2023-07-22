@@ -60,7 +60,11 @@ public:
 
 
 public:
-    Rewriter mRewriter;
+    //这里是Visitor中的Rewriter，非源头，不要构造Rewriter，只能引用Act中的源头Rewriter.
+    // 若这里也构造，将出现两个Rewriter, 则后一个Rewriter写入时会覆盖前一个Rewriter的写入，导致前一个Rewriter的写入丢失。
+    //     这里前一个是命名空间中的函数们，后一个是顶层函数们。
+    //     即 看起来的现象： 命名空间中的函数们 时钟调用语句 丢失， 而顶层函数们写入的时中调用语句 还在。
+    Rewriter & mRewriter;
 
 public:
     ASTContext *Ctx;

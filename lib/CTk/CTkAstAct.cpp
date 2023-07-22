@@ -46,7 +46,7 @@ public:
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
-    Rewriter mRewriter;
+    Rewriter mRewriter;//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
 //-----------------------------------------------------------------------------
