@@ -117,13 +117,40 @@ std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const Sou
   //}
 }
 
+void Util::printStmt(CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *stmt, bool printSourceText) {
+  SourceManager & SM=CI.getSourceManager();
+  const char *stmtClassName = stmt->getStmtClassName();
+  Stmt::StmtClass stmtClass = stmt->getStmtClass();
+  FileID fileId = SM.getFileID(stmt->getBeginLoc());
+  SourceRange sourceRange=stmt->getSourceRange();
+
+  printSourceRange(CI,
+                   tag, title,
+                   fileId, sourceRange,
+                   "getStmtClassName", stmtClassName,
+                   "getStmtClass", stmtClass,
+                   NULL,EMPTY_ENUM_VAL,
+                   NULL,EMPTY_ENUM_VAL,
+                   printSourceText);
+
+}
 void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, clang::Expr *expr,bool printSourceText) {
   SourceManager & SM=CI.getSourceManager();
-  const char *kindName = expr->getStmtClassName();
-  Stmt::StmtClass kind = expr->getStmtClass();
+  const char *stmtClassName = expr->getStmtClassName();
+  Stmt::StmtClass stmtClass = expr->getStmtClass();
+  ExprValueKind valueKind = expr->getValueKind();
+  ExprObjectKind objectKind = expr->getObjectKind();
   FileID fileId = SM.getFileID(expr->getBeginLoc());
   SourceRange sourceRange=expr->getSourceRange();
-  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,kind,printSourceText);
+
+  printSourceRange(CI,
+                   tag, title,
+                   fileId, sourceRange,
+                   "getStmtClassName", stmtClassName,
+                   "getStmtClass", stmtClass,
+                   "getValueKind", valueKind,
+                   "getObjectKind", objectKind,
+                   printSourceText);
 
 }
 void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText){
@@ -132,10 +159,25 @@ void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,cl
   Decl::Kind kind = decl->getKind();
   FileID fileId = SM.getFileID(decl->getBeginLoc());
   SourceRange sourceRange=decl->getSourceRange();
-  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,kind,printSourceText);
+  printSourceRange(CI,
+                   tag,title,
+                   fileId,sourceRange,
+                   "getDeclKindName",kindName,
+                   "getKind",kind,
+                   NULL,EMPTY_ENUM_VAL,
+                   NULL,EMPTY_ENUM_VAL,
+                   printSourceText);
 
 }
-void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string title,FileID fileId,const SourceRange &sourceRange,const char *kindOrClassName,int kindOrClassEnum,bool printSourceText){
+void  Util::printSourceRange(
+        CompilerInstance& CI,
+        std::string tag, std::string title,
+        FileID fileId, const SourceRange &sourceRange,
+        const char *topCategoryFieldName, const char *topCategoryName,
+        const char *topCategoryEnumFieldName, int topCategoryEnum,
+        const char *category1FieldName, int category1Enum,
+        const char *category2FieldName,int category2Enum,
+        bool printSourceText){
   SourceManager & SM=CI.getSourceManager();
   FileID mainFileId = SM.getMainFileID();
 //  FileID fileId = SM.getFileID(sourceRange.getBegin());
@@ -144,10 +186,30 @@ void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string t
   std::string fileAndRange=std::get<0>(frst);
   std::string sourceText=std::get<1>(frst);
 
-  std::cout << tag << "," << title << ",文件路径、坐标:"<< fileAndRange <<   ",kindOrClassName:" << kindOrClassName<<  ",kindOrClassEnum:" << kindOrClassEnum ;
+
+  std::cout
+    << tag << ","
+    << title
+    << ",文件路径、坐标:" << fileAndRange
+    << "," << topCategoryFieldName << ":" << topCategoryName
+    << "," << topCategoryEnumFieldName << ":" << topCategoryEnum
+    <<  ",mainFileId:" << mainFileId.getHashValue()
+    << ",fileId:" << fileId.getHashValue()
+    ;
+  if(category1Enum!=EMPTY_ENUM_VAL){
+  std::cout
+    << "," << category1FieldName << ":" << category1Enum
+    ;
+  }
+  if(category2Enum!=EMPTY_ENUM_VAL){
+    std::cout
+      << "," << category2FieldName << ":" << category2Enum
+    ;
+  }
   if(printSourceText){
     std::cout <<   ",源码:" << sourceText ;
   }
-  std::cout <<  ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
+
+  std::cout  << std::endl;
 
 }

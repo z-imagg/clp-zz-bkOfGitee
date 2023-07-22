@@ -259,6 +259,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   size_t parentSSize=parentS.size();
   if(parentSSize>1){
     std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
+//    Util::printExpr(CI,"查看","此文件已处理,发现时钟调用语句",callExpr, true);
   }
   if(parentSSize<=0){
     return true;

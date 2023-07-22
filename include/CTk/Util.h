@@ -33,9 +33,19 @@ public:
 
 
     static std::tuple<std::string,std::string>  get_FileAndRange_SourceText(const SourceRange &sourceRange,CompilerInstance& CI);
+    static void  printStmt(CompilerInstance& CI, std::string tag,std::string title,clang::Stmt* expr,bool printSourceText=false);
     static void  printExpr(CompilerInstance& CI, std::string tag,std::string title,clang::Expr* expr,bool printSourceText=false);
     static void  printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText=false);
-    static void  printSourceRange(CompilerInstance& CI,std::string tag, std::string title,FileID fileId, const SourceRange &sourceRange,  const char *kindOrClassName, int kindOrClassEnum,bool printSourceText=false);
+    static void  printSourceRange(
+      CompilerInstance& CI,
+      std::string tag, std::string title,
+      FileID fileId, const SourceRange &sourceRange,
+      const char *topCategoryFieldName, const char *topCategoryName,
+      const char *topCategoryEnumFieldName, int topCategoryEnum,
+      const char *category1FieldName=NULL, int category1Enum=EMPTY_ENUM_VAL,
+      const char *category2FieldName=NULL,int category2Enum=EMPTY_ENUM_VAL,
+      bool printSourceText=false);
+    static const int EMPTY_ENUM_VAL=-1;
 };
 
 

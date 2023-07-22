@@ -6,7 +6,7 @@ set(CTk_PLUGINS
 
 
 set(CTk_SOURCES
-        CTk/CTkAstAct.cpp CTk/CTkVst.cpp CTk/FndCTkClROVst.cpp)
+        CTk/Util.cpp CTk/CTkAstAct.cpp CTk/CTkVst.cpp CTk/FndCTkClROVst.cpp)
 
 
 
