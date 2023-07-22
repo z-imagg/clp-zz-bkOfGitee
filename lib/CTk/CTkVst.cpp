@@ -350,6 +350,18 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
+
+bool CTkVst::VisitIfStmt(IfStmt *ifStmt){
+  for (auto child:ifStmt.getBody()){//思路伪代码
+    processStmt(child);
+  }
+}
+bool CTkVst::VisitWhileStmt(WhileStmt *whileStmt){
+  for (auto child:whileStmt.getBody()){//思路伪代码
+    processStmt(child);
+  }
+}
+
 bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
 }
