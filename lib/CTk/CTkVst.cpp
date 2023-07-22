@@ -304,42 +304,48 @@ bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 }
 
 bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
-  const Stmt::child_range &ls = compoundStmt->children();
+  const Stmt::child_range &subStmtLs = compoundStmt->children();
 
+  ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
   //此组合语句内的变量声明语句个数
   int declStmtCnt=0;
 
-
-  for(Stmt* stmt:ls){
+  for(Stmt* stmt:subStmtLs){
     const char *stmtClassName = stmt->getStmtClassName();
     Stmt::StmtClass stmtClass = stmt->getStmtClass();
     if(Stmt::DeclStmtClass==stmtClass){
       declStmtCnt++;
     }
     Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,false);
-    processStmt(stmt);
   }
-
-  
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
   Stmt *endStmt = compoundStmt->body_back();
   if(endStmt){
-  Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
-  //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
-  if(Stmt::ReturnStmtClass==endStmtClass){
-    insertLoc=endStmt->getBeginLoc();
-  }
+    Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
+    //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
+    if(Stmt::ReturnStmtClass==endStmtClass){
+      insertLoc=endStmt->getBeginLoc();
+    }
   }
 
-  
+
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
   insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt,
                                heapObjAllocCnt, heapObjcFreeCnt);
+
+  ///////////////处理  子语句列表 中每条语句
+
+  for(Stmt* stmt:subStmtLs){
+    processStmt(stmt);
+  }
+
+  
+
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
