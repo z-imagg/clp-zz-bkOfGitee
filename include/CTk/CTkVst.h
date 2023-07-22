@@ -33,7 +33,6 @@ public:
     static const std::string funcName_TCTk ;//= "X__t_clock_tick";
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
-    //DEF_TRAVERSE_STMT(CompoundStmt  : grep '(CompoundStmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     /**遍历语句
      *
      * @param stmt
@@ -44,6 +43,7 @@ public:
 //    DEF_TRAVERSE_STMT(CallExpr      : grep '(CallExpr'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     virtual bool VisitCallExpr(CallExpr *callExpr);
 
+    //DEF_TRAVERSE_STMT(CompoundStmt  : grep '(CompoundStmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     virtual bool VisitCompoundStmt(CompoundStmt *compoundStmt);
 
     //下面4个形如 bool VisitZzz(clang:Zzz *Decl)  的方法:, 其中Zzz的完整列表叙述 从 本文件第27行开始.

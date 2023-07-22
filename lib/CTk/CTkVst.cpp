@@ -212,9 +212,6 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
 
 }
 
-bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
-  bool end=true;
-}
 /**遍历语句
  *
  * @param stmt
