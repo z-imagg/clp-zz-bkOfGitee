@@ -17,67 +17,8 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // ASTConsumer
 //-----------------------------------------------------------------------------
-class Zzz{
-public:
-    static void zzz(CTkVst& worker,Decl *Child) {
-      const char *chKN = Child->getDeclKindName();
-      Decl::Kind chK = Child->getKind();
-
-      if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
-        for (CXXMethodDecl *MD : RD->methods()) {
-          Stmt *Body = MD->getBody();
-          worker.TraverseStmt(Body);
-        }
-      }
-
-      if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
-        Stmt *Body = FD->getBody();
-        Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-//        worker.TraverseStmt(Body);
-        worker.TraverseDecl(FD);
-      }
-      if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
-        Stmt *Body = MD->getBody();
-        Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-//        worker.TraverseStmt(Body);
-        worker.TraverseDecl(MD);
-//        worker.TraverseDecl(Body);
-      }
-    }
-};
 
 
-class NameSpaceVst : public RecursiveASTVisitor<NameSpaceVst> {
-public:
-    explicit NameSpaceVst(const CTkVst &cTkVst) : worker(cTkVst) {
-
-    }
-
-    CTkVst worker;
-    bool VisitNamespaceDecl(NamespaceDecl *ND) {
-
-      ////////本命名空间下的处理
-      const DeclContext::decl_range &ds = ND->decls();
-      for (Decl *Child : ds) {
-        const char *chKN = Child->getDeclKindName();
-        Decl::Kind chK = Child->getKind();
-
-        Zzz::zzz(worker,Child);
-
-      }
-      ///////
-
-      //////{递归
-      for (Decl *Child : ND->decls()) {
-        if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
-          this->TraverseDecl(NestedND);
-        }
-      }
-      //////
-
-      return true;
-    }
-};
 
 class CTkAstCnsm : public ASTConsumer {
 public:
@@ -147,11 +88,10 @@ public:
 
 
         if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(declJ)) {
-          NameSpaceVst namespaceVisitor(insertVst);
-          namespaceVisitor.TraverseDecl(ND);
+          insertVst.TraverseDecl(ND);
         }else{
           //试图在这里处理 不在命名空间中的 顶层c++方法体、c函数体 ： 但没成功
-          Zzz::zzz(insertVst,declJ);
+          CTkVst::zzz(insertVst,declJ);
         }
 
 //        insertVst.TraverseDecl(declJ);
