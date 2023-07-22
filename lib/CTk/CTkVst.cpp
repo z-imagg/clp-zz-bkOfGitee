@@ -4,6 +4,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "CTk/Util.h"
 
 using namespace clang;
 
@@ -47,26 +48,8 @@ bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-void CTkVst::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
-  FileID fileId = SM.getFileID(Loc);
-
-  insertIncludeToFileStart(fileId,SM,rewriter);
-}
-void CTkVst::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
-//  SourceManager &SM = Context.getSourceManager();
-//  FileID MainFileID = SM.getMainFileID();
-
-//  FileID fileId = SM.getFileID(Loc);
-  SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
-
-  const RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
-  if (!RewriteBuf){
-    return;
-  }
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_TCTk, true, true);
-}
 
 static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
 static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ForStmt>();
@@ -198,67 +181,12 @@ bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* CTkVst::findFuncDecByName(ASTContext *Ctx,std::string functionName){
-//    std::string functionName = "calc";
 
-    TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
-    for(auto decl:translationUnitDecl->decls()){
-      if(FunctionDecl* funcDecl = dyn_cast<FunctionDecl>(decl)){
-        if(funcDecl->getNameAsString()==functionName){
-          return funcDecl;
-        }
-      }
-    }
-    return NULL;
-}
 
-/**
- * 获取 给定 位置范围 的源码文本
- * @param sourceRange
- * @param sourceManager
- * @param langOptions
- * @return
- */
-std::string CTkVst::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
-  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
-//  SourceRange sourceRange=S->getSourceRange();
-  CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
-  llvm::StringRef strRefSourceText=Lexer::getSourceText(charSourceRange, sourceManager, langOptions);
 
-  std::string strSourceText=strRefSourceText.str();
-  return strSourceText;
-}
 
-/**
- * 获取语句所属源文件路径
- */
-bool CTkVst::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
-  SourceLocation Loc = S->getBeginLoc();
-  CTkVst::getSourceFilePathAtLoc(Loc,SM,fn);
-}
 
-/**
- * 获取位置所属源文件路径
- * 获取语句所属源文件路径
- * code by chatgpt on : https://chat.chatgptdemo.net/
- * @param S
- * @param SM
- * @param fn
- * @return
- */
-bool CTkVst::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
-//  SourceLocation Loc = S->getBeginLoc();
-  if (Loc.isValid()) {
-    FileID File = SM.getFileID(Loc);
-    const FileEntry *FE = SM.getFileEntryForID(File);
-    if (FE) {
-      fn=FE->getName();
-//      llvm::outs() << "Source File Path: " << FE->getName() << "\n";
-      return true;
-    }
-  }
-  return false;
-}
+
 
 /**给定源文件路径是否系统源文件
  * 系统源文件路径举例：
@@ -308,10 +236,10 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   std::string stmtFileAndRange=sourceRange.printToString(SM);
 
   //获取当前语句S的源码文本
-  std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
   if(mainFileId!=fileId){
-//    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl; //开发用打印
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
   }
 
@@ -330,7 +258,9 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
   if(parentSSize>1){
-    std::cout << "注意:父节点个数大于1, 为:"<<  parentSSize << "在文件位置:" << stmtFileAndRange  << ",语句是:" << stmtSourceText << std::endl;
+    char msg[128];
+    sprintf(msg,"注意:父节点个数大于1, 为:%d",parentSSize);
+    Util::printStmt(CI,"查看",msg,stmt, true);
   }
   if(parentSSize<=0){
     return true;
@@ -339,14 +269,16 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
 
 
-//    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CTkVst::getSourceFilePathOfStmt(stmt, SM, fn);
+  Util::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
-//  std::cout <<  stmtFileAndRange <<",fileId:" << fileId.getHashValue() << ",mainFileId:" << mainFileId.getHashValue() << ","<< fnStr << ",_isInternalSysSourceFile:" << _isInternalSysSourceFile << ",_shouldInsert:" << _shouldInsert<< std::endl;  //开发用打印
+
+//  char msg[256];
+//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKind,_isInternalSysSourceFile,_shouldInsert);
+//  Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
@@ -356,10 +288,10 @@ bool CTkVst::VisitStmt(Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句,mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
+  Util::printStmt(CI,"插入调用","插入时钟语句",stmt, false);  //开发用打印
 
   }else{
-//    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
+//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
   }
   return true;
 }
@@ -370,6 +302,23 @@ bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
 }
 
+bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
+
+//  FunctionDecl *functionDecl = declK->getAsFunction();
+//  printf("functionDecl:%d,\n",functionDecl);
+//  if(functionDecl){
+//          bool _isConstexpr = functionDecl->isConstexpr();
+    ConstexprSpecKind constexprKind = declK->getConstexprKind();
+    printf("constexprKind:%d,",constexprKind);
+    if(ConstexprSpecKind::Constexpr==constexprKind){
+      //跳过constexpr修饰的函数
+      //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
+      Util::printDecl(CI,"查看","发现Constexpr修饰的函数",declK, false);
+//      break;//此时应该给一个标记，告知下层VisitStmt：你语句处在不可插入 时钟调用语句 的Constexpr函数中。
+//      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
+    }
+//  }
+}
 bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
 }

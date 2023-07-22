@@ -4,6 +4,7 @@
 
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <set>
+#include <clang/Frontend/CompilerInstance.h>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
@@ -19,9 +20,10 @@ class FndCTkClROVst
         : public RecursiveASTVisitor<FndCTkClROVst> {
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit FndCTkClROVst(SourceManager &_SM, LangOptions &_langOptions, ASTContext *_Ctx)
+    explicit FndCTkClROVst(CompilerInstance &_CI,SourceManager &_SM, LangOptions &_langOptions, ASTContext *_Ctx)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     :
+    CI(_CI),
     SM(_SM),
     langOptions(_langOptions),
     Ctx(_Ctx),
@@ -35,6 +37,7 @@ public:
 
 
 public:
+    CompilerInstance &CI;
     SourceManager &SM;
     ASTContext *Ctx;
     LangOptions &langOptions;

@@ -6,6 +6,7 @@ CTkAlone
 
 set(CTkAlone_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/CTkMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstAct.cpp"
