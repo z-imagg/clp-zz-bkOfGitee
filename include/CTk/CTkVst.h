@@ -58,7 +58,7 @@ public:
 //    DEF_TRAVERSE_DECL(FieldDecl     : grep '(FieldDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     bool VisitFieldDecl(FieldDecl *Decl);
 
-    static void zzz(CTkVst& worker,Decl *Child);
+    static void processTopNode(CTkVst& worker, Decl *Child);
     bool VisitNamespaceDecl(NamespaceDecl *ND);
 
 

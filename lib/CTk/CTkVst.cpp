@@ -340,7 +340,7 @@ bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
   return true;
 }
 
-void CTkVst::zzz(CTkVst& worker,Decl *Child) {
+void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   const char *chKN = Child->getDeclKindName();
   Decl::Kind chK = Child->getKind();
 
@@ -374,7 +374,7 @@ bool CTkVst::VisitNamespaceDecl(NamespaceDecl *ND) {
     const char *chKN = Child->getDeclKindName();
     Decl::Kind chK = Child->getKind();
 
-    zzz(*this,Child);
+    processTopNode(*this, Child);
 
   }
   ///////
