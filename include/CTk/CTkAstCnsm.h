@@ -72,6 +72,13 @@ public:
     }
 
     bool HandleTopLevelDecl(DeclGroupRef DG) override {
+      FileID mainFileId = SM.getMainFileID();
+      auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
+
+      FrontendOptions &frontendOptions = CI.getFrontendOpts();
+      std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction  <<  std::endl;
+
+
       for (Decl *D : DG) {
         if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(D)) {
           NameSpaceVst namespaceVisitor(insertVst);
