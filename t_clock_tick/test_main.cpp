@@ -25,6 +25,7 @@ int myNs1::myNs2::User::funOutImpl() {
 
 
 char topOutFunc(float f1, double d2){
+  int k;
 	char c=f1>0 && d2<0?'a':'b';//无命名空间 的 顶层函数实现.
   return c;
 }
