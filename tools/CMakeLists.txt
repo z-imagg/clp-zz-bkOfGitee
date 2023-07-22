@@ -10,6 +10,7 @@ set(CTkAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstCnsm.cpp"
 )
 
 # CONFIGURE THE TOOLS
