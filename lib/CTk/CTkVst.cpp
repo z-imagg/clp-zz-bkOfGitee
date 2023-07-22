@@ -301,24 +301,20 @@ bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
 
 bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
-  FileID fileId = SM.getFileID(declK->getLocation());
-  FileID mainFileId = SM.getMainFileID();
-  /*开发用*/ const std::tuple<std::string, std::string> & frst = Util::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
-
-  FunctionDecl *functionDecl = declK->getAsFunction();
-  printf("functionDecl:%d,\n",functionDecl);
-//        TemplateDecl *xxx = getAsTypeTemplateDecl(declK);
-  if(functionDecl){
+//  FunctionDecl *functionDecl = declK->getAsFunction();
+//  printf("functionDecl:%d,\n",functionDecl);
+//  if(functionDecl){
 //          bool _isConstexpr = functionDecl->isConstexpr();
-    ConstexprSpecKind constexprKind = functionDecl->getConstexprKind();
+    ConstexprSpecKind constexprKind = declK->getConstexprKind();
     printf("constexprKind:%d,",constexprKind);
     if(ConstexprSpecKind::Constexpr==constexprKind){
       //跳过constexpr修饰的函数
       //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
-      std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<  ",源码:" << std::get<1>(frst) << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
-      break;
+      Util::printDecl(CI,"查看","发现Constexpr修饰的函数",declK, false);
+//      break;//此时应该给一个标记，告知下层VisitStmt：你语句处在不可插入 时钟调用语句 的Constexpr函数中。
+//      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
     }
-  }
+//  }
 }
 bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
