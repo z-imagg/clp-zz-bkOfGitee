@@ -9,6 +9,7 @@
 
 #include "CTk/CTkVst.h"
 #include "FndCTkClROVst.h"
+#include "Util.h"
 
 using namespace llvm;
 using namespace clang;
@@ -61,7 +62,6 @@ public:
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
       std::cout<<"处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
-//      Ctx.getTranslationUnitDecl()->getBeginLoc() 的 FileId 居然==0?  而mainFileId==1
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
@@ -70,33 +70,27 @@ public:
       //}
 
       //{本循环能遍历到直接在本源文件中的函数定义中
-//      Ctx.getTranslationUnitDecl()->
       const DeclContext::decl_range &Decls = Ctx.getTranslationUnitDecl()->decls();
       //const DeclContext::decl_iterator::value_type &declK
-      for (clang::Decl* declK : Decls) {
-        if (!SM.isInMainFile(declK->getLocation())){
+      for (clang::Decl* declJ : Decls) {
+        if (!SM.isInMainFile(declJ->getLocation())){
           continue;
         }
 
-        const char *kKindName = declK->getDeclKindName();
-        Decl::Kind kKind = declK->getKind();
-        const Decl::redecl_range &kReDeclRange = declK->redecls();
+        const Decl::redecl_range &kReDeclRange = declJ->redecls();
+        FileID fileId = SM.getFileID(declJ->getLocation());
 
-        FileID fileId = SM.getFileID(declK->getLocation());
-        /*开发用*/ const std::tuple<std::string, std::string> & frst = CTkVst::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
-        std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<   ",kKindName:" << kKindName<<  ",kKind:" << kKind <<
-//                ",源码:" << std::get<1>(frst) <<
-                        ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
+        Util::printDecl(CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
 
 
-        Visitor.TraverseDecl(declK);
-        //直到第一次调用过 Visitor.TraverseDecl(declK) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
+        Visitor.TraverseDecl(declJ);
+        //直到第一次调用过 Visitor.TraverseDecl(declJ) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
       //}
 //////////////////3.插入包含语句
 
 
-      CTkVst::insertIncludeToFileStart(mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk,mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
       std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 //////////////////4.应用修改到源文件

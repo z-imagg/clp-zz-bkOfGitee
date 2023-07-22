@@ -4,6 +4,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "CTk/Util.h"
 
 using namespace llvm;
 using namespace clang;
@@ -17,7 +18,7 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
   //{开发用
   SourceRange sourceRange = callExpr->getSourceRange();
   std::string fileAndRange = sourceRange.printToString(SM);
-  std::string sourceText = CTkVst::getSourceTextBySourceRange(sourceRange, SM, langOptions);
+  std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOptions);
   //}
 
 //  std::string fn=callExpr->getDirectCallee()->getNameInfo().getName().getAsString(); //备忘

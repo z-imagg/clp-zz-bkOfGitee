@@ -4,6 +4,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "CTk/Util.h"
 
 using namespace clang;
 
@@ -235,7 +236,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   std::string stmtFileAndRange=sourceRange.printToString(SM);
 
   //获取当前语句S的源码文本
-  std::string stmtSourceText=getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
   if(mainFileId!=fileId){
 //    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl; //开发用打印
@@ -268,7 +269,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
 
 //    std::cout << parent0NodeKind.asStringRef().str() << std::endl;  //开发用打印
   StringRef fn;
-  CTkVst::getSourceFilePathOfStmt(stmt, SM, fn);
+  Util::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
@@ -301,7 +302,7 @@ bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
   FileID fileId = SM.getFileID(declK->getLocation());
   FileID mainFileId = SM.getMainFileID();
-  /*开发用*/ const std::tuple<std::string, std::string> & frst = CTkVst::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
+  /*开发用*/ const std::tuple<std::string, std::string> & frst = Util::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
 
   FunctionDecl *functionDecl = declK->getAsFunction();
   printf("functionDecl:%d,\n",functionDecl);

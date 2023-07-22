@@ -1,27 +1,27 @@
 
 #include "CTk/Util.h"
 
-#include <string>
-
 #include <clang/Rewrite/Core/Rewriter.h>
-#include <set>
 #include <clang/Frontend/CompilerInstance.h>
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Frontend/FrontendPluginRegistry.h"
+#include <clang/AST/ParentMapContext.h>
+
+#include <string>
+#include <iostream>
 
 
 using namespace llvm;
 using namespace clang;
 
-void Util::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
+void Util::insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
   FileID fileId = SM.getFileID(Loc);
 
-  insertIncludeToFileStart(fileId,SM,rewriter);
+  insertIncludeToFileStart(includeStmtText,fileId,SM,rewriter);
 }
 
-void Util::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
+void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
 //  SourceManager &SM = Context.getSourceManager();
 //  FileID MainFileID = SM.getMainFileID();
 
@@ -34,7 +34,7 @@ void Util::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& 
   }
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_TCTk, true, true);
+  rewriter.InsertText(startLoc, includeStmtText, true, true);
 }
 
 FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
@@ -117,11 +117,38 @@ std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const Sou
   //}
 }
 
-static std::tuple<std::string,std::string>  Util::printSourceRange(const SourceRange &sourceRange,CompilerInstance& CI){
-  const std::tuple<std::string, std::string> & frst = get_FileAndRange_SourceText(sourceRange,CI);
+void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, clang::Expr *expr,bool printSourceText) {
+  SourceManager & SM=CI.getSourceManager();
+  const char *kindName = expr->getStmtClassName();
+  Stmt::StmtClass kind = expr->getStmtClass();
+  FileID fileId = SM.getFileID(expr->getBeginLoc());
+  SourceRange sourceRange=expr->getSourceRange();
+  int zz=static_cast<int>(kind);
+  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,static_cast<int>(kind),printSourceText);
 
-  std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<   ",kKindName:" << kKindName<<  ",kKind:" << kKind <<
-            //                ",源码:" << std::get<1>(frst) <<
-            ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
+}
+void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText){
+  SourceManager & SM=CI.getSourceManager();
+  const char *kindName = decl->getDeclKindName();
+  Decl::Kind kind = decl->getKind();
+  FileID fileId = SM.getFileID(decl->getBeginLoc());
+  SourceRange sourceRange=decl->getSourceRange();
+  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,kind,printSourceText);
+
+}
+void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string title,FileID fileId,const SourceRange &sourceRange,const char *kindName,Decl::Kind kind,bool printSourceText){
+  SourceManager & SM=CI.getSourceManager();
+  FileID mainFileId = SM.getMainFileID();
+//  FileID fileId = SM.getFileID(sourceRange.getBegin());
+
+  const std::tuple<std::string, std::string> & frst = get_FileAndRange_SourceText(sourceRange,CI);
+  std::string fileAndRange=std::get<0>(frst);
+  std::string sourceText=std::get<1>(frst);
+
+  std::cout << tag << "," << title << ",文件路径、坐标:"<< fileAndRange <<   ",kindName:" << kindName<<  ",kind:" << kind ;
+  if(printSourceText){
+    std::cout <<   ",源码:" << sourceText ;
+  }
+  std::cout <<  ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
 
 }
