@@ -320,14 +320,17 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
     processStmt(stmt);
   }
 
+  
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
-  const Stmt::child_iterator &endStmt = compoundStmt->child_end();//取末尾元素 代码是不对的
+  Stmt *endStmt = compoundStmt->body_back();
+  if(endStmt){
   Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
   //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
   if(Stmt::ReturnStmtClass==endStmtClass){
     insertLoc=endStmt->getBeginLoc();
+  }
   }
 
   
@@ -337,7 +340,6 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
   int heapObjcFreeCnt=0;
   insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt,
                                heapObjAllocCnt, heapObjcFreeCnt);
-  bool end=true;
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
