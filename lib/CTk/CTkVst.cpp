@@ -239,7 +239,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
   if(mainFileId!=fileId){
-//    std::cout<< "暂时不对间接文件插入时钟语句,文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << ",mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl; //开发用打印
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
   }
 
@@ -288,10 +288,10 @@ bool CTkVst::VisitStmt(Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    std::cout<< "在文件位置:" << stmtFileAndRange << ",语句" << stmtSourceText << "前插入时钟语句,mainFileId:" << mainFileId.getHashValue() <<",fileId:" << fileId.getHashValue()  <<std::endl;
+  Util::printStmt(CI,"插入调用","插入时钟语句",stmt, false);  //开发用打印
 
   }else{
-//    std::cout<< "not insert X__t_clock_tick to __fn:" << fn.str() <<std::endl;
+//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
   }
   return true;
 }

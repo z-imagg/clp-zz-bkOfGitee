@@ -33,12 +33,12 @@ public:
 
 
     virtual void HandleTranslationUnit(ASTContext &Ctx) override{
+      FileID mainFileId = SM.getMainFileID();
+      auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
 
       FrontendOptions &frontendOptions = CI.getFrontendOpts();
-      std::cout << "frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << std::endl;
-      std::cout << "Ctx.TUKind:" << Ctx.TUKind << std::endl;
+      std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << "，Ctx.TUKind:" << Ctx.TUKind <<  std::endl;
 
-      FileID mainFileId = SM.getMainFileID();
 //////////////////1. 若已插入 ，则不用处理
       //时钟函数只插入一次，不重复插入：
       //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
@@ -61,8 +61,7 @@ public:
 
 //////////////////2. 插入时钟语句
 
-      auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
-      std::cout<<"处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
@@ -93,7 +92,7 @@ public:
 
 
       Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk,mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
-      std::cout<< "插入'包含时钟'语句到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      std::cout<< "插入include, 插入 include时钟语句 到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 //////////////////4.应用修改到源文件
 
