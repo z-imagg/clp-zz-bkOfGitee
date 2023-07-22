@@ -330,13 +330,14 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
     }
   }
 
-
+  //本块内有声明变量，才会插入释放语句
+  if(declStmtCnt>0){
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
-  insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt,
-                               heapObjAllocCnt, heapObjcFreeCnt);
+  insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
+  }
 
   ///////////////处理  子语句列表 中每条语句
 
