@@ -44,11 +44,6 @@ using namespace clang;
 const std::string CTkVst::funcName_TCTk = "X__t_clock_tick";
 const std::string CTkVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
 
-bool CTkVst::VisitCallExpr(CallExpr *callExpr){
-
-}
-
-
 
 
 static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
@@ -303,6 +298,13 @@ bool CTkVst::VisitStmt(Stmt *stmt){
 }
 
 
+bool CTkVst::VisitCallExpr(CallExpr *callExpr){
+
+}
+
+bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
+  
+}
 
 bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
