@@ -251,7 +251,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   const char* stmtClassName = stmt->getStmtClassName();
 
 
-  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
+//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
   //{开发用，条件断点
 //  bool shouldBreakPointer=stmtSourceText=="f111(";

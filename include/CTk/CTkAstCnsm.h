@@ -14,44 +14,42 @@
 using namespace llvm;
 using namespace clang;
 
-class NamespaceVisitor : public RecursiveASTVisitor<NamespaceVisitor> {
+class NameSpaceVst : public RecursiveASTVisitor<NameSpaceVst> {
 public:
-    explicit NamespaceVisitor(const CTkVst &cTkVst) : worker(cTkVst) {
+    explicit NameSpaceVst(const CTkVst &cTkVst) : worker(cTkVst) {
 
     }
 
     CTkVst worker;
     bool VisitNamespaceDecl(NamespaceDecl *ND) {
-//      if (ND->getQualifiedNameAsString() == "myNs1::myNs2") {
-        // 遍历命名空间中的声明
-//        DeclarationVisitor Visitor;
-//        for (Decl *Ch : ND->decls()) {
-          const DeclContext::decl_range &ds = ND->decls();
 
-          for (Decl *Child : ds) {
-            const char *chKN = Child->getDeclKindName();
-            Decl::Kind chK = Child->getKind();
+      ////////本命名空间下的处理
+      const DeclContext::decl_range &ds = ND->decls();
+      for (Decl *Child : ds) {
+        const char *chKN = Child->getDeclKindName();
+        Decl::Kind chK = Child->getKind();
 
-            if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
-              for (CXXMethodDecl *MD : RD->methods()) {
-                // 遍历函数体内的语句
-                worker.TraverseStmt(MD->getBody());
-//                worker.TraverseDecl(Child);
-              }
-            }
+        if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
+          for (CXXMethodDecl *MD : RD->methods()) {
+            worker.TraverseStmt(MD->getBody());
           }
-//          worker.TraverseDecl(Ch);
-//        }
+        }
 
+        if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
+          worker.TraverseStmt(FD->getBody());
+        }
 
-//      }
-      // 递归遍历嵌套的命名空间
+      }
+      ///////
+
+      //////{递归
       for (Decl *Child : ND->decls()) {
         if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
-//          NamespaceVisitor Visitor;
           this->TraverseDecl(NestedND);
         }
       }
+      //////
+
       return true;
     }
 };
@@ -67,7 +65,7 @@ public:
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            Visitor(_rewriter, _astContext, _CI, _SM),
+            insertVst(_rewriter, _astContext, _CI, _SM),
             findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
             SM(_SM)  {
       //构造函数
@@ -76,47 +74,16 @@ public:
     bool HandleTopLevelDecl(DeclGroupRef DG) override {
       for (Decl *D : DG) {
         if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(D)) {
-          NamespaceVisitor namespaceVisitor(Visitor);
+          NameSpaceVst namespaceVisitor(insertVst);
           namespaceVisitor.TraverseDecl(ND);
         }
       }
       return true;
     }
-/*    bool HandleTopLevelDecl(DeclGroupRef DG) override {
-      for (Decl *D : DG) {
-        const char *dKN = D->getDeclKindName();
-        Decl::Kind dK = D->getKind();
-        if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(D)) {
-          const std::string &nDN = ND->getNameAsString();
-          const std::string &nDQN = ND->getQualifiedNameAsString();
-          const DeclContext::decl_range &ds = ND->decls();
-            for (Decl *Child : ds) {
-              const char *chKN = Child->getDeclKindName();
-              Decl::Kind chK = Child->getKind();
-              
-              if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
-                  for (CXXMethodDecl *MD : RD->methods()) {
-                      // 遍历函数体内的语句
-                      Visitor.TraverseStmt(MD->getBody());
-                  }
-              }
-            }
-        }
-      }
-//      return true;
-
-
-      for (Decl *D : DG) {
-        if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-          Visitor.TraverseStmt(FD->getBody());
-        }
-      }
-      return true;
-    }*/
 
 private:
     CompilerInstance &CI;
-    CTkVst Visitor;
+    CTkVst insertVst;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
 };
