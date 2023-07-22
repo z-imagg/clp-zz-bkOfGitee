@@ -23,3 +23,8 @@ int myNs1::myNs2::User::funOutImpl() {
   return ch;
 }
 
+
+char topOutFunc(float f1, double d2){
+  char c=f1>0 && d2<0?'a':'b';
+  return c;
+}
