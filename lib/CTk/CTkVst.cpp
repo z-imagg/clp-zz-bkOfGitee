@@ -217,7 +217,7 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
  * @param stmt
  * @return
  */
-bool CTkVst::VisitStmt(Stmt *stmt){
+bool CTkVst::processStmt(Stmt *stmt){
   int64_t stmtId = stmt->getID(*Ctx);
 
   SourceManager & SM = mRewriter.getSourceMgr();
@@ -302,9 +302,14 @@ bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-/*bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
-  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
-}*/
+bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
+  const Stmt::child_range &ls = compoundStmt->children();
+  for(Stmt* stmt:ls){
+    //////
+    processStmt(stmt);
+  }
+//  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
+}
 
 bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
