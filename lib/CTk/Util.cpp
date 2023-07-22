@@ -123,8 +123,7 @@ void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, c
   Stmt::StmtClass kind = expr->getStmtClass();
   FileID fileId = SM.getFileID(expr->getBeginLoc());
   SourceRange sourceRange=expr->getSourceRange();
-  int zz=static_cast<int>(kind);
-  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,static_cast<int>(kind),printSourceText);
+  printSourceRange(CI,tag,title,fileId,sourceRange,kindName,kind,printSourceText);
 
 }
 void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText){
@@ -136,7 +135,7 @@ void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,cl
   printSourceRange(CI,tag,title,fileId,sourceRange,kindName,kind,printSourceText);
 
 }
-void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string title,FileID fileId,const SourceRange &sourceRange,const char *kindName,Decl::Kind kind,bool printSourceText){
+void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string title,FileID fileId,const SourceRange &sourceRange,const char *kindOrClassName,int kindOrClassEnum,bool printSourceText){
   SourceManager & SM=CI.getSourceManager();
   FileID mainFileId = SM.getMainFileID();
 //  FileID fileId = SM.getFileID(sourceRange.getBegin());
@@ -145,7 +144,7 @@ void  Util::printSourceRange(CompilerInstance& CI, std::string tag,std::string t
   std::string fileAndRange=std::get<0>(frst);
   std::string sourceText=std::get<1>(frst);
 
-  std::cout << tag << "," << title << ",文件路径、坐标:"<< fileAndRange <<   ",kindName:" << kindName<<  ",kind:" << kind ;
+  std::cout << tag << "," << title << ",文件路径、坐标:"<< fileAndRange <<   ",kindOrClassName:" << kindOrClassName<<  ",kindOrClassEnum:" << kindOrClassEnum ;
   if(printSourceText){
     std::cout <<   ",源码:" << sourceText ;
   }

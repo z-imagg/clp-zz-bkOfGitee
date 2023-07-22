@@ -35,7 +35,7 @@ public:
     static std::tuple<std::string,std::string>  get_FileAndRange_SourceText(const SourceRange &sourceRange,CompilerInstance& CI);
     static void  printExpr(CompilerInstance& CI, std::string tag,std::string title,clang::Expr* expr,bool printSourceText=false);
     static void  printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText=false);
-    static void  printSourceRange(CompilerInstance& CI,std::string tag, std::string title,FileID fileId, const SourceRange &sourceRange,  const char *kindName, Decl::Kind kKind,bool printSourceText=false);
+    static void  printSourceRange(CompilerInstance& CI,std::string tag, std::string title,FileID fileId, const SourceRange &sourceRange,  const char *kindOrClassName, int kindOrClassEnum,bool printSourceText=false);
 };
 
 

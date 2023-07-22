@@ -20,14 +20,16 @@ using namespace clang;
 class CTkAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter &R, ASTContext *Context,
-                        SourceManager &SM, LangOptions &langOptions)
+    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter &_rewriter, ASTContext *_astContext,
+                        SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            Visitor(R, Context,_CI,SM),
-            findTCCallROVisitor(SM,langOptions,Context),
-            SM(SM)  {}
+            Visitor(_rewriter, _astContext, _CI, _SM),
+            findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
+            SM(_SM)  {
+      //构造函数
+    }
 
 
     virtual void HandleTranslationUnit(ASTContext &Ctx) override{

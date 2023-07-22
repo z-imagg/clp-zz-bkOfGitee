@@ -26,6 +26,7 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
   if(dirtCallee==NULL){
 //    std::cout << "学习用,callExpr->getDirectCallee()==NULL： 在文件位置:" << fileAndRange << ",调用语句" << sourceText << std::endl;
+//Util::printExpr(CI,)
     return true;
   }
 
