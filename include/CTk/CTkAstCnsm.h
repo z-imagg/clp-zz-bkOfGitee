@@ -14,68 +14,6 @@
 using namespace llvm;
 using namespace clang;
 
-class Zzz{
-public:
-    static void zzz(CTkVst& worker,Decl *Child) {
-      const char *chKN = Child->getDeclKindName();
-      Decl::Kind chK = Child->getKind();
-
-      if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
-        for (CXXMethodDecl *MD : RD->methods()) {
-          Stmt *Body = MD->getBody();
-          worker.TraverseStmt(Body);
-        }
-      }
-
-      if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
-        Stmt *Body = FD->getBody();
-        Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-//        worker.TraverseStmt(Body);
-        worker.TraverseDecl(FD);
-      }
-      if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
-        Stmt *Body = MD->getBody();
-        Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-//        worker.TraverseStmt(Body);
-        worker.TraverseDecl(MD);
-//        worker.TraverseDecl(Body);
-      }
-    }
-};
-
-
-class NameSpaceVst : public RecursiveASTVisitor<NameSpaceVst> {
-public:
-    explicit NameSpaceVst(const CTkVst &cTkVst) : worker(cTkVst) {
-
-    }
-
-    CTkVst worker;
-    bool VisitNamespaceDecl(NamespaceDecl *ND) {
-
-      ////////本命名空间下的处理
-      const DeclContext::decl_range &ds = ND->decls();
-      for (Decl *Child : ds) {
-        const char *chKN = Child->getDeclKindName();
-        Decl::Kind chK = Child->getKind();
-
-        Zzz::zzz(worker,Child);
-
-      }
-      ///////
-
-      //////{递归
-      for (Decl *Child : ND->decls()) {
-        if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
-          this->TraverseDecl(NestedND);
-        }
-      }
-      //////
-
-      return true;
-    }
-};
-
 //-----------------------------------------------------------------------------
 // ASTConsumer
 //-----------------------------------------------------------------------------
@@ -87,38 +25,86 @@ public:
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            insertVst(_rewriter, _astContext, _CI, _SM),
+            Visitor(_rewriter, _astContext, _CI, _SM),
             findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
             SM(_SM)  {
       //构造函数
     }
 
-    bool HandleTopLevelDecl(DeclGroupRef DG) override {
+
+    virtual void HandleTranslationUnit(ASTContext &Ctx) override{
       FileID mainFileId = SM.getMainFileID();
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
 
       FrontendOptions &frontendOptions = CI.getFrontendOpts();
-      std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction  <<  std::endl;
+      std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << "，Ctx.TUKind:" << Ctx.TUKind <<  std::endl;
+
+//////////////////1. 若已插入 ，则不用处理
+      //时钟函数只插入一次，不重复插入：
+      //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
+      {
+      //{本循环遍历直接在本源文件中的函数调用们
+      auto Decls = Ctx.getTranslationUnitDecl()->decls();
+      for (auto &Decl : Decls) {
+        if (!SM.isInMainFile(Decl->getLocation())){
+          continue;
+        }
+        findTCCallROVisitor.TraverseDecl(Decl);
+      }
+      //}
+
+      if(findTCCallROVisitor.curMainFileHas_TCTkCall){
+        //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
+        return;
+      }
+      }
+
+//////////////////2. 插入时钟语句
+
+      std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
 
 
-      for (Decl *D : DG) {
-        const char *KN = D->getDeclKindName();
-        Decl::Kind K = D->getKind();
-        if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(D)) {
-          NameSpaceVst namespaceVisitor(insertVst);
-          namespaceVisitor.TraverseDecl(ND);
-        }else{
-          //试图在这里处理 不在命名空间中的 顶层c++方法体、c函数体 ： 但没成功
-          Zzz::zzz(insertVst,D);
+      //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
+      //{这样能遍历到本源文件间接包含的文件
+//      TranslationUnitDecl* translationUnitDecl=Ctx.getTranslationUnitDecl();
+//      Visitor.TraverseDecl(translationUnitDecl);
+      //}
+
+      //{本循环能遍历到直接在本源文件中的函数定义中
+      const DeclContext::decl_range &Decls = Ctx.getTranslationUnitDecl()->decls();
+      //const DeclContext::decl_iterator::value_type &declK
+      for (clang::Decl* declJ : Decls) {
+        if (!SM.isInMainFile(declJ->getLocation())){
+          continue;
         }
 
+        const Decl::redecl_range &kReDeclRange = declJ->redecls();
+        FileID fileId = SM.getFileID(declJ->getLocation());
+
+        Util::printDecl(CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
+
+
+        Visitor.TraverseDecl(declJ);
+        //直到第一次调用过 Visitor.TraverseDecl(declJ) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
-      return true;
+      //}
+//////////////////3.插入包含语句
+
+
+      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk,mainFileId, SM, Visitor.mRewriter);//此时  Visitor.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+      std::cout<< "插入include, 插入 include时钟语句 到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+
+//////////////////4.应用修改到源文件
+
+        //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
+      Visitor.mRewriter.overwriteChangedFiles();//修改会影响原始文件
+
+
     }
 
 private:
     CompilerInstance &CI;
-    CTkVst insertVst;
+    CTkVst Visitor;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
 };
