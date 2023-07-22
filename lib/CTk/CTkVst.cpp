@@ -299,9 +299,9 @@ bool CTkVst::processStmt(Stmt *stmt){
 }
 
 
-bool CTkVst::VisitCallExpr(CallExpr *callExpr){
+/*bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
-}
+}*/
 
 bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
   const Stmt::child_range &subStmtLs = compoundStmt->children();
@@ -350,11 +350,8 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
-bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
-  return true;
-}
 
-bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
+/*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
 //  FunctionDecl *functionDecl = declK->getAsFunction();
 //  printf("functionDecl:%d,\n",functionDecl);
@@ -370,19 +367,19 @@ bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 //      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
     }
 //  }
-}
-bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
+}*/
+/*bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
-}
+}*/
 
-bool CTkVst::VisitVarDecl(VarDecl *Decl) {
+/*bool CTkVst::VisitVarDecl(VarDecl *Decl) {
   return true;
-}
+}*/
 
-bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
+/*bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
 
   return true;
-}
+}*/
 
 void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   const char *chKN = Child->getDeclKindName();

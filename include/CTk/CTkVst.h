@@ -41,22 +41,22 @@ public:
 //    bool VisitStmt(Stmt *S) { return true; } : grep '(Stmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     bool processStmt(Stmt *stmt);
 //    DEF_TRAVERSE_STMT(CallExpr      : grep '(CallExpr'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    virtual bool VisitCallExpr(CallExpr *callExpr);
+//    virtual bool VisitCallExpr(CallExpr *callExpr);
 
     //DEF_TRAVERSE_STMT(CompoundStmt  : grep '(CompoundStmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     virtual bool VisitCompoundStmt(CompoundStmt *compoundStmt);
 
     //下面4个形如 bool VisitZzz(clang:Zzz *Decl)  的方法:, 其中Zzz的完整列表叙述 从 本文件第27行开始.
 //    DEF_TRAVERSE_DECL(CXXRecordDecl : grep '(CXXRecordDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool VisitCXXRecordDecl(CXXRecordDecl *Decl);
+//    bool VisitCXXRecordDecl(CXXRecordDecl *Decl);
 //    DEF_TRAVERSE_DECL(CXXMethodDecl : grep '(CXXMethodDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool VisitCXXMethodDecl(CXXMethodDecl* Decl);
+//    bool VisitCXXMethodDecl(CXXMethodDecl* Decl);
 //    DEF_TRAVERSE_DECL(FunctionDecl  : grep '(FunctionDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool VisitFunctionDecl(FunctionDecl *Decl);
+//    bool VisitFunctionDecl(FunctionDecl *Decl);
 //    DEF_TRAVERSE_DECL(VarDecl       : grep '(VarDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool VisitVarDecl(VarDecl *Decl);
+//    bool VisitVarDecl(VarDecl *Decl);
 //    DEF_TRAVERSE_DECL(FieldDecl     : grep '(FieldDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool VisitFieldDecl(FieldDecl *Decl);
+//    bool VisitFieldDecl(FieldDecl *Decl);
 
     static void processTopNode(CTkVst& worker, Decl *Child);
     bool VisitNamespaceDecl(NamespaceDecl *ND);
