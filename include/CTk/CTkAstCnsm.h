@@ -88,7 +88,7 @@ public:
 
 
         if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(declJ)) {
-          insertVst.TraverseDecl(ND);//这句话 最终会 调用  方法  insertVst.VisitNamespaceDecl
+          insertVst.TraverseNamespaceDecl(ND);//这句话 最终会 调用  方法  insertVst.VisitNamespaceDecl
         }else{
           // 在这里处理 不在命名空间中的 顶层c++方法体、c函数体
           CTkVst::processTopNode(insertVst, declJ);

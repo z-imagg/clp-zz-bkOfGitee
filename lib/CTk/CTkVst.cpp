@@ -347,19 +347,19 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
     for (CXXMethodDecl *MD : RD->methods()) {
       Stmt *Body = MD->getBody();
-      worker.TraverseStmt(Body);
+      worker.TraverseCXXRecordDecl(Body);
     }
   }
 
   if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
     Stmt *Body = FD->getBody();
     Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-    worker.TraverseDecl(FD);
+    worker.TraverseFunctionDecl(FD);
   }
   if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
     Stmt *Body = MD->getBody();
     Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-    worker.TraverseDecl(MD);
+    worker.TraverseCXXMethodDecl(MD);
   }
 }
 
