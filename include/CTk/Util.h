@@ -33,10 +33,13 @@ public:
 
 
     static std::tuple<std::string,std::string>  get_FileAndRange_SourceText(const SourceRange &sourceRange,CompilerInstance& CI);
-    static void  printStmt(CompilerInstance& CI, std::string tag,std::string title,clang::Stmt* expr,bool printSourceText=false);
-    static void  printExpr(CompilerInstance& CI, std::string tag,std::string title,clang::Expr* expr,bool printSourceText=false);
-    static void  printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText=false);
-    static void  printSourceRange(
+    static void printStmt(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *expr,
+                          bool printSourceText);
+    static void printExpr(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Expr *expr,
+                          bool printSourceText = false);
+    static void printDecl(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Decl *decl,
+                          bool printSourceText);
+    static void  printSourceRange(int64_t nodeID,
       CompilerInstance& CI,
       std::string tag, std::string title,
       FileID fileId, const SourceRange &sourceRange,

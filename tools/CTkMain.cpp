@@ -43,12 +43,12 @@ public:
 //         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
 //         .write(llvm::outs());
 
-      mRewriter.overwriteChangedFiles();//修改会影响原始文件
+//      mRewriter.overwriteChangedFiles();//修改会影响原始文件
     }
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
-    Rewriter mRewriter;
+    Rewriter mRewriter;//这里是独立运行Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
 //===----------------------------------------------------------------------===//

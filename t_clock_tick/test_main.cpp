@@ -1,108 +1,31 @@
-#include <stdio.h>
 
-#include "zzz.h"
-#include "yyy.h"
+namespace myNs1{
+namespace myNs2{
 
-#define MAX_INT 9999
-
-#define DECLARE__K int _k=0;
-
-
-int f111(){
-  return 11;
+struct User{
+int func1(){
+return 1;//func1: 在结构体定义处实现函数体
 }
-int f222(){
-  return /*BUG1*/ f111();//BUG1, 待修复
+int func2(){
+return  func1();//func2: 在结构体定义处实现函数体
 }
 
-bool maxFunc(int* pA, int* pB, int* pMax){
-  if (pA == nullptr || /*BUG2*/ !f111()){//BUG1, 待修复
+int funOutImpl();
+};
 
-  }
-
-  int x=0;
-  for(int zk=0; zk<10; zk++)
-    if (zk%2==0) x+=zk;
-
-  while(false)
-    x--;
-
-  if (pA==NULL || pB==NULL){
-    return false;
-  }
-  int A=*pA;
-  int B=*pB;
-  if(A>B){
-    (*pMax)=A;
-  }else{
-    (*pMax)=B;
-  }
-  return true;
 }
 
-template<typename T>
-void funcRange(T start, T end, T step, T& result,  T const zero, T (*binaryFunc)(T a, T b)){
-  if(binaryFunc==NULL){
-    return  ;
-  }
-  result=zero;
-  for(T k=start; k<=end; k+=step){
-    char zzz;
-    result=binaryFunc(result,k);
-  }
-  return  ;
 }
 
-int intSum(int a, int b){
-  return a+b;
+int myNs1::myNs2::User::funOutImpl() {
+	char ch;//命名空间内的 函数 funOutImpl: 在结构体定义外实现函数体
+  ch++;
+  return ch;
 }
 
 
-int intPower(int a, int b){
-  int power=1;
-  for(int k=0; k < a; k++){
-    power*=b;
-  }
-  return power;
-}
-
-float floatPower(float a, float b){
-  printf("__%f,%f\n",a,b);
-  float power=1.0;
-  for(int k=0; k < a; k++){
-    power*=b;
-    power = ((int)power)%100;
-  }
-  printf("=%f\n",power);
-  return power;
-}
-int main(int argc, char** argv){
-  DECLARE__K
-
-  int x, y, max=MAX_INT;
-  printf("input x,y:");
-  scanf("%d,%d",&x,&y);
-  bool resultMax = maxFunc(&x,&y,&max);
-  if(resultMax)
-    printf("maxFunc(%d,%d)=%d\n",x,y,max);
-  else
-    printf("call maxFunc failed\n");
-
-
-  int start=0,end=20,step=1,zero=0,resultF1;
-  funcRange(start,end,step,resultF1,zero,intSum);
-  printf("funcRange(%d,%d,%d,resultF1,%d,intSum)=%d\n",start,end,step,zero,resultF1);
-
-  start=1,end=5,step=1,zero=1;
-  int resultF2;
-  funcRange(start,end,step,resultF2,zero,intPower);
-  printf("funcRange(%d,%d,%d,resultF2,%d,intPower)=%d\n",start,end,step,zero,resultF2);
-
-  float startF=1,endF=6,stepF=1,zeroF=1,resultF3;
-  funcRange(startF,endF,stepF,resultF3,zeroF,floatPower);
-  printf("funcRange(%f,%f,%f,resultF3,%f,floatPower)=%f\n",startF,endF,stepF,zeroF,resultF3);
-
-
-  return 0;
-
+char topOutFunc(float f1, double d2){
+  int k;
+	char c=f1>0 && d2<0?'a':'b';//无命名空间 的 顶层函数实现.
+  return c;
 }
