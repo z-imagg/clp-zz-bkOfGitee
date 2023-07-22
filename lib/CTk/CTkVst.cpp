@@ -354,15 +354,12 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
     Stmt *Body = FD->getBody();
     Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-//        worker.TraverseStmt(Body);
     worker.TraverseDecl(FD);
   }
   if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
     Stmt *Body = MD->getBody();
     Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-//        worker.TraverseStmt(Body);
     worker.TraverseDecl(MD);
-//        worker.TraverseDecl(Body);
   }
 }
 
