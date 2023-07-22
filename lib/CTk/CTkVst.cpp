@@ -339,3 +339,50 @@ bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
 
   return true;
 }
+
+void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
+  const char *chKN = Child->getDeclKindName();
+  Decl::Kind chK = Child->getKind();
+
+  if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
+    for (CXXMethodDecl *MD : RD->methods()) {
+      Stmt *Body = MD->getBody();
+      worker.TraverseStmt (Body);
+    }
+  }
+
+  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
+    Stmt *Body = FD->getBody();
+//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
+    worker.TraverseDecl(FD);
+  }
+  if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
+    Stmt *Body = MD->getBody();
+//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
+    worker.TraverseDecl(MD);
+  }
+}
+
+bool CTkVst::VisitNamespaceDecl(NamespaceDecl *ND) {
+
+  ////////本命名空间下的处理
+  const DeclContext::decl_range &ds = ND->decls();
+  for (Decl *Child : ds) {
+    const char *chKN = Child->getDeclKindName();
+    Decl::Kind chK = Child->getKind();
+
+    processTopNode(*this, Child);
+
+  }
+  ///////
+
+  //////{递归
+  for (Decl *Child : ND->decls()) {
+    if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
+      this->VisitNamespaceDecl(NestedND);//这句话 最终会 调用  本方法自己 ， 本方法 即 VisitNamespaceDecl.
+    }
+  }
+  //////
+
+  return true;
+}

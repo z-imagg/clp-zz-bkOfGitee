@@ -3,7 +3,7 @@ namespace myNs1{
 namespace myNs2{
 
 struct User{
-int func1(){
+constexpr int func1(){
 return 1;//func1: 在结构体定义处实现函数体
 }
 int func2(){
