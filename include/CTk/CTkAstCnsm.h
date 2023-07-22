@@ -36,6 +36,11 @@ public:
 
 
     virtual void HandleTranslationUnit(ASTContext &Ctx) override{
+      //被上层多次调用 本方法HandleTranslationUnit，后续的调用不再进入实际处理
+      if(mainFileProcessed){
+        return;
+      }
+
       FileID mainFileId = SM.getMainFileID();
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
 
@@ -109,7 +114,7 @@ public:
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
       insertVst.mRewriter.overwriteChangedFiles();//修改会影响原始文件
 
-
+      mainFileProcessed=true;
     }
 
 private:
@@ -117,4 +122,5 @@ private:
     CTkVst insertVst;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
+    bool mainFileProcessed=false;
 };
