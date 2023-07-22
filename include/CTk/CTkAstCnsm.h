@@ -70,7 +70,7 @@ public:
 //////////////////2. 插入时钟语句
 
       std::cout<<"提示，开始处理编译单元,文件路径:"<<filePath<< ",mainFileId:" << mainFileId.getHashValue() << std::endl;
-
+      mainFileProcessed=true;
 
       //暂时 不遍历间接文件， 否则本文件会被插入两份时钟语句
       //{这样能遍历到本源文件间接包含的文件
@@ -114,7 +114,6 @@ public:
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
       insertVst.mRewriter.overwriteChangedFiles();//修改会影响原始文件
 
-      mainFileProcessed=true;
     }
 
 private:
