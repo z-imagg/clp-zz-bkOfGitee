@@ -44,7 +44,7 @@ public:
     virtual bool VisitCallExpr(CallExpr *callExpr);
 
     //DEF_TRAVERSE_STMT(CompoundStmt  : grep '(CompoundStmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    virtual bool VisitCompoundStmt(CompoundStmt *compoundStmt);
+//    virtual bool VisitCompoundStmt(CompoundStmt *compoundStmt);
 
     //下面4个形如 bool VisitZzz(clang:Zzz *Decl)  的方法:, 其中Zzz的完整列表叙述 从 本文件第27行开始.
 //    DEF_TRAVERSE_DECL(CXXRecordDecl : grep '(CXXRecordDecl' /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h

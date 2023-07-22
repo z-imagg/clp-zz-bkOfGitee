@@ -299,9 +299,9 @@ bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
+/*bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
   Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
-}
+}*/
 
 bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
