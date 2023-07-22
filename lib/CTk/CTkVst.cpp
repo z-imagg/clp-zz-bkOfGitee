@@ -267,6 +267,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   }
   auto parent0 = parentS[0];
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+  StringRef parent0NodeKindStrRef=parent0NodeKind.asStringRef();
 
 
   StringRef fn;
@@ -276,9 +277,9 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
 
-//  char msg[256];
-//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKind,_isInternalSysSourceFile,_shouldInsert);
-//  Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
+  char msg[256];
+  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindStrRef,_isInternalSysSourceFile,_shouldInsert);
+  Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
