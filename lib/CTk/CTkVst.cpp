@@ -309,7 +309,7 @@ bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 //  if(functionDecl){
 //          bool _isConstexpr = functionDecl->isConstexpr();
     ConstexprSpecKind constexprKind = declK->getConstexprKind();
-    printf("constexprKind:%d,",constexprKind);
+    printf("constexprKind:%d,\n",constexprKind);
     if(ConstexprSpecKind::Constexpr==constexprKind){
       //跳过constexpr修饰的函数
       //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
