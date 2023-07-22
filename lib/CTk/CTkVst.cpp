@@ -347,19 +347,19 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
     for (CXXMethodDecl *MD : RD->methods()) {
       Stmt *Body = MD->getBody();
-      worker.TraverseCXXRecordDecl(Body);
+      worker.TraverseStmt (Body);
     }
   }
 
   if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
     Stmt *Body = FD->getBody();
-    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-    worker.TraverseFunctionDecl(FD);
+//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
+    worker.TraverseDecl(FD);
   }
   if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
     Stmt *Body = MD->getBody();
-    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-    worker.TraverseCXXMethodDecl(MD);
+//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
+    worker.TraverseDecl(MD);
   }
 }
 
@@ -379,7 +379,7 @@ bool CTkVst::VisitNamespaceDecl(NamespaceDecl *ND) {
   //////{递归
   for (Decl *Child : ND->decls()) {
     if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
-      this->TraverseDecl(NestedND);//这句话 最终会 调用  本方法自己 ， 本方法 即 VisitNamespaceDecl.
+      this->VisitNamespaceDecl(NestedND);//这句话 最终会 调用  本方法自己 ， 本方法 即 VisitNamespaceDecl.
     }
   }
   //////
