@@ -274,9 +274,9 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
 
-  char msg[256];
-  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
+//  char msg[256];
+//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
@@ -286,7 +286,10 @@ bool CTkVst::VisitStmt(Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-    Util::printStmt(*Ctx, CI, "插入调用", "插入时钟语句", stmt, false);  //开发用打印
+    char msgz[256];
+    sprintf(msgz,"%p,插入时钟语句",&mRewriter);
+    //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
+    Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
 
   }else{
 //  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
