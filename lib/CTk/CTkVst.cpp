@@ -216,12 +216,17 @@ void insert_X__t_clock_tick(Rewriter &rewriter, Stmt * stmt, int stackVarAllocCn
   rewriter.InsertTextBefore(stmt->getBeginLoc(),strRef_X__t_clock_tick);
 
 }
+
+bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
+  bool end=true;
+}
 /**遍历语句
  *
  * @param stmt
  * @return
  */
 bool CTkVst::VisitStmt(Stmt *stmt){
+  int64_t stmtId = stmt->getID(*Ctx);
 
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
@@ -260,13 +265,14 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   if(parentSSize>1){
     char msg[128];
     sprintf(msg,"注意:父节点个数大于1, 为:%d",parentSSize);
-    Util::printStmt(CI,"查看",msg,stmt, true);
+    Util::printStmt(*Ctx, CI, "查看", msg, stmt, true);
   }
   if(parentSSize<=0){
     return true;
   }
   auto parent0 = parentS[0];
   ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+  const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
 
 
   StringRef fn;
@@ -276,9 +282,9 @@ bool CTkVst::VisitStmt(Stmt *stmt){
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
   bool _shouldInsert=shouldInsert(stmt, parent0NodeKind);
 
-//  char msg[256];
-//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKind,_isInternalSysSourceFile,_shouldInsert);
-//  Util::printStmt(CI,"查看",msg,stmt, true);  //开发用打印
+  char msg[256];
+  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
@@ -288,7 +294,7 @@ bool CTkVst::VisitStmt(Stmt *stmt){
     int heapObjcFreeCnt=0;
     insert_X__t_clock_tick(mRewriter, stmt, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
 
-  Util::printStmt(CI,"插入调用","插入时钟语句",stmt, false);  //开发用打印
+    Util::printStmt(*Ctx, CI, "插入调用", "插入时钟语句", stmt, false);  //开发用打印
 
   }else{
 //  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
@@ -309,11 +315,11 @@ bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 //  if(functionDecl){
 //          bool _isConstexpr = functionDecl->isConstexpr();
     ConstexprSpecKind constexprKind = declK->getConstexprKind();
-    printf("constexprKind:%d,",constexprKind);
+    printf("constexprKind:%d,\n",constexprKind);
     if(ConstexprSpecKind::Constexpr==constexprKind){
       //跳过constexpr修饰的函数
       //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
-      Util::printDecl(CI,"查看","发现Constexpr修饰的函数",declK, false);
+      Util::printDecl(*Ctx, CI, "查看", "发现Constexpr修饰的函数", declK, false);
 //      break;//此时应该给一个标记，告知下层VisitStmt：你语句处在不可插入 时钟调用语句 的Constexpr函数中。
 //      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
     }

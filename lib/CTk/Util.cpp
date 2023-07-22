@@ -117,14 +117,17 @@ std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const Sou
   //}
 }
 
-void Util::printStmt(CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *stmt, bool printSourceText) {
+void Util::printStmt(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *stmt,
+                     bool printSourceText) {
+  int64_t stmtID = stmt->getID(Ctx);
   SourceManager & SM=CI.getSourceManager();
   const char *stmtClassName = stmt->getStmtClassName();
   Stmt::StmtClass stmtClass = stmt->getStmtClass();
   FileID fileId = SM.getFileID(stmt->getBeginLoc());
   SourceRange sourceRange=stmt->getSourceRange();
 
-  printSourceRange(CI,
+  printSourceRange(stmtID,
+                   CI,
                    tag, title,
                    fileId, sourceRange,
                    "getStmtClassName", stmtClassName,
@@ -134,7 +137,9 @@ void Util::printStmt(CompilerInstance &CI, std::string tag, std::string title, c
                    printSourceText);
 
 }
-void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, clang::Expr *expr,bool printSourceText) {
+void Util::printExpr(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Expr *expr,
+                     bool printSourceText) {
+  int64_t exprID = expr->getID(Ctx);
   SourceManager & SM=CI.getSourceManager();
   const char *stmtClassName = expr->getStmtClassName();
   Stmt::StmtClass stmtClass = expr->getStmtClass();
@@ -143,7 +148,8 @@ void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, c
   FileID fileId = SM.getFileID(expr->getBeginLoc());
   SourceRange sourceRange=expr->getSourceRange();
 
-  printSourceRange(CI,
+  printSourceRange(exprID,
+                   CI,
                    tag, title,
                    fileId, sourceRange,
                    "getStmtClassName", stmtClassName,
@@ -153,13 +159,17 @@ void Util::printExpr(CompilerInstance &CI, std::string tag, std::string title, c
                    printSourceText);
 
 }
-void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,clang::Decl* decl,bool printSourceText){
+void Util::printDecl(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Decl *decl,
+                     bool printSourceText) {
+  int64_t declID = decl->getID();
+  unsigned int declGlobalID = decl->getGlobalID();
   SourceManager & SM=CI.getSourceManager();
   const char *kindName = decl->getDeclKindName();
   Decl::Kind kind = decl->getKind();
   FileID fileId = SM.getFileID(decl->getBeginLoc());
   SourceRange sourceRange=decl->getSourceRange();
-  printSourceRange(CI,
+  printSourceRange(declID,
+                   CI,
                    tag,title,
                    fileId,sourceRange,
                    "getDeclKindName",kindName,
@@ -169,7 +179,7 @@ void  Util::printDecl(CompilerInstance& CI, std::string tag,std::string title,cl
                    printSourceText);
 
 }
-void  Util::printSourceRange(
+void  Util::printSourceRange(int64_t nodeID,
         CompilerInstance& CI,
         std::string tag, std::string title,
         FileID fileId, const SourceRange &sourceRange,
@@ -190,6 +200,7 @@ void  Util::printSourceRange(
   std::cout
     << tag << ","
     << title
+    << ",nodeID:" << nodeID
     << ",文件路径、坐标:" << fileAndRange
     << "," << topCategoryFieldName << ":" << topCategoryName
     << "," << topCategoryEnumFieldName << ":" << topCategoryEnum
