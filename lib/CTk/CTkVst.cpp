@@ -47,26 +47,8 @@ bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
 }
 
-void CTkVst::insertIncludeToFileStartByLoc(SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
-  FileID fileId = SM.getFileID(Loc);
-
-  insertIncludeToFileStart(fileId,SM,rewriter);
-}
-void CTkVst::insertIncludeToFileStart(FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
-//  SourceManager &SM = Context.getSourceManager();
-//  FileID MainFileID = SM.getMainFileID();
-
-//  FileID fileId = SM.getFileID(Loc);
-  SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
-
-  const RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
-  if (!RewriteBuf){
-    return;
-  }
 
 
-  rewriter.InsertText(startLoc, IncludeStmt_TCTk, true, true);
-}
 
 static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
 static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ForStmt>();
@@ -198,67 +180,12 @@ bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 }
 
 
-FunctionDecl* CTkVst::findFuncDecByName(ASTContext *Ctx,std::string functionName){
-//    std::string functionName = "calc";
 
-    TranslationUnitDecl* translationUnitDecl=Ctx->getTranslationUnitDecl();
-    for(auto decl:translationUnitDecl->decls()){
-      if(FunctionDecl* funcDecl = dyn_cast<FunctionDecl>(decl)){
-        if(funcDecl->getNameAsString()==functionName){
-          return funcDecl;
-        }
-      }
-    }
-    return NULL;
-}
 
-/**
- * 获取 给定 位置范围 的源码文本
- * @param sourceRange
- * @param sourceManager
- * @param langOptions
- * @return
- */
-std::string CTkVst::getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions){
-  //ref:  https://stackoverflow.com/questions/40596195/pretty-print-statement-to-string-in-clang/40599057#40599057
-//  SourceRange sourceRange=S->getSourceRange();
-  CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
-  llvm::StringRef strRefSourceText=Lexer::getSourceText(charSourceRange, sourceManager, langOptions);
 
-  std::string strSourceText=strRefSourceText.str();
-  return strSourceText;
-}
 
-/**
- * 获取语句所属源文件路径
- */
-bool CTkVst::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
-  SourceLocation Loc = S->getBeginLoc();
-  CTkVst::getSourceFilePathAtLoc(Loc,SM,fn);
-}
 
-/**
- * 获取位置所属源文件路径
- * 获取语句所属源文件路径
- * code by chatgpt on : https://chat.chatgptdemo.net/
- * @param S
- * @param SM
- * @param fn
- * @return
- */
-bool CTkVst::getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn) {
-//  SourceLocation Loc = S->getBeginLoc();
-  if (Loc.isValid()) {
-    FileID File = SM.getFileID(Loc);
-    const FileEntry *FE = SM.getFileEntryForID(File);
-    if (FE) {
-      fn=FE->getName();
-//      llvm::outs() << "Source File Path: " << FE->getName() << "\n";
-      return true;
-    }
-  }
-  return false;
-}
+
 
 /**给定源文件路径是否系统源文件
  * 系统源文件路径举例：
@@ -370,6 +297,27 @@ bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
   return true;
 }
 
+bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
+
+  FileID fileId = SM.getFileID(declK->getLocation());
+  FileID mainFileId = SM.getMainFileID();
+  /*开发用*/ const std::tuple<std::string, std::string> & frst = CTkVst::get_FileAndRange_SourceText(declK->getSourceRange(), CI);
+
+  FunctionDecl *functionDecl = declK->getAsFunction();
+  printf("functionDecl:%d,\n",functionDecl);
+//        TemplateDecl *xxx = getAsTypeTemplateDecl(declK);
+  if(functionDecl){
+//          bool _isConstexpr = functionDecl->isConstexpr();
+    ConstexprSpecKind constexprKind = functionDecl->getConstexprKind();
+    printf("constexprKind:%d,",constexprKind);
+    if(ConstexprSpecKind::Constexpr==constexprKind){
+      //跳过constexpr修饰的函数
+      //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
+      std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<  ",源码:" << std::get<1>(frst) << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      break;
+    }
+  }
+}
 bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
 }

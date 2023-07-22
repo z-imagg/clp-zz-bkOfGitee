@@ -88,20 +88,7 @@ public:
 //                ",源码:" << std::get<1>(frst) <<
                         ",mainFileId:" << mainFileId.getHashValue() << ",fileId:" << fileId.getHashValue() << std::endl;
 
-        FunctionDecl *functionDecl = declK->getAsFunction();
-        printf("functionDecl:%d,\n",functionDecl);
-//        TemplateDecl *xxx = getAsTypeTemplateDecl(declK);
-        if(functionDecl){
-//          bool _isConstexpr = functionDecl->isConstexpr();
-          ConstexprSpecKind constexprKind = functionDecl->getConstexprKind();
-          printf("constexprKind:%d,",constexprKind);
-          if(ConstexprSpecKind::Constexpr==constexprKind){
-            //跳过constexpr修饰的函数
-            //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
-            std::cout << "函数_,文件路径、坐标:"<< std::get<0>(frst) <<  ",源码:" << std::get<1>(frst) << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
-            break;
-          }
-        }
+
         Visitor.TraverseDecl(declK);
         //直到第一次调用过 Visitor.TraverseDecl(declK) 之后， Visitor.mRewriter.getRewriteBufferFor(mainFileId) 才不为NULL， 才可以用 Visitor.mRewriter 做插入动作？这是为何？
       }
