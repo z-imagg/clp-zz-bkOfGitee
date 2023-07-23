@@ -19,6 +19,14 @@ using namespace clang;
 class CTkVst
         : public RecursiveASTVisitor<CTkVst> {
 public:
+    /**
+     * 栈变量 或 堆对象 的 生命步骤（生命阶段）
+     */
+    enum LifeStep{
+        Alloc,
+        Free
+    };
+public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
     explicit CTkVst(Rewriter &R, ASTContext *Ctx, CompilerInstance &CI, SourceManager& SM)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
@@ -34,8 +42,8 @@ public:
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
     static bool isInternalSysSourceFile(StringRef fn);
-    
-    void insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted=NULL);
+
+    void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
     /**遍历语句
      *
@@ -101,12 +109,13 @@ public:
      */
     std::list<SourceRange> constexpr_func_ls;
 
-    /**其前已经插入语句的 节点ID 们,
-     * 为防止重复遍历导致的重复插入，
+    /**其前已经插入语句的 节点ID 们, 为防止重复遍历导致的重复插入，
+     * 节点ID集合（防重复插入） 应该按 分配、释放 分开，从而互不干扰
      * 可达到： 即使重复遍历了 但不会重复插入
      * 如果后面发现ID 不是全局唯一的 可以尝试换成 该节点的开始位置
      */
-    std::set<int64_t> insertedNodeIDLs;
+    std::set<int64_t> allocInsertedNodeIDLs;
+    std::set<int64_t> freeInsertedNodeIDLs;
 
 
 

@@ -83,7 +83,7 @@ bool CTkVst::isInternalSysSourceFile(StringRef fn) {
   return isInternal;
 }
 
-void CTkVst::insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted){
+void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   char cStr_X__t_clock_tick[256];
 
   char _comment[90]="";
@@ -97,8 +97,14 @@ void CTkVst::insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int sta
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter.InsertTextBefore(sourceLocation,strRef_X__t_clock_tick);
+  mRewriter.InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);
 
+  //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+  if(lifeStep == LifeStep::Alloc){
+    allocInsertedNodeIDLs.insert(stmtId);
+  }else if(lifeStep == LifeStep::Free){
+    freeInsertedNodeIDLs.insert(stmtId);
+  }
 }
 
 //TODO 暂时去掉不必要的打印
@@ -115,7 +121,7 @@ void CTkVst::insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int sta
 bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   int64_t stmtId = stmt->getID(*Ctx);
 
-  if(insertedNodeIDLs.count(stmtId)>0){
+  if(allocInsertedNodeIDLs.count(stmtId) > 0){
     //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
     //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
     return false;
@@ -208,11 +214,10 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
       //stmtClass==Stmt::StmtClass::DeclStmtClass
 //      stmt->
     }
-    insertBefore_X__t_clock_tick(stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
-                                 heapObjcFreeCnt,whoInserted);
+    insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
+                                 heapObjcFreeCnt, whoInserted);
 
-    //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-    insertedNodeIDLs.insert(stmtId);
+
 
     char msgz[256];
     if(whoInserted){
@@ -237,6 +242,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   /////////////////////////对当前节点compoundStmt做 自定义处理
+  int64_t compoundStmtID = compoundStmt->getID(*Ctx);
   const Stmt::child_range &subStmtLs = compoundStmt->children();
 
   ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
@@ -264,12 +270,16 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   }
 
   //本块内有声明变量，才会插入释放语句
-  if(declStmtCnt>0){
+
+  //释放语句 未曾插入过吗？
+  bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
+  //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
+  if(declStmtCnt>0 && freeNotInserted){
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
-  insertBefore_X__t_clock_tick(insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt,"TraverseCompoundStmt");
+  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
 
   ///////////////处理  子语句列表 中每条语句
