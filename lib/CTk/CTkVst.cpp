@@ -395,41 +395,31 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
-/////////////////////////对当前节点functionDecl做 自定义处理
-
   const SourceRange &sourceRange = functionDecl->getSourceRange();
-
-//TODO 函数体 左花括号{ 后插入语句， 栈变量分配个数 为函数参数个数
-//TODO 函数体 右边花括号} 前插入语句， 栈变量释放个数 为
-// 函数参数个数 A
-// +
-// 函数体内栈变量分配个数 B :
-//    （不包括函数体内嵌套的语句块内的栈变量分配个数）
-// B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
-
   bool _isConstexpr = functionDecl->isConstexpr();
-  const SourceLocation &xx = functionDecl->getBeginLoc();
-  if(_isConstexpr){
-    //若此函数 有 constexpr 修饰，则记录其坐标范围。
-    //  方便 processStmt 判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
-    this->constexpr_func_ls.push_back(sourceRange);
-  }
-///////////////////// 自定义处理 完毕
-
-////////////////////  粘接直接子节点到递归链条:  对 当前节点functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = functionDecl->getBody();
-  if(body){
-    TraverseStmt(body);
-  }
-  return true;
+
+  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
 }
 
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
-
-/////////////////////////对当前节点cxxMethodDecl做 自定义处理
-
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
+  bool _isConstexpr = cxxMethodDecl->isConstexpr();
+  Stmt *body = cxxMethodDecl->getBody();
+
+  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+}
+
+bool CTkVst::_Traverse_Func(
+        const SourceRange &funcSourceRange,
+        bool funcIsConstexpr,
+        Stmt *funcBodyStmt
+){
+
+/////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
+
+  const SourceRange &sourceRange = funcSourceRange;
 
 //TODO 函数体 左花括号{ 后插入语句， 栈变量分配个数 为函数参数个数
 //TODO 函数体 右边花括号} 前插入语句， 栈变量释放个数 为
@@ -439,7 +429,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
 //    （不包括函数体内嵌套的语句块内的栈变量分配个数）
 // B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
 
-  bool _isConstexpr = cxxMethodDecl->isConstexpr();
+  bool _isConstexpr = funcIsConstexpr;
   if(_isConstexpr){
     //若此函数 有 constexpr 修饰，则记录其坐标范围。
     //  方便 processStmt 判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
@@ -447,12 +437,13 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   }
 ///////////////////// 自定义处理 完毕
 
-////////////////////  粘接直接子节点到递归链条:  对 当前节点functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-  Stmt *body = cxxMethodDecl->getBody();
+////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxMethodDecl|functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *body = funcBodyStmt;
   if(body){
     TraverseStmt(body);
   }
   return true;
+
 }
 bool CTkVst::LocIsIn_constexpr_func_ls(SourceLocation Loc) {
 

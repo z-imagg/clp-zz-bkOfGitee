@@ -59,6 +59,19 @@ public:
     virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
 
+    /** 遍历  FunctionDecl 或 CXXMethodDecl
+     * TraverseFunctionDecl 和 TraverseCXXMethodDecl 的 公共代码
+     * @param funcSourceRange
+     * @param funcIsConstexpr
+     * @param funcBodyStmt
+     * @return
+     */
+    bool _Traverse_Func(
+            const SourceRange &funcSourceRange,
+            bool funcIsConstexpr,
+            Stmt *funcBodyStmt
+    );
+
 
 
   /**
