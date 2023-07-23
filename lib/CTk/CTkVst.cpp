@@ -357,33 +357,10 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
    调用栈深度高达 42476，最终 调用栈溢出 异常退出
 
    */
-/**
-推测结论：
+
+/**  推测的结论：
 在clang源码内部 ：
- 在Stmt递归过程中， TraverseStmt 位于 顶层， 各个 TraverseXxxStmt 位于 下层， 即   TraverseStmt 调用 各个 TraverseXxxStmt
-      TraverseXxxStmt 比如： TraverseCompoundStmt 、TraverseWhileStmt 、TraverseIfStmt、...
-
-写法1. 正确的自定义写法
-TraverseXxxStmt(nodeX){
-    //对nodeX的自定义处理
-
-    for(childK: nodeX){
-        TraverseStmt(childK); //这里正确的 连接了 递归链条，并且 不会死递归。因为这已经是下一层了。
-    }
-}
-
-写法2. 错误的自定义写法： 引起死递归
-TraverseXxxStmt(nodeX){
-    //对nodeX的自定义处理
-
-    TraverseStmt(nodeX);// 这里想图省事，者接用本层节点。 假定本行这句调用称为Top
-    // 当前函数的当前被调用 称作 Cur.
-    // 问题是 正是 更早时刻的Top 触发了 当前时刻的Cur   ， 而此时 Cur 又想着 触发 此时的Top， 这显然是个环  而且是 无终止条件的环  即是 死递归了。
-    // 所以说 正确的写法 当前时刻 应该触发 Top(当前节点nodeX的下层节点)  即 下一层Top ，如此 在 空间上 避开了 环的形成，从而不会死递归。 也即 "写法1" 是正确的写法
-}
- */
-
-/** 更进一步推测的结论：
+   在Stmt递归过程中， TraverseStmt 位于 顶层， 各个 TraverseXxxStmt 位于 下层， 即   TraverseStmt 调用 各个 TraverseXxxStmt
 在clang源码内部  Stmt递归过程 伪码如下：
 TraverseStmt(第k层节点x){
 	for (Xxx in [If, While, For, Try, ... ] ){
@@ -394,7 +371,7 @@ TraverseStmt(第k层节点x){
 }
 
 // 也可以看出 自定义 TraverseXxxStmt(x) 应该具有如下形式：
-//正确的 自定义 TraverseXxxStmt(x) 写法如下：
+//写法1. 正确的 自定义 TraverseXxxStmt(x) 写法 ：
 TraverseXxxStmt(x) {
 //  对当前节点x做想要的自定义处理， 比如 插入 时钟调用语句
 
@@ -403,6 +380,13 @@ TraverseXxxStmt(x) {
     TraverseStmt(child); //进入下一层节点的递归. 注意 此时 调用栈上层有 TraverseStmt(x),  本行有 TraverseStmt(child) ， 但 x 和 child 是 不相等的 ，所以不存在环 即不会死递归。
     // 注：  x 是 语法树 中的 第k层节点  ，而 child是第k+1层节点，因此 x 和 child 不相等。
   }
+}
+
+//写法2. 错误的自定义写法： 引起死递归
+TraverseXxxStmt(x){
+    //对当前节点x做想要的自定义处理
+
+    TraverseStmt(x);// 这里想图省事，直接用本层节点. 注意 此时 调用栈上层有 TraverseStmt(x),  本行又有  TraverseStmt(x) ，二者 函数+参数 完全相同  ，所以存在环 且 没有条件斩断环 即 产生死递归。
 }
  */
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
