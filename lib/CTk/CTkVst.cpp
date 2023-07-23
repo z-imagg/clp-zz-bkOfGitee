@@ -367,15 +367,12 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
     }
   );*/
 
-//  for (auto child:ifStmt.getBody()){//思路伪代码
-//    processStmt(child);
-//  }
 
   processStmt(ifStmt);
 
 ///////////////////// 自定义处理 完毕
 
-////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
+////////////////////  将递归链条正确的接好:  对 当前节点ifStmt的下一层节点child:{then,else}  调用顶层方法TraverseStmt(child)
   Stmt *thenStmt = ifStmt->getThen();
   Stmt *elseStmt = ifStmt->getElse();
 
@@ -389,10 +386,16 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 
   return true;
 }
-bool CTkVst::VisitWhileStmt(WhileStmt *whileStmt){
-/*  for (auto child:whileStmt.getBody()){//思路伪代码
-    processStmt(child);
-  }*/
+bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
+/////////////////////////对当前节点compoundStmt做 自定义处理
+  processStmt(whileStmt);
+///////////////////// 自定义处理 完毕
+
+////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *bodyStmt = whileStmt->getBody();
+  if(bodyStmt){
+    TraverseStmt(bodyStmt);
+  }
   return true;
 }
 
