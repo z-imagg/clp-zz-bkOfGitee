@@ -351,6 +351,26 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
 }
 
 
+bool CTkVst::VisitIfStmt(IfStmt *ifStmt){
+  std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
+[this](Stmt* childK){
+      Util::printStmt(*this->Ctx,this->CI,"查看VisitIfStmt","的孩子",childK, true);
+      return true;
+    }
+  );
+
+//  for (auto child:ifStmt.getBody()){//思路伪代码
+//    processStmt(child);
+//  }
+  return true;
+}
+bool CTkVst::VisitWhileStmt(WhileStmt *whileStmt){
+/*  for (auto child:whileStmt.getBody()){//思路伪代码
+    processStmt(child);
+  }*/
+  return true;
+}
+
 /*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
 //  FunctionDecl *functionDecl = declK->getAsFunction();
