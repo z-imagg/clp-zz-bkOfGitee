@@ -55,9 +55,18 @@ public:
 //    virtual bool TraverseCaseStmt(CaseStmt *caseStmt);由于case语句前不能插入 任何语句 ,否则语法错误，因此 case语句不需要自定义处理，只需要对case语句用clang内部的正常递归即可。
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
 
+    /////////constexpr
+    virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
+    virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
 
 
 
+  /**
+   * 返回 该坐标Loc 是否 在 任意一个 被 constexpr 修饰的 函数 的坐标范围内, 若在 ，则 此坐标 不能被插入语句。
+   * @param Loc
+   * @return
+   */
+    bool LocIsIn_constexpr_func_ls(SourceLocation Loc);
 public:
     //这里是Visitor中的Rewriter，非源头，不要构造Rewriter，只能引用Act中的源头Rewriter.
     // 若这里也构造，将出现两个Rewriter, 则后一个Rewriter写入时会覆盖前一个Rewriter的写入，导致前一个Rewriter的写入丢失。
@@ -69,6 +78,13 @@ public:
     ASTContext *Ctx;
     CompilerInstance& CI;
     SourceManager& SM;
+
+    /** 存放有constexpr修饰的函数整体坐标范围
+     * 方便 processStmt 判断 当前语句 是否在这些函数坐标范围内，若是 则不插入语句
+     */
+    std::list<SourceRange> constexpr_func_ls;
+
+
 
 };
 
