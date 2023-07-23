@@ -83,7 +83,7 @@ bool isInternalSysSourceFile(StringRef fn) {
   return isInternal;
 }
 
-void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted=NULL){
+void CTkVst::insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted){
   char cStr_X__t_clock_tick[256];
 
   char _comment[90]="";
@@ -97,7 +97,7 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  rewriter.InsertTextBefore(sourceLocation,strRef_X__t_clock_tick);
+  mRewriter.InsertTextBefore(sourceLocation,strRef_X__t_clock_tick);
 
 }
 
@@ -208,7 +208,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
       //stmtClass==Stmt::StmtClass::DeclStmtClass
 //      stmt->
     }
-    insertBefore_X__t_clock_tick(mRewriter, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
+    insertBefore_X__t_clock_tick(stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt,whoInserted);
 
     //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
@@ -269,7 +269,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
-  insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt,"TraverseCompoundStmt");
+  insertBefore_X__t_clock_tick(insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt,"TraverseCompoundStmt");
   }
 
   ///////////////处理  子语句列表 中每条语句

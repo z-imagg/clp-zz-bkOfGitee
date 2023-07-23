@@ -33,6 +33,8 @@ public:
     static const std::string funcName_TCTk ;//= "X__t_clock_tick";
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
+    void insertBefore_X__t_clock_tick(SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted=NULL);
+
     /**遍历语句
      *
      * @param stmt
