@@ -304,11 +304,13 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
       if(declStmt){
 
         Decl *decl0 = *(declStmt->decl_begin());
-//        decl0->getKind()==Decl::Var;
         if(decl0 && decl0->getKind()==Decl::Kind::Var){
           //如果当前语句是声明语句, 且第一个子声明是变量声明语句,则栈变量分配个数填写1
-          //TODO 有可能是这种样子: int n,m,u,v=0; 此时 应该取 declStmt->decls() 的size?
-          stackVarAllocCnt=1;
+          //  有可能是这种样子: int n,m,u,v=0;  应该取 declStmt->decls() 的size
+          const DeclStmt::decl_range &declRange = declStmt->decls();
+          // 取 declStmt->decls() 的size
+          long declCnt = std::distance(declRange.begin(), declRange.end());
+          stackVarAllocCnt=declCnt;
         }
       }
       //stmtClass==Stmt::StmtClass::DeclStmtClass
