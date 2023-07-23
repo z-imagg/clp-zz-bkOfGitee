@@ -103,7 +103,7 @@ int main(int Argc, const char **Argv) {
   CI.getDiagnosticOpts().ShowColors = true;
 
   Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("--verbose"));
-  //为解决找不到 stddef.h 的解决办法
+  //解决： 找不到 stddef.h  
   Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-resource-dir","/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0"},tooling::ArgumentInsertPosition::END));
   /* stddef.h位于:
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/stddef.h
