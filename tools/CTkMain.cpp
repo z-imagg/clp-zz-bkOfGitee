@@ -88,6 +88,10 @@ int main(int Argc, const char **Argv) {
 
   // 设置文件名
   const char* FileName = "/pubx/clang-ctk/t_clock_tick/test_main.cpp";
+  if(Argc>=2 && Argv[1]){
+    //如果命令行 有指定源文件路径 则用命令行的
+    FileName=Argv[1];
+  }
   clang::FileID MainFileID = CI.getSourceManager().getOrCreateFileID(
           CI.getFileManager().getVirtualFile(FileName, /*Size=*/0, /*ModificationTime=*/0),
           clang::SrcMgr::C_User);
@@ -103,7 +107,7 @@ int main(int Argc, const char **Argv) {
   CI.getDiagnosticOpts().ShowColors = true;
 
   Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("--verbose"));
-  //为解决找不到 stddef.h 的解决办法
+  //解决： 找不到 stddef.h
   Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-resource-dir","/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0"},tooling::ArgumentInsertPosition::END));
   /* stddef.h位于:
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/stddef.h

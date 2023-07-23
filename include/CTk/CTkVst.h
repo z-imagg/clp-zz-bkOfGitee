@@ -39,7 +39,7 @@ public:
      * @return
      */
 //    bool VisitStmt(Stmt *S) { return true; } : grep '(Stmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool processStmt(Stmt *stmt);
+    bool processStmt(Stmt *stmt,const char* whoInserted=NULL);
 //    DEF_TRAVERSE_STMT(CallExpr      : grep '(CallExpr'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
 //    virtual bool VisitCallExpr(CallExpr *callExpr);
 
@@ -49,6 +49,10 @@ public:
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
     virtual bool TraverseForStmt(ForStmt *forStmt);
     virtual bool TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt);
+    virtual bool TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt);
+    virtual bool TraverseDoStmt(DoStmt *doStmt);
+    virtual bool TraverseSwitchStmt(SwitchStmt *switchStmt);
+//    virtual bool TraverseCaseStmt(CaseStmt *caseStmt);由于case语句前不能插入 任何语句 ,否则语法错误，因此 case语句不需要自定义处理，只需要对case语句用clang内部的正常递归即可。
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
 
 
