@@ -20,11 +20,22 @@ int funOutImpl();
 int myNs1::myNs2::User::funOutImpl() {
 	char ch,sex='m';//命名空间内的 函数 funOutImpl: 在结构体定义外实现函数体
   ch++;
+  while(ch!='a'){
+    int num;
+    char flag;
+    ch--;
+  }
   return ch;
 }
 
 
 char topOutFunc(float f1, double d2){
+  int arr[]={8,0,-1,99};
+  for(int x: arr){
+    bool ok=x%2==0;
+    if(ok) break;
+  }
+
   {
     double sum;
     {
@@ -47,4 +58,29 @@ char topOutFunc(float f1, double d2){
   int k;
 	char c=f1>0 && d2<0?'a':'b';//无命名空间 的 顶层函数实现.
   return c;
+}
+
+#include <exception>
+#include <iostream>
+
+static void* staticFunc(int* arg){
+  char (*funcPtr)(int, char, short)=0;
+  try{
+    int num=*arg;
+    char ch='A';
+    short shrt=(short)num/10;
+    try{
+      char result=funcPtr(num,ch,shrt);
+      if(!result)
+        throw "err02";
+    }catch (std::exception& exception){
+      std::cout<< exception.what() << std::endl;
+    }
+  }catch (const char* errmsg){
+    std::cout<< errmsg << std::endl;
+  }catch(std::exception & e){
+    std::cout<< e.what() << std::endl;
+  }catch (...){
+    throw "other exception";
+  }
 }
