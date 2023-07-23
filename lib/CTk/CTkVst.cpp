@@ -18,23 +18,10 @@ using namespace clang;
 // CTkVst implementation
 //-----------------------------------------------------------------------------
 /*
-运行clang++带上本插件.so：但这只是cc1  如何能把整个编译过程串起来？
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++ -cc1  -load /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so   -plugin CTk   test_main.cpp
 
 
-只运行了本插件CTk，没有运行编译过程:
-#参考: https://releases.llvm.org/8.0.0/tools/clang/docs/ClangPlugins.html
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
-
-"-plugin" 改为  "-add-plugin", 运行了编译过程:  并输出了 test_main.o
-#参考: https://www.ibm.com/docs/en/xl-c-and-cpp-linux/16.1.0?topic=cla-running-user-defined-actions-by-using-clang-plug-ins
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c  /pubx/clang-tutor/test/test_main.cpp
-
-
-运行clang++带上本插件.so 且 运行编译、链接 全过程:
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk   /pubx/clang-tutor/t_clock_tick/test_main.cpp  -o test_main
-但运行应用，应用结束时 t没变依然是0，说明本插件对源码的修改没生效.
-
+利用  运行clang++的编译 带上本插件.so  实现 对源文件插入时钟滴答语句:
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c /pubx/clang-tutor/t_clock_tick/test_main.cpp
 
 
  */
