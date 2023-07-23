@@ -354,22 +354,39 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   }
 
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
+  return true;
 }
 
 
 bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
-  std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
+  /////////////////////////对当前节点compoundStmt做 自定义处理
+/*  std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
 [this](Stmt* childK){
       Util::printStmt(*this->Ctx,this->CI,"查看VisitIfStmt","的孩子",childK, true);
       return true;
     }
-  );
-
-  //////
+  );*/
 
 //  for (auto child:ifStmt.getBody()){//思路伪代码
 //    processStmt(child);
 //  }
+
+  processStmt(ifStmt);
+
+///////////////////// 自定义处理 完毕
+
+////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
+  Stmt *thenStmt = ifStmt->getThen();
+  Stmt *elseStmt = ifStmt->getElse();
+
+  if(thenStmt){
+      TraverseStmt  (thenStmt);
+  }
+
+  if(elseStmt){
+    TraverseStmt(elseStmt);
+  }
+
   return true;
 }
 bool CTkVst::VisitWhileStmt(WhileStmt *whileStmt){
