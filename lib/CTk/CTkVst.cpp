@@ -351,7 +351,7 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
 }
 
 
-bool CTkVst::VisitIfStmt(IfStmt *ifStmt){
+bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
 [this](Stmt* childK){
       Util::printStmt(*this->Ctx,this->CI,"查看VisitIfStmt","的孩子",childK, true);
@@ -359,15 +359,6 @@ bool CTkVst::VisitIfStmt(IfStmt *ifStmt){
     }
   );
 
-  ///////clang Visit 只负责访问当前层次下符合条件的节点们，并不会再Visit节点的子节点 即 并不会递归
-  //参考:  https://stackoverflow.com/questions/37802947/visitdecl-vs-traversedecl-clang-recursiveastvisitor/37817218#37817218
-  //////递归遍历if的下层if
-  if(Stmt *thenStmt = ifStmt->getThen()){
-    TraverseStmt(thenStmt);
-  };
-  if(Stmt *elseStmt = ifStmt->getElse()){
-    TraverseStmt(elseStmt);
-  };
   //////
 
 //  for (auto child:ifStmt.getBody()){//思路伪代码
