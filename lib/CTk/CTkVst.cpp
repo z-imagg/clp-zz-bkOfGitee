@@ -212,7 +212,7 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
   }
 
   //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);%s\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,_comment);//"X__t_clock_tick(%d, %d, %d, %d)"
+  sprintf(cStr_X__t_clock_tick, "%s(/*SVA*/%d, /*SVF*/%d, /*HOA*/%d, /*HOF*/%d);%s\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,_comment);//"X__t_clock_tick(%d, %d, %d, %d)"
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
