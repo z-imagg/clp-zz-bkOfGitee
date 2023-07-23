@@ -316,7 +316,7 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
     if(Stmt::DeclStmtClass==stmtClass){
       declStmtCnt++;
     }
-    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,false);
+    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
   }
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
@@ -406,9 +406,10 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
   Decl::Kind chK = Child->getKind();
 
   if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
+    worker.TraverseDecl (RD);
     for (CXXMethodDecl *MD : RD->methods()) {
       Stmt *Body = MD->getBody();
-      worker.TraverseStmt (Body);
+      worker.TraverseStmt(Body);
     }
   }
 
@@ -416,11 +417,13 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
     Stmt *Body = FD->getBody();
 //    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
     worker.TraverseDecl(FD);
+    worker.TraverseStmt(Body);
   }
   if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
     Stmt *Body = MD->getBody();
 //    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
     worker.TraverseDecl(MD);
+    worker.TraverseStmt(Body);
   }
 }
 
