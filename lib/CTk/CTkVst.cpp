@@ -387,12 +387,25 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   return true;
 }
 bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
-/////////////////////////对当前节点compoundStmt做 自定义处理
+/////////////////////////对当前节点whileStmt做 自定义处理
   processStmt(whileStmt);
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *bodyStmt = whileStmt->getBody();
+  if(bodyStmt){
+    TraverseStmt(bodyStmt);
+  }
+  return true;
+}
+
+bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
+/////////////////////////对当前节点forStmt做 自定义处理
+  processStmt(forStmt);
+///////////////////// 自定义处理 完毕
+
+////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt){
     TraverseStmt(bodyStmt);
   }

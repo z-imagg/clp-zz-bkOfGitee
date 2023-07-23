@@ -47,6 +47,7 @@ public:
     virtual bool TraverseCompoundStmt(CompoundStmt *compoundStmt );
     virtual bool TraverseIfStmt(IfStmt *ifStmt);
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
+    virtual bool TraverseForStmt(ForStmt *forStmt);
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
 
 
