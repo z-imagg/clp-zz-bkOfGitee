@@ -130,19 +130,15 @@ int main(int Argc, const char **Argv) {
   CI.createDiagnostics();
   CI.createFileManager();
   CI.createSourceManager(CI.getFileManager());
-
-//  const std::shared_ptr<CompilerInstance> &ci = std::make_shared<clang::CompilerInstance>();
-//  clang::CompilerInstance & CI = *ci;
-
-  // 设置诊断对象
-//  CI.createDiagnostics();
+/* 确保在创建编译器实例（`clang::CompilerInstance`）后，立即创建源管理器（`clang::SourceManager`）并将其设置到编译器实例中
+否则 ，运行时 断言失败 报错 ：   CompilerInstance.h:423: clang::SourceManager& clang::CompilerInstance::getSourceManager() const: Assertion `SourceMgr && "Compiler instance has no source manager!"' failed.
+ */
 
   // 设置语言选项
   CI.getLangOpts().CPlusPlus = true;
 
   // 设置文件名
   const char* FileName = "/pubx/clang-ctk/t_clock_tick/test_main.cpp";
-  /*clang::FileID MainFileID = CI.getSourceManager().createFileID(  CI.getFileManager().getVirtualFile(FileName, *//*Size=*//*0, *//*ModificationTime=*//*0),  clang::SrcMgr::C_User);*/
   clang::FileID MainFileID = CI.getSourceManager().getOrCreateFileID(
           CI.getFileManager().getVirtualFile(FileName, /*Size=*/0, /*ModificationTime=*/0),
           clang::SrcMgr::C_User);
@@ -157,11 +153,11 @@ int main(int Argc, const char **Argv) {
 
   Tool.appendArgumentsAdjuster(
           clang::tooling::getInsertArgumentAdjuster("-I/usr/lib/gcc/x86_64-linux-gnu/11/include"));
+  //为解决找不到 stddef.h 的初步解决办法
 
   // 运行 ClangTool
   int Result = Tool.run(clang::tooling::newFrontendActionFactory<CTkAloneAct>().get());
 
   return Result;
 }
-//运行 报错：  CompilerInstance.h:423: clang::SourceManager& clang::CompilerInstance::getSourceManager() const: Assertion `SourceMgr && "Compiler instance has no source manager!"' failed.
 
