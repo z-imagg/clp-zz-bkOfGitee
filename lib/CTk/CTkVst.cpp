@@ -359,6 +359,17 @@ bool CTkVst::VisitIfStmt(IfStmt *ifStmt){
     }
   );
 
+  ///////clang Visit 只负责访问当前层次下符合条件的节点们，并不会再Visit节点的子节点 即 并不会递归
+  //参考:  https://stackoverflow.com/questions/37802947/visitdecl-vs-traversedecl-clang-recursiveastvisitor/37817218#37817218
+  //////递归遍历if的下层if
+  if(Stmt *thenStmt = ifStmt->getThen()){
+    TraverseStmt(thenStmt);
+  };
+  if(Stmt *elseStmt = ifStmt->getElse()){
+    TraverseStmt(elseStmt);
+  };
+  //////
+
 //  for (auto child:ifStmt.getBody()){//思路伪代码
 //    processStmt(child);
 //  }
@@ -409,6 +420,7 @@ void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
     worker.TraverseDecl (RD);
     for (CXXMethodDecl *MD : RD->methods()) {
       Stmt *Body = MD->getBody();
+      worker.TraverseDecl(MD);
       worker.TraverseStmt(Body);
     }
   }
