@@ -97,6 +97,13 @@ public:
      */
     std::list<SourceRange> constexpr_func_ls;
 
+    /**其前已经插入语句的 节点ID 们,
+     * 为防止重复遍历导致的重复插入，
+     * 可达到： 即使重复遍历了 但不会重复插入
+     * 如果后面发现ID 不是全局唯一的 可以尝试换成 该节点的开始位置
+     */
+    std::set<int64_t> insertedNodeIDLs;
+
 
 
 };

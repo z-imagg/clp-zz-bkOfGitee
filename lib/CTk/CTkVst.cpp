@@ -115,6 +115,12 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
 bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   int64_t stmtId = stmt->getID(*Ctx);
 
+  if(insertedNodeIDLs.count(stmtId)>0){
+    //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
+    //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
+    return false;
+  }
+
   SourceManager & SM = mRewriter.getSourceMgr();
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
@@ -204,6 +210,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     }
     insertBefore_X__t_clock_tick(mRewriter, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt,whoInserted);
+
+    //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+    insertedNodeIDLs.insert(stmtId);
 
     char msgz[256];
     if(whoInserted){
