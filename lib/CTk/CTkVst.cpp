@@ -295,7 +295,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
     insertBefore_X__t_clock_tick(mRewriter, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
-                                 heapObjcFreeCnt);
+                                 heapObjcFreeCnt,whoInserted);
 
     char msgz[256];
     if(whoInserted){
@@ -352,7 +352,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
-  insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt);
+  insertBefore_X__t_clock_tick(mRewriter, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt,"TraverseCompoundStmt");
   }
 
   ///////////////处理  子语句列表 中每条语句
