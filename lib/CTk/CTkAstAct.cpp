@@ -21,7 +21,7 @@ public:
       LangOptions &langOptions = CI.getLangOpts();
       ASTContext &astContext = CI.getASTContext();
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
-      mRewriter.setSourceMgr(SM, langOptions);
+      mRewriter.setSourceMgr(SM, langOptions);//A
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
       //Act中 是 每次都是 新创建 CTkAstCnsm

@@ -84,7 +84,7 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter.InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);
+  mRewriter.InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   if(lifeStep == LifeStep::Alloc){
@@ -114,13 +114,13 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     return false;
   }
 
-  SourceManager & SM = mRewriter.getSourceMgr();
+//  SourceManager & SM = mRewriter.getSourceMgr();//此处的mRewriter的SourceMgr是空, 所以才会有C处崩溃，因为C处用 NULL.getFileID() 肯定崩溃。
   const LangOptions & langOpts = mRewriter.getLangOpts();
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
   SourceRange sourceRange=stmt->getSourceRange();
-  FileID fileId = SM.getFileID(beginLoc);
+  FileID fileId = SM.getFileID(beginLoc);//C
 
   FileID mainFileId = SM.getMainFileID();
 
