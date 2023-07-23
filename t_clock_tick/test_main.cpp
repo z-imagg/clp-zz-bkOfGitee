@@ -59,3 +59,28 @@ char topOutFunc(float f1, double d2){
 	char c=f1>0 && d2<0?'a':'b';//无命名空间 的 顶层函数实现.
   return c;
 }
+
+#include <exception>
+#include <iostream>
+
+static void* staticFunc(int* arg){
+  char (*funcPtr)(int, char, short)=0;
+  try{
+    int num=*arg;
+    char ch='A';
+    short shrt=(short)num/10;
+    try{
+      char result=funcPtr(num,ch,shrt);
+      if(!result)
+        throw "err02";
+    }catch (std::exception& exception){
+      std::cout<< exception.what() << std::endl;
+    }
+  }catch (const char* errmsg){
+    std::cout<< errmsg << std::endl;
+  }catch(std::exception & e){
+    std::cout<< e.what() << std::endl;
+  }catch (...){
+    throw "other exception";
+  }
+}
