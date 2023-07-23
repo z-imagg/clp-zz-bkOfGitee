@@ -25,6 +25,12 @@ int myNs1::myNs2::User::funOutImpl() {
 
 
 char topOutFunc(float f1, double d2){
+  {
+    double sum;
+    {
+      short fix;
+    }
+  }
   if(f1<d2){
     int age;//CompoundStmt举例: 第1层CompoundStmt
     float xx;
