@@ -75,7 +75,7 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
  * @param fn
  * @return
  */
-bool isInternalSysSourceFile(StringRef fn) {
+bool CTkVst::isInternalSysSourceFile(StringRef fn) {
   bool startWithUsr=fn.startswith("/usr/");
   bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
   bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
