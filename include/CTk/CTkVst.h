@@ -39,7 +39,7 @@ public:
      * @return
      */
 //    bool VisitStmt(Stmt *S) { return true; } : grep '(Stmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool processStmt(Stmt *stmt);
+    bool processStmt(Stmt *stmt,const char* whoInserted=NULL);
 //    DEF_TRAVERSE_STMT(CallExpr      : grep '(CallExpr'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
 //    virtual bool VisitCallExpr(CallExpr *callExpr);
 

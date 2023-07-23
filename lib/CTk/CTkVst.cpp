@@ -200,11 +200,18 @@ bool isInternalSysSourceFile(StringRef fn) {
   bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
   return isInternal;
 }
-void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt){
+
+void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocation, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt,const char* whoInserted=NULL){
   char cStr_X__t_clock_tick[256];
 
+  char _comment[90]="";
+  if(whoInserted){
+    //如果有提供，插入者信息，则放在注释中.
+    sprintf(_comment,"//%s",whoInserted);
+  }
+
   //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt);//"X__t_clock_tick(%d, %d, %d, %d)"
+  sprintf(cStr_X__t_clock_tick, "%s(%d, %d, %d, %d);%s\n", CTkVst::funcName_TCTk.c_str(),stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,_comment);//"X__t_clock_tick(%d, %d, %d, %d)"
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
@@ -212,13 +219,15 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
 
 }
 
+//TODO 暂时去掉不必要的打印
+
 /**遍历语句
  *
  * @param stmt
  * @return
  */
 //TODO 增加 谁插入的这条语句 的string参数
-bool CTkVst::processStmt(Stmt *stmt){
+bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   int64_t stmtId = stmt->getID(*Ctx);
 
   SourceManager & SM = mRewriter.getSourceMgr();
@@ -289,7 +298,11 @@ bool CTkVst::processStmt(Stmt *stmt){
                                  heapObjcFreeCnt);
 
     char msgz[256];
-    sprintf(msgz,"%p,插入时钟语句",&mRewriter);
+    if(whoInserted){
+      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,&mRewriter);
+    }else{
+      sprintf(msgz,"插入时钟语句,Rwt:%p",&mRewriter);
+    }
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
 
@@ -345,7 +358,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   ///////////////处理  子语句列表 中每条语句
 
   for(Stmt* stmt:subStmtLs){
-    processStmt(stmt);
+    processStmt(stmt,"TraverseCompoundStmt");
   }
 ///////////////////// 自定义处理 完毕
 
@@ -369,7 +382,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   );*/
 
 
-  processStmt(ifStmt);
+  processStmt(ifStmt,"TraverseIfStmt");
 
 ///////////////////// 自定义处理 完毕
 
@@ -389,7 +402,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 }
 bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 /////////////////////////对当前节点whileStmt做 自定义处理
-  processStmt(whileStmt);
+  processStmt(whileStmt,"TraverseWhileStmt");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -402,7 +415,7 @@ bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 
 bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(forStmt);
+  processStmt(forStmt,"TraverseForStmt");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -416,7 +429,7 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(cxxTryStmt);
+  processStmt(cxxTryStmt,"TraverseCXXTryStmt");
 ///////////////////// 自定义处理 完毕
 
 
@@ -432,7 +445,7 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 
 /////////////////////////对当前节点cxxCatchStmt做 自定义处理
-  processStmt(cxxCatchStmt);
+  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
@@ -446,7 +459,7 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 
 /////////////////////////对当前节点doStmt做 自定义处理
-  processStmt(doStmt);
+  processStmt(doStmt,"TraverseDoStmt");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -460,7 +473,7 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 
 /////////////////////////对当前节点switchStmt做 自定义处理
-  processStmt(switchStmt);
+  processStmt(switchStmt,"TraverseSwitchStmt");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
