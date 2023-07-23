@@ -106,17 +106,18 @@ int main(int Argc, const char **Argv) {
 
   Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-v"));
 //  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-I/usr/lib/gcc/x86_64-linux-gnu/11/include"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-resource-dir  /app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /usr/include/c++/12"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /usr/include/x86_64-linux-gnu/c++/12"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /usr/include/c++/12/backward"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /usr/local/include"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-isystem  /usr/x86_64-linux-gnu/include"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-externc-isystem  /usr/include/x86_64-linux-gnu"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-externc-isystem  /include"));
-  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster("-internal-externc-isystem  /usr/include"));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-resource-dir","/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0"},tooling::ArgumentInsertPosition::END));
+  //报错:  -internal-isystem,  改为 -isystem
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/usr/include/c++/12"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/usr/include/x86_64-linux-gnu/c++/12"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/usr/include/c++/12/backward"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/usr/local/include"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-isystem","/usr/x86_64-linux-gnu/include"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-externc-isystem","/usr/include/x86_64-linux-gnu"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-externc-isystem","/include"},tooling::ArgumentInsertPosition::END));
+  Tool.appendArgumentsAdjuster( clang::tooling::getInsertArgumentAdjuster({"-internal-externc-isystem","/usr/include"},tooling::ArgumentInsertPosition::END));
   //为解决找不到 stddef.h 的初步解决办法
 
   // 运行 ClangTool
