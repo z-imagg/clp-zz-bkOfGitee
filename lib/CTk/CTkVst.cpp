@@ -299,11 +299,11 @@ bool CTkVst::processStmt(Stmt *stmt){
 }
 
 
-bool CTkVst::VisitCallExpr(CallExpr *callExpr){
+/*bool CTkVst::VisitCallExpr(CallExpr *callExpr){
 
-}
+}*/
 
-bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
+bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   const Stmt::child_range &subStmtLs = compoundStmt->children();
 
   ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
@@ -316,7 +316,7 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
     if(Stmt::DeclStmtClass==stmtClass){
       declStmtCnt++;
     }
-    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,false);
+    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
   }
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
@@ -343,18 +343,79 @@ bool CTkVst::VisitCompoundStmt(CompoundStmt *compoundStmt){
 
   for(Stmt* stmt:subStmtLs){
     processStmt(stmt);
+    TraverseStmt  (stmt);
   }
 
-  
+  TraverseStmt  (compoundStmt);//这句造成死递归. 显然是 无条件环 造成的， 本行语句 的 函数+参数  一定是 完全相同地  出现  在当前调用栈 的上层，且 没有条件来斩断此环， 才会向上调用形成死递归。
+  // 由此说明 clang内部假设了 ： 在Stmt的递归过程中  TraverseStmt 是上层  而各个 TraverseXxxStmt 是下层
+  /**大量重复:
+#42449 0x0000555555c320ea in CTkVst::TraverseCompoundStmt (this=0x555557ddd238, compoundStmt=0x555557e445d8) at /pubx/clang_plugin_demo/clang-tutor/lib/CTk/CTkVst.cpp:349
+#42450 0x0000555555b830e0 in clang::RecursiveASTVisitor<CTkVst>::dataTraverseNode (this=0x555557ddd238, S=0x555557e445d8, Queue=0x7fffffffc950) at /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/StmtNodes.inc:73
+#42451 0x0000555555b2be37 in clang::RecursiveASTVisitor<CTkVst>::TraverseStmt (this=0x555557ddd238, S=0x555557e445d8, Queue=0x0) at /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h:700
+#42452 0x0000555555c320ea in CTkVst::TraverseCompoundStmt (this=0x555557ddd238, compoundStmt=0x555557e445d8) at /pubx/clang_plugin_demo/clang-tutor/lib/CTk/CTkVst.cpp:349
 
+   调用栈深度高达 42476，最终 调用栈溢出 异常退出
+
+   */
+
+/**  推测的结论：
+在clang源码内部 ：
+   在Stmt递归过程中， TraverseStmt 位于 顶层， 各个 TraverseXxxStmt 位于 下层， 即   TraverseStmt 调用 各个 TraverseXxxStmt
+在clang源码内部  Stmt递归过程 伪码如下：
+TraverseStmt(第k层节点x){
+	for (Xxx in [If, While, For, Try, ... ] ){
+		TraverseXxxStmt(x);
+	}
+//因此 TraverseXxxStmt(x) 中 不能含有 TraverseStmt(x) , 否则 形成  环 且 是无条件环  即死递归
+//  clang并没有预期允许能发生这种事情 即没有代码能检测这种事情   即 是 无条件
+}
+
+// 也可以看出 自定义 TraverseXxxStmt(x) 应该具有如下形式：
+//写法1. 正确的 自定义 TraverseXxxStmt(x) 写法 ：
+TraverseXxxStmt(x) {
+//  对当前节点x做想要的自定义处理， 比如 插入 时钟调用语句
+
+//  将递归链条正确的接好:
+  for(auto child: x){
+    TraverseStmt(child); //进入下一层节点的递归. 注意 此时 调用栈上层有 TraverseStmt(x),  本行有 TraverseStmt(child) ， 但 x 和 child 是 不相等的 ，所以不存在环 即不会死递归。
+    // 注：  x 是 语法树 中的 第k层节点  ，而 child是第k+1层节点，因此 x 和 child 不相等。
+  }
+}
+
+//写法2. 错误的自定义写法： 引起死递归
+TraverseXxxStmt(x){
+    //对当前节点x做想要的自定义处理
+
+    TraverseStmt(x);// 这里想图省事，直接用本层节点. 注意 此时 调用栈上层有 TraverseStmt(x),  本行又有  TraverseStmt(x) ，二者 函数+参数 完全相同  ，所以存在环 且 没有条件斩断环 即 产生死递归。
+}
+ */
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
-bool CTkVst::VisitCXXRecordDecl(CXXRecordDecl *Decl) {
+
+bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
+  std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
+[this](Stmt* childK){
+      Util::printStmt(*this->Ctx,this->CI,"查看VisitIfStmt","的孩子",childK, true);
+      return true;
+    }
+  );
+
+  //////
+
+//  for (auto child:ifStmt.getBody()){//思路伪代码
+//    processStmt(child);
+//  }
+  return true;
+}
+bool CTkVst::VisitWhileStmt(WhileStmt *whileStmt){
+/*  for (auto child:whileStmt.getBody()){//思路伪代码
+    processStmt(child);
+  }*/
   return true;
 }
 
-bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
+/*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
 //  FunctionDecl *functionDecl = declK->getAsFunction();
 //  printf("functionDecl:%d,\n",functionDecl);
@@ -370,63 +431,16 @@ bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 //      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
     }
 //  }
-}
-bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
+}*/
+/*bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
   return true;
-}
+}*/
 
-bool CTkVst::VisitVarDecl(VarDecl *Decl) {
+/*bool CTkVst::VisitVarDecl(VarDecl *Decl) {
   return true;
-}
+}*/
 
-bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
-
-  return true;
-}
-
-void CTkVst::processTopNode(CTkVst& worker, Decl *Child) {
-  const char *chKN = Child->getDeclKindName();
-  Decl::Kind chK = Child->getKind();
-
-  if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(Child)) {
-    for (CXXMethodDecl *MD : RD->methods()) {
-      Stmt *Body = MD->getBody();
-      worker.TraverseStmt (Body);
-    }
-  }
-
-  if (FunctionDecl *FD = dyn_cast<FunctionDecl>(Child)) {
-    Stmt *Body = FD->getBody();
-//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看顶层函数", "", Body, true);
-    worker.TraverseDecl(FD);
-  }
-  if (CXXMethodDecl *MD = dyn_cast<CXXMethodDecl>(Child)) {
-    Stmt *Body = MD->getBody();
-//    Util::printStmt(*worker.Ctx, worker.CI, "上层临时查看c++方法", "", Body, true);
-    worker.TraverseDecl(MD);
-  }
-}
-
-bool CTkVst::VisitNamespaceDecl(NamespaceDecl *ND) {
-
-  ////////本命名空间下的处理
-  const DeclContext::decl_range &ds = ND->decls();
-  for (Decl *Child : ds) {
-    const char *chKN = Child->getDeclKindName();
-    Decl::Kind chK = Child->getKind();
-
-    processTopNode(*this, Child);
-
-  }
-  ///////
-
-  //////{递归
-  for (Decl *Child : ND->decls()) {
-    if (NamespaceDecl *NestedND = dyn_cast<NamespaceDecl>(Child)) {
-      this->VisitNamespaceDecl(NestedND);//这句话 最终会 调用  本方法自己 ， 本方法 即 VisitNamespaceDecl.
-    }
-  }
-  //////
+/*bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
 
   return true;
-}
+}*/
