@@ -346,8 +346,65 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     TraverseStmt  (stmt);
   }
 
-//  TraverseStmt  (compoundStmt);
+  TraverseStmt  (compoundStmt);//这句造成死递归. 显然是 无条件环 造成的， 本行语句 的 函数+参数  一定是 完全相同地  出现  在当前调用栈 的上层，且 没有条件来斩断此环， 才会向上调用形成死递归。
+  // 由此说明 clang内部假设了 ： 在Stmt的递归过程中  TraverseStmt 是上层  而各个 TraverseXxxStmt 是下层
+  /**大量重复:
+#42449 0x0000555555c320ea in CTkVst::TraverseCompoundStmt (this=0x555557ddd238, compoundStmt=0x555557e445d8) at /pubx/clang_plugin_demo/clang-tutor/lib/CTk/CTkVst.cpp:349
+#42450 0x0000555555b830e0 in clang::RecursiveASTVisitor<CTkVst>::dataTraverseNode (this=0x555557ddd238, S=0x555557e445d8, Queue=0x7fffffffc950) at /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/StmtNodes.inc:73
+#42451 0x0000555555b2be37 in clang::RecursiveASTVisitor<CTkVst>::TraverseStmt (this=0x555557ddd238, S=0x555557e445d8, Queue=0x0) at /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h:700
+#42452 0x0000555555c320ea in CTkVst::TraverseCompoundStmt (this=0x555557ddd238, compoundStmt=0x555557e445d8) at /pubx/clang_plugin_demo/clang-tutor/lib/CTk/CTkVst.cpp:349
 
+   调用栈深度高达 42476，最终 调用栈溢出 异常退出
+
+   */
+/**
+推测结论：
+在clang源码内部 ：
+ 在Stmt递归过程中， TraverseStmt 位于 顶层， 各个 TraverseXxxStmt 位于 下层， 即   TraverseStmt 调用 各个 TraverseXxxStmt
+      TraverseXxxStmt 比如： TraverseCompoundStmt 、TraverseWhileStmt 、TraverseIfStmt、...
+
+写法1. 正确的自定义写法
+TraverseXxxStmt(nodeX){
+    //对nodeX的自定义处理
+
+    for(childK: nodeX){
+        TraverseStmt(childK); //这里正确的 连接了 递归链条，并且 不会死递归。因为这已经是下一层了。
+    }
+}
+
+写法2. 错误的自定义写法： 引起死递归
+TraverseXxxStmt(nodeX){
+    //对nodeX的自定义处理
+
+    TraverseStmt(nodeX);// 这里想图省事，者接用本层节点。 假定本行这句调用称为Top
+    // 当前函数的当前被调用 称作 Cur.
+    // 问题是 正是 更早时刻的Top 触发了 当前时刻的Cur   ， 而此时 Cur 又想着 触发 此时的Top， 这显然是个环  而且是 无终止条件的环  即是 死递归了。
+    // 所以说 正确的写法 当前时刻 应该触发 Top(当前节点nodeX的下层节点)  即 下一层Top ，如此 在 空间上 避开了 环的形成，从而不会死递归。 也即 "写法1" 是正确的写法
+}
+ */
+
+/** 更进一步推测的结论：
+在clang源码内部  Stmt递归过程 伪码如下：
+TraverseStmt(第k层节点x){
+	for (Xxx in [If, While, For, Try, ... ] ){
+		TraverseXxxStmt(x);
+	}
+//因此 TraverseXxxStmt(x) 中 不能含有 TraverseStmt(x) , 否则 形成  环 且 是无条件环  即死递归
+//  clang并没有预期允许能发生这种事情 即没有代码能检测这种事情   即 是 无条件
+}
+
+// 也可以看出 自定义 TraverseXxxStmt(x) 应该具有如下形式：
+//正确的 自定义 TraverseXxxStmt(x) 写法如下：
+TraverseXxxStmt(x) {
+//  对当前节点x做想要的自定义处理， 比如 插入 时钟调用语句
+
+//  将递归链条正确的接好:
+  for(auto child: x){
+    TraverseStmt(child); //进入下一层节点的递归. 注意 此时 调用栈上层有 TraverseStmt(x),  本行有 TraverseStmt(child) ， 但 x 和 child 是 不相等的 ，所以不存在环 即不会死递归。
+    // 注：  x 是 语法树 中的 第k层节点  ，而 child是第k+1层节点，因此 x 和 child 不相等。
+  }
+}
+ */
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
 }
 
