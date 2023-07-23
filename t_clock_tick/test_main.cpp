@@ -20,6 +20,11 @@ int funOutImpl();
 int myNs1::myNs2::User::funOutImpl() {
 	char ch,sex='m';//命名空间内的 函数 funOutImpl: 在结构体定义外实现函数体
   ch++;
+  while(ch!='a'){
+    int num;
+    char flag;
+    ch--;
+  }
   return ch;
 }
 
