@@ -412,6 +412,21 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
   return true;
 }
 
+bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
+
+/////////////////////////对当前节点forStmt做 自定义处理
+  processStmt(cxxTryStmt);
+///////////////////// 自定义处理 完毕
+
+
+////////////////////  将递归链条正确的接好:  对 当前节点cxxTryStmt的下一层节点child:{tryBlock} 调用顶层方法TraverseStmt(child)
+  CompoundStmt *tryBlockCompoundStmt = cxxTryStmt->getTryBlock();
+  if(tryBlockCompoundStmt){
+    TraverseStmt(tryBlockCompoundStmt);
+  }
+  return true;
+}
+
 /*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
 //  FunctionDecl *functionDecl = declK->getAsFunction();
