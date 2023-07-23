@@ -217,6 +217,7 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
  * @param stmt
  * @return
  */
+//TODO 增加 谁插入的这条语句 的string参数
 bool CTkVst::processStmt(Stmt *stmt){
   int64_t stmtId = stmt->getID(*Ctx);
 
@@ -426,6 +427,51 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
   }
   return true;
 }
+
+
+bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
+
+/////////////////////////对当前节点cxxCatchStmt做 自定义处理
+  processStmt(cxxCatchStmt);
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
+  Stmt *handlerBlockStmt = cxxCatchStmt->getHandlerBlock();
+  if(handlerBlockStmt){
+    TraverseStmt(handlerBlockStmt);
+  }
+  return true;
+}
+
+bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
+
+/////////////////////////对当前节点doStmt做 自定义处理
+  processStmt(doStmt);
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *body = doStmt->getBody();
+  if(body){
+    TraverseStmt(body);
+  }
+  return true;
+}
+
+bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
+
+/////////////////////////对当前节点switchStmt做 自定义处理
+  processStmt(switchStmt);
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *body = switchStmt->getBody();
+  if(body){
+    TraverseStmt(body);
+  }
+  return true;
+}
+
+
 
 /*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
