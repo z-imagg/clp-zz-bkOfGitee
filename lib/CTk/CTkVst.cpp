@@ -45,6 +45,7 @@ const std::string CTkVst::funcName_TCTk = "X__t_clock_tick";
 const std::string CTkVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
 
 
+static auto _VarDeclAstNodeKind=ASTNodeKind::getFromNodeKind<VarDecl>();
 
 static auto _whileStmtAstNodeKind=ASTNodeKind::getFromNodeKind<WhileStmt>();
 static auto _forStmtAstNodeKind=ASTNodeKind::getFromNodeKind<ForStmt>();
@@ -220,6 +221,7 @@ void insertBefore_X__t_clock_tick(Rewriter &rewriter, SourceLocation sourceLocat
 }
 
 //TODO 暂时去掉不必要的打印
+//TODO 分配变量个数： 当前语句如果是VarDecl
 
 /**遍历语句
  *
@@ -290,10 +292,27 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   if( ( !_isInternalSysSourceFile ) && _shouldInsert){
 
+//    stmtClass=stmt->getStmtClass();
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
+    if(stmtClass==Stmt::StmtClass::DeclStmtClass){
+      //如果当前语句是声明语句
+      DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
+      if(declStmt){
+
+        Decl *decl0 = *(declStmt->decl_begin());
+//        decl0->getKind()==Decl::Var;
+        if(decl0 && decl0->getKind()==Decl::Kind::Var){
+          //如果当前语句是声明语句, 且第一个子声明是变量声明语句,则栈变量分配个数填写1
+          //TODO 有可能是这种样子: int n,m,u,v=0; 此时 应该取 declStmt->decls() 的size?
+          stackVarAllocCnt=1;
+        }
+      }
+      //stmtClass==Stmt::StmtClass::DeclStmtClass
+//      stmt->
+    }
     insertBefore_X__t_clock_tick(mRewriter, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt,whoInserted);
 
