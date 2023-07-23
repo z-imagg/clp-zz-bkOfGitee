@@ -130,6 +130,11 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   //获取当前语句S的源码文本
   std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
+  if(LocIsIn_constexpr_func_ls(beginLoc)){
+//    判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
+    return true;
+  }
+
   if(mainFileId!=fileId){
 //    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
@@ -385,6 +390,74 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
     TraverseStmt(body);
   }
   return true;
+}
+
+////////////////constexpr
+
+bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
+  const SourceRange &sourceRange = functionDecl->getSourceRange();
+  bool _isConstexpr = functionDecl->isConstexpr();
+  Stmt *body = functionDecl->getBody();
+
+  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+}
+
+
+bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
+  bool _isConstexpr = cxxMethodDecl->isConstexpr();
+  Stmt *body = cxxMethodDecl->getBody();
+
+  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+}
+
+bool CTkVst::_Traverse_Func(
+        const SourceRange &funcSourceRange,
+        bool funcIsConstexpr,
+        Stmt *funcBodyStmt
+){
+
+/////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
+
+  const SourceRange &sourceRange = funcSourceRange;
+
+//TODO 函数体 左花括号{ 后插入语句， 栈变量分配个数 为函数参数个数
+//TODO 函数体 右边花括号} 前插入语句， 栈变量释放个数 为
+// 函数参数个数 A
+// +
+// 函数体内栈变量分配个数 B :
+//    （不包括函数体内嵌套的语句块内的栈变量分配个数）
+// B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
+
+  bool _isConstexpr = funcIsConstexpr;
+  if(_isConstexpr){
+    //若此函数 有 constexpr 修饰，则记录其坐标范围。
+    //  方便 processStmt 判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
+    this->constexpr_func_ls.push_back(sourceRange);
+  }
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxMethodDecl|functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  Stmt *body = funcBodyStmt;
+  if(body){
+    TraverseStmt(body);
+  }
+  return true;
+
+}
+bool CTkVst::LocIsIn_constexpr_func_ls(SourceLocation Loc) {
+
+  bool LocIsInAnyOneFuncRange=std::any_of(constexpr_func_ls.begin(), constexpr_func_ls.end(),
+  [&Loc](const clang::SourceRange& funcKSourceRange){
+    //指定坐标Loc 是否在 某个函数 的 坐标范围funcKSourceRange  内
+    //若在，说明 该坐标属于 某个 被 constexpr 修饰的 函数，此坐标 不能被插入语句。
+    bool isIn= Loc >= funcKSourceRange.getBegin() && Loc <= funcKSourceRange.getEnd();
+    return isIn;
+  }
+  );
+  //返回 该坐标Loc 是否 在 任意一个 被 constexpr 修饰的 函数 的坐标范围内, 若在 ，则 此坐标 不能被插入语句。
+  return LocIsInAnyOneFuncRange;
+
 }
 
 
