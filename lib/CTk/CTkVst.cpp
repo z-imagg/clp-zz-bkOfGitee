@@ -117,7 +117,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   }
 
 //  SourceManager & SM = mRewriter.getSourceMgr();//此处的mRewriter的SourceMgr是空, 所以才会有C处崩溃，因为C处用 NULL.getFileID() 肯定崩溃。
-  const LangOptions & langOpts = mRewriter.getLangOpts();
+  const LangOptions & langOpts = CI.getLangOpts();
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
