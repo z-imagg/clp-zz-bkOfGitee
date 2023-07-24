@@ -21,9 +21,11 @@ int myNs1::myNs2::User::funOutImpl() {
 	char ch,sex='m';//命名空间内的 函数 funOutImpl: 在结构体定义外实现函数体
   ch++;
   while(ch!='a'){
-    int num;
+    int num,sum=0;
     char flag;
+    float delta=0.9, alpha, ZERO=0.0, PI=3.14, DIFF;
     ch--;
+    //此块末尾 应该释放8个变量, 而不是3个变量。
   }
   return ch;
 }
