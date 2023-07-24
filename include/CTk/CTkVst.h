@@ -174,7 +174,6 @@ public:
      * @return
      */
     virtual bool TraverseDoStmt(DoStmt *doStmt);
-    /* for、while、doWhile很相似 */
     /**
      * 1. switch语句整体 前 插入 时钟调用语句
      * 2. 粘接直接子节点到递归链
@@ -185,23 +184,61 @@ public:
      * 举例如下:
      * switch(...)
      * {       //这里是switch的多情况体
+     *
      * case 1: //这里是多情况体 的 第1个 子语句 case语句1
      * {
      * }//case语句1结束
+     *
      * case 2: //这里是多情况体 的 第2个 子语句 case语句2
      * break;
      * //case语句2结束
+     *
      * case 3: //这里是多情况体 的 第3个 子语句 case语句3
      * {
      * ...;
      * }//case语句3结束
+     *
      * }//多情况体结束
      *
      * @param switchStmt
      * @return
      */
     virtual bool TraverseSwitchStmt(SwitchStmt *switchStmt);
-//    virtual bool TraverseCaseStmt(CaseStmt *caseStmt);由于case语句前不能插入 任何语句 ,否则语法错误，因此 case语句不需要自定义处理，只需要对case语句用clang内部的正常递归即可。
+    /**
+     * 1. case语句整体 前 不插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理case语句内的子语句
+     *
+     * case语句的子语句 child:[body即单情况体]  单情况体内的子语句是case语句 ，case语句整体前是不能插入 不需要插入 时钟调用语句.
+     *
+     * 当case语句的子语句 child:[body即单情况体]  单情况体是块语句的情况下, 单情况体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(单情况体) ---...---> TraverseCompoundStmt(单情况体) 后，由TraverseCompoundStmt(单情况体)对该单情况体中的每条语句前 插入 时钟调用语句.
+     * 如果case语句的单情况体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
+     *
+     *
+     * 举例如下:
+     * switch(...)
+     * {//这里是switch语句的多情况体
+     *
+     * case 1: //这里是 case语句1
+     * {  //这里是 case语句1 的  单情况体
+     * ...;
+     * }//case语句1结束
+     *
+     * case 2: //这里是 case语句2
+     * break; ////这里是 case语句2 的  单情况体
+     * //case语句2结束
+     *
+     * case 3: //这里是 case语句3
+     * {  //这里是 case语句3 的  单情况体
+     * ...;
+     * }//case语句3结束
+     *
+     * }//多情况体结束
+     *
+     * @param switchStmt
+     * @return
+     */
+    virtual bool TraverseCaseStmt(CaseStmt *caseStmt);//由于case语句前不能插入 任何语句 ,否则语法错误，因此 case语句不需要自定义处理，只需要对case语句用clang内部的正常递归即可。
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
 
     /////////constexpr

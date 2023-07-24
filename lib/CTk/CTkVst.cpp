@@ -556,6 +556,26 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
   return true;
 }
 
+
+bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
+
+/////////////////////////对当前节点caseStmt 不做 自定义处理
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点caseStmt的下一层节点中的单情况体  调用顶层方法TraverseStmt(单情况体)
+                                /////case的其他子节点，比如 'case 值:' 中的 '值' 不做处理。
+  Stmt *body = caseStmt->getSubStmt();//不太确定 case.getSubStmt 是 获取case的单情况体
+  if(body){
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(body);
+    }
+  }
+  return true;
+}
+
+
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
