@@ -24,8 +24,9 @@ using namespace clang;
 
 class Util {
 public:
+    static bool parentIsCompound(ASTContext* astContext, const Stmt* currentStmt);
     static bool parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass);
-    static bool parentKindIsSame(ASTContext *Ctx, Stmt* stmt, const ASTNodeKind& kind);
+    static bool parentKindIsSame(ASTContext *Ctx, const Stmt* stmt, const ASTNodeKind& kind);
     /**
      * 在声明语句 中 声明的变量个数
      * 比如 :

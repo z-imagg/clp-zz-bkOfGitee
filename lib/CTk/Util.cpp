@@ -15,6 +15,12 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::parentIsCompound(ASTContext* astContext, const Stmt* currentStmt) {
+  bool parentKindIsCompound= Util::parentKindIsSame(astContext, currentStmt, ASTNodeKind::getFromNodeKind<CompoundStmt>());
+  bool parentClassIsCompound= Util::parentClassEqual(astContext, currentStmt, Stmt::CompoundStmtClass);
+  bool parentIsCompound=parentKindIsCompound||parentClassIsCompound;
+  return parentIsCompound;
+}
 
 bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass) {
   auto parents = astContext->getParents(*stmt);
@@ -29,7 +35,7 @@ bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::Stmt
   return false;
 }
 
-bool Util::parentKindIsSame(ASTContext *Ctx, Stmt* stmt, const ASTNodeKind& kind){
+bool Util::parentKindIsSame(ASTContext *Ctx, const Stmt* stmt, const ASTNodeKind& kind){
   if(!Ctx || !stmt){
     return false;
   }

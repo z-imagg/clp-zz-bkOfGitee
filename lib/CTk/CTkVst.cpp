@@ -285,13 +285,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   );*/
 
   if(ifStmt){
-    bool parentKindIsCompound= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<CompoundStmt>());
-
-    bool parentClassIsCompound= Util::parentClassEqual(Ctx, ifStmt, Stmt::CompoundStmtClass);
-
-    bool parentIsCompound=parentKindIsCompound||parentClassIsCompound;
-
-    if(parentIsCompound){
+    if(Util::parentIsCompound(Ctx,ifStmt)){
       processStmt(ifStmt,"TraverseIfStmt");
     }
   }
@@ -330,7 +324,9 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 }
 bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 /////////////////////////对当前节点whileStmt做 自定义处理
-  processStmt(whileStmt,"TraverseWhileStmt");
+  if(Util::parentIsCompound(Ctx,whileStmt)){
+    processStmt(whileStmt,"TraverseWhileStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -360,7 +356,9 @@ bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 
 bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(forStmt,"TraverseForStmt");
+  if(Util::parentIsCompound(Ctx,forStmt)){
+    processStmt(forStmt,"TraverseForStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -378,7 +376,9 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(cxxTryStmt,"TraverseCXXTryStmt");
+  if(Util::parentIsCompound(Ctx,cxxTryStmt)){
+    processStmt(cxxTryStmt,"TraverseCXXTryStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 
@@ -398,7 +398,7 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 
 /////////////////////////对当前节点cxxCatchStmt做 自定义处理
-  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");
+//  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");//catch整体 前 肯定不能插入
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
@@ -415,7 +415,9 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 
 /////////////////////////对当前节点doStmt做 自定义处理
-  processStmt(doStmt,"TraverseDoStmt");
+  if(Util::parentIsCompound(Ctx,doStmt)){
+    processStmt(doStmt,"TraverseDoStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -433,7 +435,9 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 //switchStmt: switch整体:  'switch(v){ case k1:{...}  case k2:{...}  default:{} }'
 /////////////////////////对当前节点switchStmt做 自定义处理
-  processStmt(switchStmt,"TraverseSwitchStmt");
+  if(Util::parentIsCompound(Ctx,switchStmt)){
+    processStmt(switchStmt,"TraverseSwitchStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{switchBody} 调用顶层方法TraverseStmt(child)
