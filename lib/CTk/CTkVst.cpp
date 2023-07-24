@@ -486,7 +486,11 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 ////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt){
-    TraverseStmt(bodyStmt);
+    Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(bodyStmt);
+    }
   }
   return true;
 }
@@ -537,7 +541,11 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = doStmt->getBody();
   if(body){
-    TraverseStmt(body);
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(body);
+    }
   }
   return true;
 }
@@ -551,6 +559,8 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = switchStmt->getBody();
   if(body){
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
     TraverseStmt(body);
   }
   return true;
