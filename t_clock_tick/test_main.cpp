@@ -6,6 +6,31 @@ constexpr int func0(){
   return 90;//constexpr func0
 }
 
+class Product{
+public:
+    Product(){
+
+    }
+    Product(int id, bool ok, char cate='Z')
+    :id(id),ok(ok),cate(cate),owner_id(-1)
+    {
+      int thanks,memory=100;
+      while(true){
+        bool err=false;
+        if(err){
+          break;
+        }
+      }
+    }
+    Product &operator=(Product &&Other) = default;
+
+private:
+    int id;
+    bool ok;
+    char cate;
+    int owner_id;
+};
+
 struct User{
 constexpr int func1(){
 return 1;//func1: 在结构体定义处实现函数体
