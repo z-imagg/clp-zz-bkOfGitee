@@ -22,6 +22,11 @@ public:
       ASTContext &astContext = CI.getASTContext();
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       mRewriter.setSourceMgr(SM, langOptions);//A
+      /**
+时间轴正向: C--->C'--->C'', 即'越多时刻越晚.
+各个C、C'、C''、C'''处的代码都是 Rewriter.overwriteChangedFiles()
+       */
+      mRewriter.overwriteChangedFiles();//C处 正常.
 
       //Rewriter:3:  Action将Rewriter传递给Consumer
       //Act中 是 每次都是 新创建 CTkAstCnsm
