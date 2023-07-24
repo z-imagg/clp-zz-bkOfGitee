@@ -80,14 +80,16 @@ public:
      * 2. 粘接直接子节点到递归链
      * 不直接处理while语句内的子语句
      *
-     * 当while语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(child)对该块语句child中的每条语句前 插入 时钟调用语句
-     * 如果if语句的子语句 中 不是块语句的 不需要 插入 时钟调用语句, 因此也就没有 形如 processThenStmt、processElseStmt 之类的自定义处理了。
+     * 当while语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(body)对该块语句body中的每条语句前 插入 时钟调用语句.
+     * 如果while语句的循环体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
      *
      * 举例如下:
-     * if(...)
-     *    ...; //这里是if的then子语句， 该then子语句 不是 块语句，不需要插入 时钟调用语句.
-     * else {//这里是if的else子语句， 该else子语句 是 块语句， 会经过 转交: TraverseStmt(child) ---...---> TraverseCompoundStmt(child) , 最终在 TraverseCompoundStmt中 对 该else子语句中的每条语句前插入 时钟调用语句.
-     *  ...;
+     * while(...)
+     *    ...; //这里是while的循环体， 该循环体 不是 块语句，故而 该 循环体前 不需要插入 时钟调用语句.
+     *
+     * while(...)
+     * {
+     *    ...; //这里是while的循环体， 该循环体 是 块语句，会经过 转交: TraverseStmt(循环体) ---...---> TraverseCompoundStmt(循环体) , 最终在 TraverseCompoundStmt中 对 该循环体中的每条语句前插入 时钟调用语句.
      * }
      * @param whileStmt
      * @return
