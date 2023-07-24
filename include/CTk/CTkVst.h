@@ -95,10 +95,23 @@ public:
      * @return
      */
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
+    /* for、while很相似 */
     /**
      * 1. for语句整体 前 插入 时钟调用语句
      * 2. 粘接直接子节点到递归链
      * 不直接处理for语句内的子语句
+     *
+     * 当for语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(body)对该块语句body中的每条语句前 插入 时钟调用语句.
+     * 如果for语句的循环体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
+     *
+     * 举例如下:
+     * for(...)
+     *    ...; //这里是for的循环体， 该循环体 不是 块语句，故而 该 循环体前 不需要插入 时钟调用语句.
+     *
+     * for(...)
+     * {
+     *    ...; //这里是for的循环体， 该循环体 是 块语句，会经过 转交: TraverseStmt(循环体) ---...---> TraverseCompoundStmt(循环体) , 最终在 TraverseCompoundStmt中 对 该循环体中的每条语句前插入 时钟调用语句.
+     * }
      * @param forStmt
      * @return
      */
