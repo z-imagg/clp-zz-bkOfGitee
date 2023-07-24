@@ -226,15 +226,15 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   //此组合语句内的变量声明语句个数
   int declStmtCnt=0;
 
-  for(Stmt* stmt:subStmtLs){
-    const char *stmtClassName = stmt->getStmtClassName();
-    Stmt::StmtClass stmtClass = stmt->getStmtClass();
-    if(Stmt::DeclStmtClass == stmtClass){
-      DeclStmt* declStmt=static_cast<DeclStmt*> (stmt);
+  for(Stmt* subStmt:subStmtLs){
+    const char *subStmtClassName = subStmt->getStmtClassName();
+    Stmt::StmtClass subStmtClass = subStmt->getStmtClass();
+    if(Stmt::DeclStmtClass == subStmtClass){
+      DeclStmt* declStmt=static_cast<DeclStmt*> (subStmt);
       //取得声明语句subDeclStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
       declStmtCnt+=Util::varCntInVarDecl(declStmt);
     }
-//    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
+//    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",subStmt,true);
   }
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
