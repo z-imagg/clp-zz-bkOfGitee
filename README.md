@@ -1,4 +1,4 @@
-# 简写约定
+# 简写约定 
 ## 单词
 - CTk: 时钟滴答
 > CTk: C_Tk : Clock_Tick
