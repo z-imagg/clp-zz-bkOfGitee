@@ -244,7 +244,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     if(Stmt::DeclStmtClass==stmtClass){
       declStmtCnt++;
     }
-    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
+//    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
   }
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
