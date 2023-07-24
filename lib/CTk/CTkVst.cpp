@@ -171,9 +171,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
 
-//  char msg[256];
-//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
+  char msg[256];
+  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile )){
 
@@ -284,8 +284,11 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
     }
   );*/
 
-
-  processStmt(ifStmt,"TraverseIfStmt");
+  if(ifStmt){
+    if(Util::parentIsCompound(Ctx,ifStmt)){
+      processStmt(ifStmt,"TraverseIfStmt");
+    }
+  }
 
 ///////////////////// 自定义处理 完毕
 
@@ -295,7 +298,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 
   if(thenStmt){
     Stmt::StmtClass thenStmtClass = thenStmt->getStmtClass();
-    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
       //这一段可以替代shouldInsert
       /**只有当if的then子语句是 块语句 时, 该 then子语句，才需要 经过 TraverseStmt(thenStmt) ---...--->TraverseCompoundStmt(thenStmt) 转交，在 TraverseCompoundStmt(thenStmt) 中 对 then块中的每条子语句前 插入 时钟调用语句.
        * 形如:
@@ -305,7 +308,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
        * }
        */
       TraverseStmt  (thenStmt);
-    }
+//    }
     /**否则 if的then子语句 肯定是一个单行语句，无需插入 时钟调用语句.
      * 形如 :
      * if(...)
@@ -321,7 +324,9 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 }
 bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 /////////////////////////对当前节点whileStmt做 自定义处理
-  processStmt(whileStmt,"TraverseWhileStmt");
+  if(Util::parentIsCompound(Ctx,whileStmt)){
+    processStmt(whileStmt,"TraverseWhileStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -351,17 +356,19 @@ bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 
 bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(forStmt,"TraverseForStmt");
+  if(Util::parentIsCompound(Ctx,forStmt)){
+    processStmt(forStmt,"TraverseForStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt){
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
-    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
       //这一段可以替代shouldInsert
       TraverseStmt(bodyStmt);
-    }
+//    }
   }
   return true;
 }
@@ -369,7 +376,9 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 
 /////////////////////////对当前节点forStmt做 自定义处理
-  processStmt(cxxTryStmt,"TraverseCXXTryStmt");
+  if(Util::parentIsCompound(Ctx,cxxTryStmt)){
+    processStmt(cxxTryStmt,"TraverseCXXTryStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 
@@ -389,7 +398,7 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 
 /////////////////////////对当前节点cxxCatchStmt做 自定义处理
-  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");
+//  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");//catch整体 前 肯定不能插入
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
@@ -406,7 +415,9 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 
 /////////////////////////对当前节点doStmt做 自定义处理
-  processStmt(doStmt,"TraverseDoStmt");
+  if(Util::parentIsCompound(Ctx,doStmt)){
+    processStmt(doStmt,"TraverseDoStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
@@ -422,18 +433,33 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 }
 
 bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
-
+//switchStmt: switch整体:  'switch(v){ case k1:{...}  case k2:{...}  default:{} }'
 /////////////////////////对当前节点switchStmt做 自定义处理
-  processStmt(switchStmt,"TraverseSwitchStmt");
+  if(Util::parentIsCompound(Ctx,switchStmt)){
+    processStmt(switchStmt,"TraverseSwitchStmt");
+  }
 ///////////////////// 自定义处理 完毕
 
-////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-  Stmt *body = switchStmt->getBody();
-  if(body){
-    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
-    assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
-    TraverseStmt(body);
+////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{switchBody} 调用顶层方法TraverseStmt(child)
+  Stmt *switchBody = switchStmt->getBody();//switchBody：switch体 : 即   '{ case k1:{...}  case k2:{...}  default:{} }'
+  if(!switchBody){
+    return true;
   }
+
+  Stmt::StmtClass bodyStmtClass = switchBody->getStmtClass();
+  assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
+  //不要遍历switch体 即 不要有 TraverseStmt(switch体), 否则会有 TraverseCompoundStmt(switch体) 即 : 会在case前插入语句，这是错误的。
+
+  for (SwitchCase *switchCaseK = switchStmt->getSwitchCaseList(); switchCaseK != nullptr; switchCaseK = switchCaseK->getNextSwitchCase()) {
+    if (CaseStmt *caseKStmt = dyn_cast<CaseStmt>(switchCaseK)) {
+      //caseKStmt: case k 整体 : 'case k: {....}'
+      Stmt *caseKBody = caseKStmt->getSubStmt();//caseKBody: case k 的 身体 : 即 'case k: {...}'  中的 '{...}'
+      if(caseKBody){
+        TraverseStmt(caseKBody);
+      }
+    }
+  }
+
   return true;
 }
 

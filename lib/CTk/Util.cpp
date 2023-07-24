@@ -15,6 +15,40 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::parentIsCompound(ASTContext* astContext, const Stmt* currentStmt) {
+  bool parentKindIsCompound= Util::parentKindIsSame(astContext, currentStmt, ASTNodeKind::getFromNodeKind<CompoundStmt>());
+  bool parentClassIsCompound= Util::parentClassEqual(astContext, currentStmt, Stmt::CompoundStmtClass);
+  bool parentIsCompound=parentKindIsCompound||parentClassIsCompound;
+  return parentIsCompound;
+}
+
+bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass) {
+  auto parents = astContext->getParents(*stmt);
+
+  for (const auto& parent : parents) {
+    auto stmtParent = parent.get<Stmt>();
+    if (stmtParent && stmtParent->getStmtClass() == targetClass) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Util::parentKindIsSame(ASTContext *Ctx, const Stmt* stmt, const ASTNodeKind& kind){
+  if(!Ctx || !stmt){
+    return false;
+  }
+  DynTypedNodeList parentS=Ctx->getParents(*stmt);
+  for (const auto& parent : parentS) {
+    if (   kind.isSame(parent.getNodeKind())  ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 /**取得声明语句中声明的变量个数
  * 在声明语句 中 声明的变量个数
