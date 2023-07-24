@@ -171,9 +171,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
 
-//  char msg[256];
-//  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d,_shouldInsert:%d",parent0NodeKindCStr,_isInternalSysSourceFile,_shouldInsert);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
+  char msg[256];
+  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
 
   if( ( !_isInternalSysSourceFile )){
 
@@ -307,11 +307,10 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 
     bool curNodeAsASingleStmtInParent=curNodeAsASingleStmtInParent_kind||curNodeAsASingleStmtInParent_class;
 
-    if(curNodeAsASingleStmtInParent){
-      return true;
+    if(!curNodeAsASingleStmtInParent){
+      processStmt(ifStmt,"TraverseIfStmt");
     }
   }
-  processStmt(ifStmt,"TraverseIfStmt");
 
 ///////////////////// 自定义处理 完毕
 
@@ -321,7 +320,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 
   if(thenStmt){
     Stmt::StmtClass thenStmtClass = thenStmt->getStmtClass();
-    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
       //这一段可以替代shouldInsert
       /**只有当if的then子语句是 块语句 时, 该 then子语句，才需要 经过 TraverseStmt(thenStmt) ---...--->TraverseCompoundStmt(thenStmt) 转交，在 TraverseCompoundStmt(thenStmt) 中 对 then块中的每条子语句前 插入 时钟调用语句.
        * 形如:
@@ -331,7 +330,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
        * }
        */
       TraverseStmt  (thenStmt);
-    }
+//    }
     /**否则 if的then子语句 肯定是一个单行语句，无需插入 时钟调用语句.
      * 形如 :
      * if(...)
@@ -384,10 +383,10 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt){
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
-    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
       //这一段可以替代shouldInsert
       TraverseStmt(bodyStmt);
-    }
+//    }
   }
   return true;
 }
