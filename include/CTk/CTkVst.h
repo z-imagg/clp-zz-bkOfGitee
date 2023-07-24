@@ -245,6 +245,7 @@ public:
     /////////constexpr
     virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
+    virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
 
     /** 遍历  FunctionDecl 或 CXXMethodDecl
      * TraverseFunctionDecl 和 TraverseCXXMethodDecl 的 公共代码
