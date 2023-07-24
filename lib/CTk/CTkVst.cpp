@@ -422,26 +422,25 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 }
 
 bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
-
+//switchStmt: switch整体:  'switch(v){ case k1:{...}  case k2:{...}  default:{} }'
 /////////////////////////对当前节点switchStmt做 自定义处理
   processStmt(switchStmt,"TraverseSwitchStmt");
 ///////////////////// 自定义处理 完毕
 
-////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-  Stmt *body = switchStmt->getBody();
-  if(!body){
+////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{switchBody} 调用顶层方法TraverseStmt(child)
+  Stmt *switchBody = switchStmt->getBody();//switchBody：switch体 : 即   '{ case k1:{...}  case k2:{...}  default:{} }'
+  if(!switchBody){
     return true;
   }
 
-  Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+  Stmt::StmtClass bodyStmtClass = switchBody->getStmtClass();
   assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
-//  TraverseStmt(body);//不要遍历switch体, 否则会有 TraverseCompoundStmt(switch体) 即 : 会在case前插入语句，这是错误的。
+  //不要遍历switch体 即 不要有 TraverseStmt(switch体), 否则会有 TraverseCompoundStmt(switch体) 即 : 会在case前插入语句，这是错误的。
 
-  // Traverse each switch case
   for (SwitchCase *switchCaseK = switchStmt->getSwitchCaseList(); switchCaseK != nullptr; switchCaseK = switchCaseK->getNextSwitchCase()) {
     if (CaseStmt *caseKStmt = dyn_cast<CaseStmt>(switchCaseK)) {
-      //caseKStmt: case k 整体
-      Stmt *caseKBody = caseKStmt->getSubStmt();//caseKBody: case k 的 身体
+      //caseKStmt: case k 整体 : 'case k: {....}'
+      Stmt *caseKBody = caseKStmt->getSubStmt();//caseKBody: case k 的 身体 : 即 'case k: {...}'  中的 '{...}'
       if(caseKBody){
         TraverseStmt(caseKBody);
       }
