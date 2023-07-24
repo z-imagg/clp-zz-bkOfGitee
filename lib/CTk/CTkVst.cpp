@@ -429,11 +429,25 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = switchStmt->getBody();
-  if(body){
-    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
-    assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
-    TraverseStmt(body);
+  if(!body){
+    return true;
   }
+
+  Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+  assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
+//  TraverseStmt(body);//不要遍历switch体, 否则会有 TraverseCompoundStmt(switch体) 即 : 会在case前插入语句，这是错误的。
+
+  // Traverse each switch case
+  for (SwitchCase *switchCaseK = switchStmt->getSwitchCaseList(); switchCaseK != nullptr; switchCaseK = switchCaseK->getNextSwitchCase()) {
+    if (CaseStmt *caseKStmt = dyn_cast<CaseStmt>(switchCaseK)) {
+      //caseKStmt: case k 整体
+      Stmt *caseKBody = caseKStmt->getSubStmt();//caseKBody: case k 的 身体
+      if(caseKBody){
+        TraverseStmt(caseKBody);
+      }
+    }
+  }
+
   return true;
 }
 
