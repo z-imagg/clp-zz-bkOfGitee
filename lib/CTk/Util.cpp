@@ -71,7 +71,7 @@ std::string Util::getSourceTextBySourceRange(SourceRange sourceRange, SourceMana
 /**
  * 获取语句所属源文件路径
  */
-bool Util::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+void Util::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
   SourceLocation Loc = S->getBeginLoc();
   Util::getSourceFilePathAtLoc(Loc,SM,fn);
 }
