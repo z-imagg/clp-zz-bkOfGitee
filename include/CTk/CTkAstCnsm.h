@@ -35,7 +35,7 @@ public:
             findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
             SM(_SM)  {
       //构造函数
-      _rewriter_ptr->overwriteChangedFiles();//C'正常.
+//      _rewriter_ptr->overwriteChangedFiles();//C'正常.
     }
 
 

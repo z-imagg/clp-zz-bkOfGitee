@@ -26,7 +26,7 @@ public:
 时间轴正向: C--->C'--->C'', 即'越多时刻越晚.
 各个C、C'、C''、C'''处的代码都是 Rewriter.overwriteChangedFiles()
        */
-      mRewriter_ptr->overwriteChangedFiles();//C处 正常.
+//      mRewriter_ptr->overwriteChangedFiles();//C处 正常.
 
 //      const std::shared_ptr<Rewriter> &rewriter_ptr = std::make_shared<Rewriter>();
       //Rewriter:3:  Action将Rewriter传递给Consumer
