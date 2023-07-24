@@ -203,8 +203,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
       //stmtClass==Stmt::StmtClass::DeclStmtClass
 //      stmt->
     }
-    insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
-                                 heapObjcFreeCnt, whoInserted);
+//    insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
+//                                 heapObjcFreeCnt, whoInserted);
 
 
 
@@ -268,7 +268,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
-  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
+//  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
 
   ///////////////处理  子语句列表 中每条语句
