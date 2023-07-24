@@ -423,7 +423,23 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   Stmt *elseStmt = ifStmt->getElse();
 
   if(thenStmt){
+    Stmt::StmtClass thenStmtClass = thenStmt->getStmtClass();
+    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      /**只有当if的then子语句是 块语句 时, 该 then子语句，才需要 经过 TraverseStmt(thenStmt) ---...--->TraverseCompoundStmt(thenStmt) 转交，在 TraverseCompoundStmt(thenStmt) 中 对 then块中的每条子语句前 插入 时钟调用语句.
+       * 形如:
+       * if(...)
+       * {
+       * ...;//这里是 if的then子语句, 是一个块语句，需要 对 then块中的每条子语句前 插入 时钟调用语句.
+       * }
+       */
       TraverseStmt  (thenStmt);
+    }
+    /**否则 if的then子语句 肯定是一个单行语句，无需插入 时钟调用语句.
+     * 形如 :
+     * if(...)
+     *   ...;// 这里是 if的then子语句, 是一个单行语句，无需插入 时钟调用语句.
+     */
   }
 
   if(elseStmt){
