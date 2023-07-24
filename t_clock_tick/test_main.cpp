@@ -5,6 +5,7 @@ char topOutFunc(float f1, double d2){
   int arr[]={8,0,-1,99};
   for(int q: arr)
     if (q>0)
+      if(diff>9)
       diff+=q;
   
 }
