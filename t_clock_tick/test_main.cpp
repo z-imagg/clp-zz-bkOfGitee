@@ -30,9 +30,14 @@ char topOutFunc000(float f1, double d2){
 namespace myNs1{
     namespace myNs2{
 
-        constexpr int func0(){
+
+        constexpr int func0(int z){
+          int a[]={};
+          for(int i:a)
+            i=z;
           return 90;//constexpr func0
         }
+
 
         class Product{
         public:
