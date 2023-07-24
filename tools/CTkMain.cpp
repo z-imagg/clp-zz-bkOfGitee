@@ -33,13 +33,13 @@ public:
     LangOptions &langOpts=CI.getLangOpts();
     ASTContext& astContext=CI.getASTContext();
     //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
-    mRewriter.setSourceMgr(SM, langOpts);
+    mRewriter_ptr->setSourceMgr(SM, langOpts);
 
 
 
     //Rewriter:3:  Action将Rewriter传递给Consumer
     //Act中 是 每次都是 新创建 CTkAstCnsm
-    return std::make_unique<CTkAstCnsm>(CI, mRewriter,
+    return std::make_unique<CTkAstCnsm>(CI, mRewriter_ptr,
                                         &astContext, SM, langOpts);
   }
 
@@ -54,7 +54,8 @@ public:
 private:
     //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
     //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
-    Rewriter mRewriter;//这里是独立运行Act中的Rewriter，是源头，理应构造Rewriter.
+    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是独立运行Act中的Rewriter，是源头，理应构造Rewriter.
+
 };
 
 

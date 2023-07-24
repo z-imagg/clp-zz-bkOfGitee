@@ -25,15 +25,14 @@ bool FndCTkClROVst::VisitCallExpr(CallExpr *callExpr){
 
   FunctionDecl* dirtCallee=callExpr->getDirectCallee();
   if(dirtCallee==NULL){
-    Util::printExpr(*Ctx, CI, "查看、学习用", "遍历CallExpr时callExpr.DirectCallee为空的", callExpr, false);
+//    Util::printExpr(*Ctx, CI, "查看、学习用", "遍历CallExpr时callExpr.DirectCallee为空的", callExpr, false);
     return true;
   }
 
   IdentifierInfo *identifierInfo = dirtCallee->getIdentifier();
   if(identifierInfo==NULL){
     //sourceText 可以 为 ++, 此时 identifierInfo 为NULL， 即 这是 操作符函数，自然是没有函数名字的，此时 dirtCallee->getName() 一定会出错。忽略即可。
-    Util::printExpr(*Ctx, CI, "查看、学习用", "遍历CallExpr时callExpr.DirectCallee.Identifier为空的",
-                    callExpr, false);
+//    Util::printExpr(*Ctx, CI, "查看、学习用", "遍历CallExpr时callExpr.DirectCallee.Identifier为空的", callExpr, false);
     return true;
   }
 

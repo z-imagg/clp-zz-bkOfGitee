@@ -22,8 +22,8 @@ using namespace clang;
 
 class Util {
 public:
-    static void insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, Rewriter& rewriter);
-    static void insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, Rewriter& rewriter);
+    static void insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
+    static void insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
     static bool getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn);
     static bool getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn);
 
