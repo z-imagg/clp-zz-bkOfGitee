@@ -90,7 +90,12 @@ int myNs1::myNs2::User::funOutImpl() {
 
 
 char topOutFunc(float f1, double d2){
+  int diff;
   int arr[]={8,0,-1,99};
+  for(int q: arr)
+    if (q>0)
+      diff+=q;
+  
   for(int x: arr){
     bool ok=x%2==0;
     if(ok) break;
