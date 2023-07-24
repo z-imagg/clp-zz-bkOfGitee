@@ -57,8 +57,49 @@ public:
 
     //DEF_TRAVERSE_STMT(CompoundStmt  : grep '(CompoundStmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
     virtual bool TraverseCompoundStmt(CompoundStmt *compoundStmt );
+    /**
+     * 1. if语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理if语句内的子语句
+     *
+     * 当if语句的子语句 child:[then, else]中 只有是块语句的情况下, 子语句内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(child) ---...---> TraverseCompoundStmt(child) 后，由TraverseCompoundStmt(child)对该块语句child中的每条语句前 插入 时钟调用语句
+     * 如果if语句的子语句 中 不是块语句的 不需要 插入 时钟调用语句, 因此也就没有 形如 processThenStmt、processElseStmt 之类的自定义处理了。
+     *
+     * 举例如下:
+     * if(...)
+     *    ...; //这里是if的then子语句， 该then子语句 不是 块语句，不需要插入 时钟调用语句.
+     * else {//这里是if的else子语句， 该else子语句 是 块语句， 会经过 转交: TraverseStmt(child) ---...---> TraverseCompoundStmt(child) , 最终在 TraverseCompoundStmt中 对 该else子语句中的每条语句前插入 时钟调用语句.
+     *  ...;
+     * }
+     * @param ifStmt
+     * @return
+     */
     virtual bool TraverseIfStmt(IfStmt *ifStmt);
+    /**
+     * 1. while语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理while语句内的子语句
+     *
+     * 当while语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(child)对该块语句child中的每条语句前 插入 时钟调用语句
+     * 如果if语句的子语句 中 不是块语句的 不需要 插入 时钟调用语句, 因此也就没有 形如 processThenStmt、processElseStmt 之类的自定义处理了。
+     *
+     * 举例如下:
+     * if(...)
+     *    ...; //这里是if的then子语句， 该then子语句 不是 块语句，不需要插入 时钟调用语句.
+     * else {//这里是if的else子语句， 该else子语句 是 块语句， 会经过 转交: TraverseStmt(child) ---...---> TraverseCompoundStmt(child) , 最终在 TraverseCompoundStmt中 对 该else子语句中的每条语句前插入 时钟调用语句.
+     *  ...;
+     * }
+     * @param whileStmt
+     * @return
+     */
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
+    /**
+     * 1. for语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理for语句内的子语句
+     * @param forStmt
+     * @return
+     */
     virtual bool TraverseForStmt(ForStmt *forStmt);
     virtual bool TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt);
     virtual bool TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt);
