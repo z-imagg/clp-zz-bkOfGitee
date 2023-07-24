@@ -3,8 +3,13 @@
 char topOutFunc000(float f1, double d2){
   int diff;
   int arr[]={8,0,-1,99};
-//  for(int q: arr)
-  for(int q=0; q< 8 ; q++)
+  for(int p:arr)
+  for(int j:arr){
+    int zz;
+  }
+  if(true)
+  for(int q: arr)
+//  for(int q=0; q< 8 ; q++)
     if (q>0)//if1
       if(diff>9)//if2
         diff+=q;
