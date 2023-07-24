@@ -15,26 +15,26 @@
 using namespace llvm;
 using namespace clang;
 
-void Util::insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, Rewriter& rewriter){
+void Util::insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, const std::shared_ptr<Rewriter> mRewriter_ptr){
   FileID fileId = SM.getFileID(Loc);
 
-  insertIncludeToFileStart(includeStmtText,fileId,SM,rewriter);
+  insertIncludeToFileStart(includeStmtText,fileId,SM,mRewriter_ptr);
 }
 
-void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, Rewriter& rewriter)   {
+void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> mRewriter_ptr)   {
 //  SourceManager &SM = Context.getSourceManager();
 //  FileID MainFileID = SM.getMainFileID();
 
 //  FileID fileId = SM.getFileID(Loc);
   SourceLocation startLoc = SM.getLocForStartOfFile(fileId);
 
-  const RewriteBuffer *RewriteBuf = rewriter.getRewriteBufferFor(fileId);
+  const RewriteBuffer *RewriteBuf = mRewriter_ptr->getRewriteBufferFor(fileId);
   if (!RewriteBuf){
     return;
   }
 
 
-  rewriter.InsertText(startLoc, includeStmtText, true, true);
+  mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
 }
 
 FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
