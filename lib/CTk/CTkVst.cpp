@@ -84,7 +84,7 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter.InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
+  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   if(lifeStep == LifeStep::Alloc){
@@ -106,7 +106,7 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
 //TODO 插入前 需要看该语句ID是否已经被插入（ 还是 看 该位置 是否已经被插入？ ）  这两者没区别。 关键是  理论上 rewrite.overwriteChangedFiles 是在 HandleTranslationUnit 结尾 才发生，    所以 这种判断才没有被破坏  才能用。
 //    比如 对if语句前 TraverseCompoundStmt 和 TraverseIfStmt 都会插入 ， 这就重复了
 bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
-  this->mRewriter.setSourceMgr(this->SM,CI.getLangOpts());
+  this->mRewriter_ptr->setSourceMgr(this->SM,CI.getLangOpts());
 
   int64_t stmtId = stmt->getID(*Ctx);
 
@@ -210,9 +210,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
     char msgz[256];
     if(whoInserted){
-      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,&mRewriter);
+      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr);
     }else{
-      sprintf(msgz,"插入时钟语句,Rwt:%p",&mRewriter);
+      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr);
     }
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印

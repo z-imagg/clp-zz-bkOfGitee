@@ -26,16 +26,16 @@ using namespace clang;
 class CTkAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter &_rewriter, ASTContext *_astContext,
+    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter *_rewriter_ptr, ASTContext *_astContext,
                         SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
-            insertVst(_rewriter, _astContext, _CI, _SM),
+            insertVst(_rewriter_ptr, _astContext, _CI, _SM),
             findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
             SM(_SM)  {
       //构造函数
-      _rewriter.overwriteChangedFiles();//C'正常.
+      _rewriter_ptr->overwriteChangedFiles();//C'正常.
     }
 
 
@@ -113,7 +113,7 @@ public:
 //////////////////4.应用修改到源文件
 
         //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
-      insertVst.mRewriter.overwriteChangedFiles();//C''处崩溃, 即使没有对源文件有任何修改 C''处也崩溃
+      insertVst.mRewriter_ptr->overwriteChangedFiles();//C''处崩溃, 即使没有对源文件有任何修改 C''处也崩溃
 
 
       //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。
