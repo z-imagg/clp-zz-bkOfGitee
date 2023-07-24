@@ -261,12 +261,6 @@ public:
 
 
 
-  /**
-   * 返回 该坐标Loc 是否 在 任意一个 被 constexpr 修饰的 函数 的坐标范围内, 若在 ，则 此坐标 不能被插入语句。
-   * @param Loc
-   * @return
-   */
-    bool LocIsIn_constexpr_func_ls(SourceLocation Loc);
 public:
     //这里是Visitor中的Rewriter，非源头，不要构造Rewriter，只能引用Act中的源头Rewriter.
     // 若这里也构造，将出现两个Rewriter, 则后一个Rewriter写入时会覆盖前一个Rewriter的写入，导致前一个Rewriter的写入丢失。
@@ -279,10 +273,6 @@ public:
     CompilerInstance& CI;
     SourceManager& SM;
 
-    /** 存放有constexpr修饰的函数整体坐标范围
-     * 方便 processStmt 判断 当前语句 是否在这些函数坐标范围内，若是 则不插入语句
-     */
-    std::list<SourceRange> constexpr_func_ls;
 
     /**其前已经插入语句的 节点ID 们, 为防止重复遍历导致的重复插入，
      * 节点ID集合（防重复插入） 应该按 分配、释放 分开，从而互不干扰
