@@ -79,6 +79,68 @@ gdb --quiet --command=./gdb_script.gs  --args /app/llvm_release_home/clang+llvm-
 
 ```
 
+###  定位崩溃的直接原因
+
+> 注意仔细看一下调用栈帧:
+```bash
+#0  Util::get_FileAndRange_SourceText[abi:cxx11](clang::SourceRange const&, clang::CompilerInstance&) (sourceRange=..., CI=...) at /pubx/clang-ctk/lib/CTk/Util.cpp:111
+#1  0x000055555e6dbd88 in ?? ()
+#2  0x00000000000002ee in ?? ()
+#3  0x00007fffffffb180 in ?? ()
+#4  0x00007ffff7be634f in CTkVst::processStmt (this=0x55555e6e52b0, stmt=0x55555e7636f0, whoInserted=<optimized out>) at /pubx/clang-ctk/lib/CTk/CTkVst.cpp:172
+```
+> 疑点: 
+> 
+1.  #1 #2 #3 为何没名字?
+
+2.  分析源码得知：#4 根本没有调用过 #0  . 详细分析如下:
+
+```cpp
+//CTkVst.cpp
+bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
+//...
+  Util::getSourceFilePathOfStmt(stmt, SM, fn); //CTkVst.cpp:172.  即行即 #4
+//...
+}
+```
+```cpp
+//Util.cpp
+bool Util::getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn) {
+  SourceLocation Loc = S->getBeginLoc();
+  Util::getSourceFilePathAtLoc(Loc,SM,fn);  //  #4调用了此函数，但此函数有问题。
+  //此函数的问题是：  本函数声明了返回bool, 但这里并没有返回值语句.
+  //当 #4 执行到这里的时, 没有返回语句，自然是继续执行，继续执行什么？ 
+  // 继续执行 本文件 （即 Util.o）中 本函数末尾的下一条机器指令，到此已经很危险了，
+  // 如果 编译器 没有在 本函数末尾 和 下一个函数开头 塞入 一些指令的话，这条指令肯定是 Util.o 中 本函数末尾的下一个函数的开头 。
+  // 所以结果很不确定，这相当于是乱跳了，执行到别的文件中都有可能。
+  // 这里 不确定的乱跳 最终跳到了 同文件的下面一个无关函数 get_FileAndRange_SourceText 的入口处，但显然  大概率 入参不对，
+  // 调试结果 支撑这一点。 分析源码可知， get_FileAndRange_SourceText 的 入参 CI 不可能是NULL， 但却是NULL。
+  // 此调用栈 中 的 没名字的函数 #1 #2 #3 应该就是 乱跳 的具体过程。  即 疑点1 有了大概对应。
+  // 问题调查结束，
+  // Release版libCTk.so作为clang插件运行崩溃直接原因： 崩溃调用栈中 中 下层#4栈帧 的源码 调用了一个 残缺函数(缺少return语句), 导致 执行流 不确定的乱跳，最终 跳到 某函数（#0中的函数）入口，因入参大概率不对（入参CI指针是NULL），引发空指针导致崩溃（Segmentation fault）
+}
+
+//同文件下 有崩溃处的函数:
+std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const SourceRange &sourceRange,CompilerInstance& CI){
+//...
+}
+  
+```
+
+> 此分析，进一步说明：  
+> 所谓 Debug是 :
+>1. 编译器 生成 调试信息
+>2. 编译器 自发的解决 源码中 可能存在的问题， 即 编译器 并不止 如实地  翻译源码，还帮忙补漏。
+>>比如 以上 编译器 主动 对 以上  残缺函数(缺少return语句) getSourceFilePathOfStmt 默认 加一条 返回语句, 以避免大问题出现。
+>>
+>>具体来说，应该是 自动的增加了 大量的 gcc 选项
+
+> 显然，所谓Release是：
+>1. 编译器 不生成 调试信息
+>2. 编译器 仅仅 如实地 翻译源码，不补充任何源码中没表达的内容。
+
+> 当没有编译器的补漏，便发生了这里描述的问题。
+
 ## 作为比对 看一下: Release+g1
 
 ```bash
