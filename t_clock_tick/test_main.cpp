@@ -2,6 +2,10 @@
 namespace myNs1{
 namespace myNs2{
 
+constexpr int func0(){
+  return 90;//constexpr func0
+}
+
 struct User{
 constexpr int func1(){
 return 1;//func1: 在结构体定义处实现函数体

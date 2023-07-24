@@ -131,10 +131,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   //获取当前语句S的源码文本
   std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
 
-  if(LocIsIn_constexpr_func_ls(beginLoc)){
-//    判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
-    return true;
-  }
+///////若某函数 有 constexpr 修饰，则在TraverseCXXMethodDecl|TraverseFunctionDecl中被拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
 
   if(mainFileId!=fileId){
 //    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
@@ -297,7 +294,23 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   Stmt *elseStmt = ifStmt->getElse();
 
   if(thenStmt){
+    Stmt::StmtClass thenStmtClass = thenStmt->getStmtClass();
+    if(thenStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      /**只有当if的then子语句是 块语句 时, 该 then子语句，才需要 经过 TraverseStmt(thenStmt) ---...--->TraverseCompoundStmt(thenStmt) 转交，在 TraverseCompoundStmt(thenStmt) 中 对 then块中的每条子语句前 插入 时钟调用语句.
+       * 形如:
+       * if(...)
+       * {
+       * ...;//这里是 if的then子语句, 是一个块语句，需要 对 then块中的每条子语句前 插入 时钟调用语句.
+       * }
+       */
       TraverseStmt  (thenStmt);
+    }
+    /**否则 if的then子语句 肯定是一个单行语句，无需插入 时钟调用语句.
+     * 形如 :
+     * if(...)
+     *   ...;// 这里是 if的then子语句, 是一个单行语句，无需插入 时钟调用语句.
+     */
   }
 
   if(elseStmt){
@@ -314,7 +327,24 @@ bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
 ////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt){
-    TraverseStmt(bodyStmt);
+
+    Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      /**只有当while的循环体是 块语句 时, 该 循环体，才需要 经过 TraverseStmt(循环体) ---...--->TraverseCompoundStmt(循环体) 转交，在 TraverseCompoundStmt(循环体) 中 对 该循环体中的每条子语句前 插入 时钟调用语句.
+       * 形如:
+       * while(...)
+       * {
+       * ...;//这里是 while的循环体, 是一个块语句，需要 对 循环体中的每条子语句前 插入 时钟调用语句.
+       * }
+       */
+      TraverseStmt(bodyStmt);
+    }
+    /**否则 while的循环体 肯定是一个单行语句，无需插入 时钟调用语句.
+     * 形如 :
+     * while(...)
+     *   ...;// 这里是 while的循环体, 是一个单行语句，无需插入 时钟调用语句.
+     */
   }
   return true;
 }
@@ -327,7 +357,11 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
 ////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt){
-    TraverseStmt(bodyStmt);
+    Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(bodyStmt);
+    }
   }
   return true;
 }
@@ -342,6 +376,10 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 ////////////////////  将递归链条正确的接好:  对 当前节点cxxTryStmt的下一层节点child:{tryBlock} 调用顶层方法TraverseStmt(child)
   CompoundStmt *tryBlockCompoundStmt = cxxTryStmt->getTryBlock();
   if(tryBlockCompoundStmt){
+
+    Stmt::StmtClass tryBlockCompoundStmtClass = tryBlockCompoundStmt->getStmtClass();
+    assert(tryBlockCompoundStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//C++Try的尝试体一定是块语句
+
     TraverseStmt(tryBlockCompoundStmt);
   }
   return true;
@@ -357,6 +395,9 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
   Stmt *handlerBlockStmt = cxxCatchStmt->getHandlerBlock();
   if(handlerBlockStmt){
+    Stmt::StmtClass handlerBlockStmtClass = handlerBlockStmt->getStmtClass();
+    assert(handlerBlockStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//C++Catch的捕捉体一定是块语句
+
     TraverseStmt(handlerBlockStmt);
   }
   return true;
@@ -371,7 +412,11 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = doStmt->getBody();
   if(body){
-    TraverseStmt(body);
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(body);
+    }
   }
   return true;
 }
@@ -385,10 +430,32 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点switchStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = switchStmt->getBody();
   if(body){
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    assert(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//switch语句的多情况体 一定是块语句
     TraverseStmt(body);
   }
   return true;
 }
+
+
+bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
+
+/////////////////////////对当前节点caseStmt 不做 自定义处理
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点caseStmt的下一层节点中的单情况体  调用顶层方法TraverseStmt(单情况体)
+                                /////case的其他子节点，比如 'case 值:' 中的 '值' 不做处理。
+  Stmt *body = caseStmt->getSubStmt();//不太确定 case.getSubStmt 是 获取case的单情况体
+  if(body){
+    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
+    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+      //这一段可以替代shouldInsert
+      TraverseStmt(body);
+    }
+  }
+  return true;
+}
+
 
 ////////////////constexpr
 
@@ -428,33 +495,19 @@ bool CTkVst::_Traverse_Func(
 // B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
 
   bool _isConstexpr = funcIsConstexpr;
-  if(_isConstexpr){
-    //若此函数 有 constexpr 修饰，则记录其坐标范围。
-    //  方便 processStmt 判断当前 语句坐标 是否 在 任意一个 constexpr 修饰 的函数坐标范围内，若是 则不插入语句，避免导致语法错误。
-    this->constexpr_func_ls.push_back(sourceRange);
-  }
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxMethodDecl|functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   Stmt *body = funcBodyStmt;
-  if(body){
-    TraverseStmt(body);
+  if(!_isConstexpr){
+    //若此函数 有 constexpr 修饰，则拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
+    //    由此 变相实现了  constexpr_func_ls标记, 因此 constexpr_func_ls标记可以删除了.
+    if(body){
+      TraverseStmt(body);
+    }
   }
+
   return true;
-
-}
-bool CTkVst::LocIsIn_constexpr_func_ls(SourceLocation Loc) {
-
-  bool LocIsInAnyOneFuncRange=std::any_of(constexpr_func_ls.begin(), constexpr_func_ls.end(),
-  [&Loc](const clang::SourceRange& funcKSourceRange){
-    //指定坐标Loc 是否在 某个函数 的 坐标范围funcKSourceRange  内
-    //若在，说明 该坐标属于 某个 被 constexpr 修饰的 函数，此坐标 不能被插入语句。
-    bool isIn= Loc >= funcKSourceRange.getBegin() && Loc <= funcKSourceRange.getEnd();
-    return isIn;
-  }
-  );
-  //返回 该坐标Loc 是否 在 任意一个 被 constexpr 修饰的 函数 的坐标范围内, 若在 ，则 此坐标 不能被插入语句。
-  return LocIsInAnyOneFuncRange;
 
 }
 
