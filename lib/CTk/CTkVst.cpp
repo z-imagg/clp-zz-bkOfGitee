@@ -43,6 +43,12 @@ static auto _CXXStaticCastExprAstNodeKind=ASTNodeKind::getFromNodeKind<CXXStatic
 static auto _ExprAstNodeKind=ASTNodeKind::getFromNodeKind<Expr>();
 static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>();
 
+/**shouldInsert判断和其他地方 可能有些重复，暂时忽略。
+ *
+ * @param S
+ * @param parent0NodeKind
+ * @return
+ */
 bool shouldInsert(Stmt *S,ASTNodeKind& parent0NodeKind){
 //Stmt::StmtClass & stmtClass
   Stmt::StmtClass stmtClass = S->getStmtClass();
