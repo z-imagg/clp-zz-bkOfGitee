@@ -25,7 +25,7 @@ public:
     static void insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
     static void insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
     static bool getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn);
-    static bool getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn);
+    static void getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn);
 
     static FunctionDecl* findFuncDecByName(ASTContext *Ctx,std::string functionName);
     static std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions);
