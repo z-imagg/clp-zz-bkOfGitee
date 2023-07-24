@@ -188,20 +188,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     if(stmtClass==Stmt::StmtClass::DeclStmtClass){
       //如果当前语句是声明语句
       DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
-      if(declStmt){
-
-        Decl *decl0 = *(declStmt->decl_begin());
-        if(decl0 && decl0->getKind()==Decl::Kind::Var){
-          //如果当前语句是声明语句, 且第一个子声明是变量声明语句,则栈变量分配个数填写1
-          //  有可能是这种样子: int n,m,u,v=0;  应该取 declStmt->decls() 的size
-          const DeclStmt::decl_range &declRange = declStmt->decls();
-          // 取 declStmt->decls() 的size
-          long declCnt = std::distance(declRange.begin(), declRange.end());
-          stackVarAllocCnt=declCnt;
-        }
-      }
-      //stmtClass==Stmt::StmtClass::DeclStmtClass
-//      stmt->
+      //取得声明语句declStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
+      stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
     }
     insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt, whoInserted);
@@ -241,8 +229,10 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   for(Stmt* stmt:subStmtLs){
     const char *stmtClassName = stmt->getStmtClassName();
     Stmt::StmtClass stmtClass = stmt->getStmtClass();
-    if(Stmt::DeclStmtClass==stmtClass){
-      declStmtCnt++;
+    if(Stmt::DeclStmtClass == stmtClass){
+      DeclStmt* declStmt=static_cast<DeclStmt*> (stmt);
+      //取得声明语句subDeclStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
+      declStmtCnt+=Util::varCntInVarDecl(declStmt);
     }
 //    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",stmt,true);
   }
