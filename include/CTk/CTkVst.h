@@ -75,12 +75,13 @@ public:
      * @return
      */
     virtual bool TraverseIfStmt(IfStmt *ifStmt);
+    /* for、while、doWhile很相似 */
     /**
      * 1. while语句整体 前 插入 时钟调用语句
      * 2. 粘接直接子节点到递归链
      * 不直接处理while语句内的子语句
      *
-     * 当while语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(body)对该块语句body中的每条语句前 插入 时钟调用语句.
+     * 当while语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(循环体) ---...---> TraverseCompoundStmt(循环体) 后，由TraverseCompoundStmt(循环体)对该循环体中的每条语句前 插入 时钟调用语句.
      * 如果while语句的循环体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
      *
      * 举例如下:
@@ -95,13 +96,13 @@ public:
      * @return
      */
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
-    /* for、while很相似 */
+    /* for、while、doWhile很相似 */
     /**
      * 1. for语句整体 前 插入 时钟调用语句
      * 2. 粘接直接子节点到递归链
      * 不直接处理for语句内的子语句
      *
-     * 当for语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(body) 后，由TraverseCompoundStmt(body)对该块语句body中的每条语句前 插入 时钟调用语句.
+     * 当for语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(body) ---...---> TraverseCompoundStmt(循环体) 后，由TraverseCompoundStmt(循环体)对该循环体中的每条语句前 插入 时钟调用语句.
      * 如果for语句的循环体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
      *
      * 举例如下:
@@ -116,9 +117,89 @@ public:
      * @return
      */
     virtual bool TraverseForStmt(ForStmt *forStmt);
+    /**
+     * 1. C++Try语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理C++Try语句内的尝试体
+     *
+     * C++Try语句的尝试体 一定是 块语句,   对 尝试体 内  插入 时钟调用语句, 这是经转交 TraverseStmt(尝试体) ---...---> TraverseCompoundStmt(尝试体) 后，由TraverseCompoundStmt(尝试体)对该尝试体中的每条语句前 插入 时钟调用语句.
+     *
+     * 举例如下:
+     *
+     * try
+     * {
+     *    ...; //这里是C++Try的尝试体， 该尝试体  会经过 转交: TraverseStmt(尝试体) ---...---> TraverseCompoundStmt(尝试体) , 最终在 TraverseCompoundStmt中 对 该尝试体中的每条语句前插入 时钟调用语句.
+     * }
+     * @param forStmt
+     * @return
+     */
     virtual bool TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt);
+    /**
+     * 1. C++Catch语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理C++Catch语句内的捕捉体
+     *
+     * C++Catch语句的捕捉体 一定是 块语句,   对 捕捉体 内  插入 时钟调用语句, 这是经转交 TraverseStmt(捕捉体) ---...---> TraverseCompoundStmt(捕捉体) 后，由TraverseCompoundStmt(捕捉体)对该捕捉体中的每条语句前 插入 时钟调用语句.
+     *
+     * 举例如下:
+     * try{...}
+     * catch(...)
+     * {
+     *    ...; //这里是C++Catch的捕捉体， 该捕捉体  会经过 转交: TraverseStmt(捕捉体) ---...---> TraverseCompoundStmt(捕捉体) , 最终在 TraverseCompoundStmt中 对 该捕捉体中的每条语句前插入 时钟调用语句.
+     * }
+     * @param forStmt
+     * @return
+     */
     virtual bool TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt);
+    /* for、while、doWhile很相似 */
+    /**
+     * 1. doWhile语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理doWhile语句内的子语句
+     *
+     * 当doWhile语句的子语句 child:[body即循环体]  循环体是块语句的情况下, 循环体内才需要 插入 时钟调用语句, 这是经转交 TraverseStmt(循环体) ---...---> TraverseCompoundStmt(循环体) 后，由TraverseCompoundStmt(循环体)对该循环体中的每条语句前 插入 时钟调用语句.
+     * 如果doWhile语句的循环体 是一个单行语句 即不是块语句，  则 不需要 在该单行语句前 插入 时钟调用语句。
+     *
+     * 举例如下:
+     * do
+     * ...;    //这里是doWhile的循环体， 该循环体 不是 块语句，故而 该 循环体前 不需要插入 时钟调用语句.
+     * while(...);
+     *
+     * do
+     * {
+     *    ...; //这里是doWhile的循环体， 该循环体 是 块语句，会经过 转交: TraverseStmt(循环体) ---...---> TraverseCompoundStmt(循环体) , 最终在 TraverseCompoundStmt中 对 该循环体中的每条语句前插入 时钟调用语句.
+     * }
+     * while(...);
+     * @param doStmt
+     * @return
+     */
     virtual bool TraverseDoStmt(DoStmt *doStmt);
+    /* for、while、doWhile很相似 */
+    /**
+     * 1. switch语句整体 前 插入 时钟调用语句
+     * 2. 粘接直接子节点到递归链
+     * 不直接处理switch语句内的子语句
+     *
+     * switch语句的子语句 child:[body即多情况体]  多情况体内的子语句是case语句 ，case语句整体前是不能插入 不需要插入 时钟调用语句.
+     *
+     * 举例如下:
+     * switch(...)
+     * {       //这里是switch的多情况体
+     * case 1: //这里是多情况体 的 第1个 子语句 case语句1
+     * {
+     * }//case语句1结束
+     * case 2: //这里是多情况体 的 第2个 子语句 case语句2
+     * break;
+     * //case语句2结束
+     * case 3: //这里是多情况体 的 第3个 子语句 case语句3
+     * {
+     * ...;
+     * }//case语句3结束
+     * }//多情况体结束
+     *
+     * @param switchStmt
+     * @return
+     */
     virtual bool TraverseSwitchStmt(SwitchStmt *switchStmt);
 //    virtual bool TraverseCaseStmt(CaseStmt *caseStmt);由于case语句前不能插入 任何语句 ,否则语法错误，因此 case语句不需要自定义处理，只需要对case语句用clang内部的正常递归即可。
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
