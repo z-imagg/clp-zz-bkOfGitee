@@ -26,7 +26,7 @@ using namespace clang;
 class CTkAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CTkAstCnsm(CompilerInstance &_CI, Rewriter *_rewriter_ptr, ASTContext *_astContext,
+    explicit CTkAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
                         SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
