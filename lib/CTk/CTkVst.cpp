@@ -501,6 +501,10 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 ////////////////////  将递归链条正确的接好:  对 当前节点cxxTryStmt的下一层节点child:{tryBlock} 调用顶层方法TraverseStmt(child)
   CompoundStmt *tryBlockCompoundStmt = cxxTryStmt->getTryBlock();
   if(tryBlockCompoundStmt){
+
+    Stmt::StmtClass tryBlockCompoundStmtClass = tryBlockCompoundStmt->getStmtClass();
+    assert(tryBlockCompoundStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//C++Try的尝试体一定是块语句
+
     TraverseStmt(tryBlockCompoundStmt);
   }
   return true;
@@ -516,6 +520,9 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxCatchStmt的下一层节点child:{handlerBlock} 调用顶层方法TraverseStmt(child)
   Stmt *handlerBlockStmt = cxxCatchStmt->getHandlerBlock();
   if(handlerBlockStmt){
+    Stmt::StmtClass handlerBlockStmtClass = handlerBlockStmt->getStmtClass();
+    assert(handlerBlockStmtClass==Stmt::StmtClass::CompoundStmtClass) ;//C++Catch的捕捉体一定是块语句
+
     TraverseStmt(handlerBlockStmt);
   }
   return true;
