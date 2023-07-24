@@ -20,7 +20,7 @@ bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::Stmt
   auto parents = astContext->getParents(*stmt);
 
   for (const auto& parent : parents) {
-    const Stmt *stmtParent = static_cast<const Stmt *>(stmt);
+    auto stmtParent = parent.get<Stmt>();
     if (stmtParent && stmtParent->getStmtClass() == targetClass) {
       return true;
     }

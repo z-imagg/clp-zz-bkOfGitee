@@ -285,11 +285,29 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
   );*/
 
   if(ifStmt){
-    bool parentIsFor= Util::parentClassEqual(Ctx, ifStmt, Stmt::ForStmtClass);
-    bool parentIsWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::WhileStmtClass);
-    bool parentIsDoWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::DoStmtClass);
-    bool ignore=parentIsFor || parentIsWhile || parentIsDoWhile;
-    if(ignore){
+    bool parentKindIsCXXForRange= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<CXXForRangeStmt>());
+    bool parentKindIsFor= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<ForStmt>());
+    bool parentKindIsWhile= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<WhileStmt>());
+    bool parentKindIsDoWhile= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<DoStmt>());
+    bool parentKindIsIf= Util::parentKindIsSame(Ctx, ifStmt, ASTNodeKind::getFromNodeKind<IfStmt>());
+    //从kind角度:
+    //父亲节点 是否 只有 将 当前语句(if) 作为 一个单语句了.
+    // 比如 'for(...)  当前语句;'   、 'while(...) 当前语句;'  都 表示 当前语句 是 单语句,
+    // 而 'for(...) {当前语句;}' 则 表示 当前语句 不是 单语句.
+    bool curNodeAsASingleStmtInParent_kind=parentKindIsCXXForRange || parentKindIsFor || parentKindIsWhile ||parentKindIsDoWhile || parentKindIsIf;
+
+    bool parentClassIsFor= Util::parentClassEqual(Ctx, ifStmt, Stmt::ForStmtClass);
+    bool parentClassIsCXXForRange= Util::parentClassEqual(Ctx, ifStmt, Stmt::CXXForRangeStmtClass);
+    bool parentClassIsWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::WhileStmtClass);
+    bool parentClassIsDoWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::DoStmtClass);
+    bool parentClassIsIf= Util::parentClassEqual(Ctx, ifStmt, Stmt::IfStmtClass);
+    //从class角度:
+    //同上
+    bool curNodeAsASingleStmtInParent_class=parentClassIsFor || parentClassIsCXXForRange || parentClassIsWhile ||parentClassIsDoWhile ||parentClassIsIf;
+
+    bool curNodeAsASingleStmtInParent=curNodeAsASingleStmtInParent_kind||curNodeAsASingleStmtInParent_class;
+
+    if(curNodeAsASingleStmtInParent){
       return true;
     }
   }
