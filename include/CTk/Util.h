@@ -11,7 +11,9 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <set>
 #include <clang/Frontend/CompilerInstance.h>
+#include <clang/AST/ParentMapContext.h>
 #include "clang/AST/ASTConsumer.h"
+#include "clang/AST/ASTContext.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
@@ -22,6 +24,8 @@ using namespace clang;
 
 class Util {
 public:
+    static bool parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass);
+    static bool parentKindIsSame(ASTContext *Ctx, Stmt* stmt, const ASTNodeKind& kind);
     /**
      * 在声明语句 中 声明的变量个数
      * 比如 :

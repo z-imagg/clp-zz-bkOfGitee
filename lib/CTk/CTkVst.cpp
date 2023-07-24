@@ -284,7 +284,15 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
     }
   );*/
 
-
+  if(ifStmt){
+    bool parentIsFor= Util::parentClassEqual(Ctx, ifStmt, Stmt::ForStmtClass);
+    bool parentIsWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::WhileStmtClass);
+    bool parentIsDoWhile= Util::parentClassEqual(Ctx, ifStmt, Stmt::DoStmtClass);
+    bool ignore=parentIsFor || parentIsWhile || parentIsDoWhile;
+    if(ignore){
+      return true;
+    }
+  }
   processStmt(ifStmt,"TraverseIfStmt");
 
 ///////////////////// 自定义处理 完毕

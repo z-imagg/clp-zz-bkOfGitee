@@ -16,6 +16,34 @@ using namespace llvm;
 using namespace clang;
 
 
+bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass) {
+  auto parents = astContext->getParents(*stmt);
+
+  for (const auto& parent : parents) {
+    const Stmt *stmtParent = static_cast<const Stmt *>(stmt);
+    if (stmtParent && stmtParent->getStmtClass() == targetClass) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Util::parentKindIsSame(ASTContext *Ctx, Stmt* stmt, const ASTNodeKind& kind){
+  if(!Ctx || !stmt){
+    return false;
+  }
+  DynTypedNodeList parentS=Ctx->getParents(*stmt);
+  for (const auto& parent : parentS) {
+    if (   kind.isSame(parent.getNodeKind())  ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 /**取得声明语句中声明的变量个数
  * 在声明语句 中 声明的变量个数
  * 比如 :
