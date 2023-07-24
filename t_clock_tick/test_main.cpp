@@ -24,6 +24,35 @@ public:
     }
     Product &operator=(Product &&Other) = default;
 
+    void switch_demo_func(){
+      int z;
+      
+      switch(z)
+      {//switch身体开始
+
+        case 1://case 1
+          break;
+
+        case 2:
+        {//case 2 身体 开始
+          bool valid;
+          if(valid){
+            break;
+          }else{
+            valid=true;
+          }
+        }//case 2 身体 结尾
+
+      default:
+      {//switch的default 身体 开始
+        float f;//switch's default content
+        return;
+      }//witch的default 身体结尾
+
+      }//switch(z) 结尾
+
+    }//switch_demo_func函数 结尾
+
 private:
     int id;
     bool ok;
