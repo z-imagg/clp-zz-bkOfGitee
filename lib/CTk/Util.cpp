@@ -38,13 +38,12 @@ bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
   if(!stmt){
     return false;
   }
-  Stmt::StmtClass stmtClass = stmt->getStmtClass();
-  if(!(stmtClass==Stmt::StmtClass::CaseStmtClass)){
-    return false;
-  }
-  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+//  clang::AttributedStmt* attributedStmt = clang::dyn_cast<clang::AttributedStmt>(stmt);
 
-  SwitchCase* switchCase= static_cast<SwitchCase*> (stmt);
+  clang::AttributedStmt* attributedStmt = clang::dyn_cast_or_null<clang::AttributedStmt>(stmt);
+
+//  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);//不能这样转，static_cast会把一个不是AttributedStmt的东西强硬转为AttributedStmt, 比如把一段不可写的代码区域转为Attr对象, 显然导致Segmentation fault而崩溃退出.
+
   if(attributedStmt){
     const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
     std::vector<const Attr *> attrVec(attrS.begin(), attrS.end());//方便调试看数组内容
