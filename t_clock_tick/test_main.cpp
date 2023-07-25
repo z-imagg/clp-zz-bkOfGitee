@@ -75,6 +75,7 @@ namespace myNs1{
                   }else{
                     valid=true;
                   }
+                  [[gnu::fallthrough]];//在 TraverseCompoundStmt 即 组合语句处理 中， 若发现当前语句 是 [[gnu::fallthrough]] ， 则下一条语句前不要插入。
                 }//case 2 身体 结尾
 
                 default:
