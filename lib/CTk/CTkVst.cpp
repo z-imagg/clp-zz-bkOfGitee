@@ -493,6 +493,13 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   return this->_Traverse_Func(sourceRange,_isConstexpr,body);
 }
 
+bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
+  const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
+  bool _isConstexpr = cxxConstructorDecl->isConstexpr();
+  Stmt *body = cxxConstructorDecl->getBody();
+
+  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+}
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
