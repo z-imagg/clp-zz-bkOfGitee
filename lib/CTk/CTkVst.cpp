@@ -266,10 +266,10 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   unsigned long subStmtCnt = subStmtVec.size();
 
   //subStmtVec中的stmtJ是否应该跳过
-  std::vector<bool> subStmtSkipVec(subStmtVec.size(),false);
+  std::vector<bool> subStmtSkipVec(subStmtCnt,false);
 
   // 使用普通for循环和整数循环下标遍历 child_range
-  for (std::size_t j = 0; j < subStmtVec.size(); ++j) {
+  for (std::size_t j = 0; j < subStmtCnt; ++j) {
     clang::Stmt* stmtJ = subStmtVec[j];
 //    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmtJ,true);
     bool isFallThrough=Util::hasAttrKind(stmtJ, attr::Kind::FallThrough);
@@ -277,6 +277,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
       //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
       int nextStmtIdx=(j+1)%(subStmtCnt+1);
       subStmtSkipVec[nextStmtIdx]=true;
+      //这样表达不出，因为'[[gnu::fallthrough]];' 已经是最后一条语句， 其下一条语句 是 块结束 '}'
     }
     if(!subStmtSkipVec[j]){
       processStmt(stmtJ, "TraverseCompoundStmt");
