@@ -35,12 +35,27 @@ std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStm
 }
 
 bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
+  if(!stmt){
+    return false;
+  }
+  Stmt::StmtClass stmtClass = stmt->getStmtClass();
+  if(!(stmtClass==Stmt::StmtClass::CaseStmtClass)){
+    return false;
+  }
   AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+
+  SwitchCase* switchCase= static_cast<SwitchCase*> (stmt);
   if(attributedStmt){
     const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
-    for(auto attrJ:attrS){
+    std::vector<const Attr *> attrVec(attrS.begin(), attrS.end());//方便调试看数组内容
+    for(const Attr * attrJ:attrVec){
+      if(!attrJ){
+        continue;
+      }
+      attrJ->getSpellingListIndex();
+//      bool  zzz=attrJ->isAttributeSpellingListCalculated();
       attr::Kind attrJKind = attrJ->getKind();
-      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
+//      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
 //      std::cout << "AttributedStmt:" << attrJKind << "," << normalizedFullName << std::endl;
 //    AttributedStmt:24,gnu::fallthrough
       if(attrKind==attrJKind){

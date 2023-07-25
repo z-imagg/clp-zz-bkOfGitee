@@ -243,7 +243,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   Stmt* negativeSecond;
   std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond);
-  bool  endStmtIsFallThrough=subStmtIsFallThroughVec.back();
+  bool  endStmtIsFallThrough=subStmtIsFallThroughVec.empty()? false: subStmtIsFallThroughVec.back();
   if(endStmtIsFallThrough){
     //如果块内最后一条语句是'[[gnu::fallthrough]];', 则释放语句 位置 在 倒数第二条语句之后.
     // 若最后一条语句'[[gnu::fallthrough]];' 是以宏的形式出现的，在宏所占有位置前 插入 ，实际运行 发现 并没插入。 估计是   clang 不允许 在宏的位置范围内 插入。
