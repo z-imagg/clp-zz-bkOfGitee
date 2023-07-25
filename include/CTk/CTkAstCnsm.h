@@ -91,7 +91,7 @@ public:
 
         FileID fileId = SM.getFileID(declJ->getLocation());
 
-        Util::printDecl(Ctx,CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
+//        Util::printDecl(Ctx,CI, "查看", "TranslationUnitDecl.decls.j", declJ, false);
 
 
 /*        if (NamespaceDecl *ND = dyn_cast<NamespaceDecl>(declJ)) {
