@@ -1,6 +1,5 @@
 
 
-#include "t_clock_tick.h"
 
 int t;//时钟
 int currentStackVarAllocCnt=0;//当前栈变量分配数目
