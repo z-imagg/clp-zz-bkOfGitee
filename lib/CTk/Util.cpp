@@ -15,6 +15,43 @@
 using namespace llvm;
 using namespace clang;
 
+std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond) {
+  std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
+  unsigned long subStmtCnt = subStmtVec.size();
+  if(subStmtCnt>=2){
+    //倒数第二条语句
+    negativeSecond=subStmtVec[subStmtCnt-2];
+  }
+
+  //subStmtVec中的stmtJ是否为'[[gnu::fallthrough]];'
+  std::vector<bool> subStmtIsFallThroughVec(subStmtCnt,false);
+
+  for (std::size_t j = 0; j < subStmtCnt; ++j) {
+    clang::Stmt* stmtJ = subStmtVec[j];
+    subStmtIsFallThroughVec[j]=Util::hasAttrKind(stmtJ, attr::Kind::FallThrough);
+      //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
+  }
+  return subStmtIsFallThroughVec;
+}
+
+bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
+  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+  if(attributedStmt){
+    const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
+    for(auto attrJ:attrS){
+      attr::Kind attrJKind = attrJ->getKind();
+      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
+//      std::cout << "AttributedStmt:" << attrJKind << "," << normalizedFullName << std::endl;
+//    AttributedStmt:24,gnu::fallthrough
+      if(attrKind==attrJKind){
+        return true;
+      }
+    }//for结束
+
+  }//if结束
+
+  return false;
+}
 void Util::extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation, int& line, int& column) {
   clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
   line = presumedLoc.getLine();

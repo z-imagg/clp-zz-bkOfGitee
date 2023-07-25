@@ -235,10 +235,22 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     }
 //    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",subStmt,true);
   }
+
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
   Stmt *endStmt = compoundStmt->body_back();
+
+  Stmt* negativeSecond;
+  std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond);
+  bool  endStmtIsFallThrough=subStmtIsFallThroughVec.back();
+  if(endStmtIsFallThrough){
+    //如果块内最后一条语句是'[[gnu::fallthrough]];', 则释放语句 位置 在 倒数第二条语句之后.
+    // 若最后一条语句'[[gnu::fallthrough]];' 是以宏的形式出现的，在宏所占有位置前 插入 ，实际运行 发现 并没插入。 估计是   clang 不允许 在宏的位置范围内 插入。
+    insertLoc=negativeSecond->getEndLoc().getLocWithOffset(+1);//+1是为了到分号后面.
+  }
+
+
   if(endStmt){
     Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
     //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
@@ -248,7 +260,6 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   }
 
   //本块内有声明变量，才会插入释放语句
-
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
@@ -257,6 +268,10 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
+
+//  int insertLine, insertCol;//开发看行号用.
+//  Util::extractLineAndColumn(SM,insertLoc,insertLine,insertCol);
+
   insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
 
@@ -573,32 +588,3 @@ bool CTkVst::_Traverse_Func(
 
 
 
-/*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
-
-//  FunctionDecl *functionDecl = declK->getAsFunction();
-//  printf("functionDecl:%d,\n",functionDecl);
-//  if(functionDecl){
-//          bool _isConstexpr = functionDecl->isConstexpr();
-    ConstexprSpecKind constexprKind = declK->getConstexprKind();
-    printf("constexprKind:%d,\n",constexprKind);
-    if(ConstexprSpecKind::Constexpr==constexprKind){
-      //跳过constexpr修饰的函数
-      //  constexpr修饰的函数 不能插入non-constexpr函数调用, 否则  c++编译错误。似语义错误,非语法错误。
-      Util::printDecl(*Ctx, CI, "查看", "发现Constexpr修饰的函数", declK, false);
-//      break;//此时应该给一个标记，告知下层VisitStmt：你语句处在不可插入 时钟调用语句 的Constexpr函数中。
-//      但 做不到 上告诉下 ， 唯一的办法是 下往上找直到找到函数节点为止 才能发现本函数被修饰, 从而不做插入。
-    }
-//  }
-}*/
-/*bool CTkVst::VisitFunctionDecl(FunctionDecl *Decl) {
-  return true;
-}*/
-
-/*bool CTkVst::VisitVarDecl(VarDecl *Decl) {
-  return true;
-}*/
-
-/*bool CTkVst::VisitFieldDecl(FieldDecl *Decl) {
-
-  return true;
-}*/
