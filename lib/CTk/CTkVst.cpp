@@ -264,6 +264,14 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   for(Stmt* stmt:subStmtLs){
 //    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
+    AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+    if(attributedStmt){
+      const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
+      for(auto attrK:attrS){
+        std::cout<< "E:" << attrK->getKind() << "," << attrK->getNormalizedFullName() << std::endl;
+//    D:24,gnu::fallthrough
+      }
+    }
     processStmt(stmt,"TraverseCompoundStmt");
   }
 ///////////////////// 自定义处理 完毕
@@ -573,22 +581,7 @@ bool CTkVst::_Traverse_Func(
 
 
 
-bool CTkVst::TraverseAttr(Attr *At){
-  std::cout<< "C:" << At->getKind() << std::endl;
-  //此方法TraverseAttr没被调用
-  return true;
-}
 
-
-bool CTkVst::TraverseAttributedStmt(AttributedStmt *attributedStmt){
-  //方法 TraverseAttributedStmt 被调用
-  const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
-  for(auto attrK:attrS){
-    std::cout<< "D:" << attrK->getKind() << "," << attrK->getNormalizedFullName() << std::endl;
-//    D:24,gnu::fallthrough
-  }
-  return true;
-}
 
 /*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
