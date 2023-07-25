@@ -30,7 +30,7 @@ public:
      * @param negativeSecond
      * @return
      */
-    static std::vector<bool>  subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond );
+    static std::vector<bool>  subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond ,SourceManager& SM, LangOptions& langOptions);
     /**语句是否有该属性
      *
      * @param stmt
@@ -58,6 +58,7 @@ public:
     static void getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn);
 
     static FunctionDecl* findFuncDecByName(ASTContext *Ctx,std::string functionName);
+    static std::vector<std::string> stmtLs2TextLs(std::vector<Stmt*> stmtVec, SourceManager & SM, const LangOptions & langOptions);
     static std::string getSourceTextBySourceRange(SourceRange sourceRange, SourceManager & sourceManager, const LangOptions & langOptions);
 
 

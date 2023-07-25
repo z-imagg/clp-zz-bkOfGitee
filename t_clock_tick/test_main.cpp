@@ -1,4 +1,5 @@
 
+#define LLVM_FALLTHROUGH [[gnu::fallthrough]]
 
 char topOutFunc000(float f1, double d2){
   int diff;
@@ -65,7 +66,11 @@ namespace myNs1{
               {//switch身体开始
 
                 case 1://case 1
-                  break;
+                {
+                  int idea; float aa,bb,cc=0.9; double sex;
+                  z=z*98+z/3;//倒数第二条语句右是宏周边，位置不准。 但倒数第二条语句左不是宏周边，位置是准的。
+                  LLVM_FALLTHROUGH;//宏周边位置不准
+                }
 
                 case 2:
                 {//case 2 身体 开始

@@ -15,9 +15,10 @@
 using namespace llvm;
 using namespace clang;
 
-std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond) {
+std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond,SourceManager& SM, LangOptions& langOptions) {
   std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
   unsigned long subStmtCnt = subStmtVec.size();
+  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, langOptions);
   if(subStmtCnt>=2){
     //倒数第二条语句
     negativeSecond=subStmtVec[subStmtCnt-2];
@@ -35,10 +36,22 @@ std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStm
 }
 
 bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
-  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+  if(!stmt){
+    return false;
+  }
+//  clang::AttributedStmt* attributedStmt = clang::dyn_cast<clang::AttributedStmt>(stmt);
+
+  clang::AttributedStmt* attributedStmt = clang::dyn_cast_or_null<clang::AttributedStmt>(stmt);
+
+//  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);//不能这样转，static_cast会把一个不是AttributedStmt的东西强硬转为AttributedStmt, 比如把一段不可写的代码区域转为Attr对象, 显然导致Segmentation fault而崩溃退出.
+
   if(attributedStmt){
     const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
-    for(auto attrJ:attrS){
+    std::vector<const Attr *> attrVec(attrS.begin(), attrS.end());//方便调试看数组内容
+    for(const Attr * attrJ:attrVec){
+      if(!attrJ){
+        continue;
+      }
       attr::Kind attrJKind = attrJ->getKind();
       const std::string &normalizedFullName = attrJ->getNormalizedFullName();
 //      std::cout << "AttributedStmt:" << attrJKind << "," << normalizedFullName << std::endl;
@@ -157,6 +170,15 @@ FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
   return NULL;
 }
 
+std::vector<std::string> Util::stmtLs2TextLs(std::vector<Stmt*> stmtVec, SourceManager & SM, const LangOptions & langOptions){
+  std::vector<std::string> textVec;
+
+  std::transform(stmtVec.begin(), stmtVec.end(), std::back_inserter(textVec), [&SM,&langOptions](Stmt* stmt) {
+      return getSourceTextBySourceRange(stmt->getSourceRange(),SM,langOptions); // 这里可以根据需要进行转换操作
+  });
+
+  return textVec;
+}
 /**
  * 获取 给定 位置范围 的源码文本
  * @param sourceRange
