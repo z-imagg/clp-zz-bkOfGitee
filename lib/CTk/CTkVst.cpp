@@ -263,6 +263,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   ///////////////处理  子语句列表 中每条语句
 
   for(Stmt* stmt:subStmtLs){
+//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
     processStmt(stmt,"TraverseCompoundStmt");
   }
 ///////////////////// 自定义处理 完毕
@@ -489,6 +490,14 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   const SourceRange &sourceRange = functionDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
+  bool hasDefault = functionDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = functionDecl->isConstexpr();
   Stmt *body = functionDecl->getBody();
 
@@ -497,6 +506,14 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'RuleMatcher( ) = default;'
+  bool hasDefault = cxxConstructorDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
   Stmt *body = cxxConstructorDecl->getBody();
 
@@ -505,6 +522,14 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'RuleMatcher &operator=(RuleMatcher &&Other) = default;'
+  bool hasDefault = cxxMethodDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
   Stmt *body = cxxMethodDecl->getBody();
 
