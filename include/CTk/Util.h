@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static std::vector<bool>  subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond );
     static bool hasAttrKind(Stmt *stmt, attr::Kind attrKind);
     static void extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation, int& line, int& column);
     static bool parentIsCompound(ASTContext* astContext, const Stmt* currentStmt);

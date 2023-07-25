@@ -235,10 +235,26 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     }
 //    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",subStmt,true);
   }
+
   //时钟语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
   Stmt *endStmt = compoundStmt->body_back();
+
+  //如果块内最后一条语句是'[[gnu::fallthrough]];', 则释放语句 位置 在 倒数第二条语句之后.
+  // 若最后一条语句'[[gnu::fallthrough]];' 是以宏的形式出现的，在宏所占有位置前 插入 ，实际运行 发现 并没插入。 估计是   clang 不允许 在宏的位置范围内 插入。
+  Stmt* negativeSecond;
+  std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond);
+  bool  endStmtIsFallThrough=subStmtIsFallThroughVec.back();
+//  std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
+  if(endStmtIsFallThrough){
+    //如果块内最后一条语句是 '[[gnu::fallthrough]];'， 则释放语句语句
+//    insertLoc=endStmt->getBeginLoc();
+//    insertLoc=subStmtVec[subStmtVec.size()-2]->getEndLoc().getLocWithOffset(1);
+    insertLoc=negativeSecond->getEndLoc().getLocWithOffset(+1);//+1是为了到分号后面.
+  }
+
+
   if(endStmt){
     Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
     //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
@@ -247,8 +263,9 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     }
   }
 
-  //本块内有声明变量，才会插入释放语句
 
+
+  //本块内有声明变量，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
@@ -257,34 +274,21 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
   int heapObjcFreeCnt=0;
+
+//  int insertLine, insertCol;//开发看行号用.
+//  Util::extractLineAndColumn(SM,insertLoc,insertLine,insertCol);
+
   insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
 
   ///////////////处理  子语句列表 中每条语句
 
-  std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
-  unsigned long subStmtCnt = subStmtVec.size();
 
-  //subStmtVec中的stmtJ是否应该跳过
-  std::vector<bool> subStmtSkipVec(subStmtCnt,false);
 
-  // 使用普通for循环和整数循环下标遍历 child_range
-  for (std::size_t j = 0; j < subStmtCnt; ++j) {
-    clang::Stmt* stmtJ = subStmtVec[j];
-//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmtJ,true);
-    bool isFallThrough=Util::hasAttrKind(stmtJ, attr::Kind::FallThrough);
-    if(isFallThrough){
-      //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
-      int nextStmtIdx=(j+1)%(subStmtCnt+1);
-      subStmtSkipVec[nextStmtIdx]=true;
-      //这样表达不出，因为'[[gnu::fallthrough]];' 已经是最后一条语句， 其下一条语句 是 块结束 '}'
-    }
-    if(!subStmtSkipVec[j]){
-      processStmt(stmtJ, "TraverseCompoundStmt");
-    }
+  for(Stmt* stmt:subStmtLs){
+//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
+    processStmt(stmt,"TraverseCompoundStmt");
   }
-
-
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
