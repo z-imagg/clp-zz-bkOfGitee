@@ -249,6 +249,8 @@ public:
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
 
+    virtual bool TraverseAttr(Attr *At);
+
     /** 遍历  FunctionDecl 或 CXXMethodDecl
      * TraverseFunctionDecl 和 TraverseCXXMethodDecl 的 公共代码
      * @param funcSourceRange

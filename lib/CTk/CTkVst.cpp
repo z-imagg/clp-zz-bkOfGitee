@@ -573,6 +573,11 @@ bool CTkVst::_Traverse_Func(
 
 
 
+bool CTkVst::TraverseAttr(Attr *At){
+  std::cout<< "C:" << At->getKind() << std::endl;
+  return true;
+}
+
 /*bool CTkVst::VisitCXXMethodDecl(CXXMethodDecl *declK) {
 
 //  FunctionDecl *functionDecl = declK->getAsFunction();
