@@ -575,6 +575,18 @@ bool CTkVst::_Traverse_Func(
 
 bool CTkVst::TraverseAttr(Attr *At){
   std::cout<< "C:" << At->getKind() << std::endl;
+  //此方法TraverseAttr没被调用
+  return true;
+}
+
+
+bool CTkVst::TraverseAttributedStmt(AttributedStmt *attributedStmt){
+  //方法 TraverseAttributedStmt 被调用
+  const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
+  for(auto attrK:attrS){
+    std::cout<< "D:" << attrK->getKind() << "," << attrK->getNormalizedFullName() << std::endl;
+//    D:24,gnu::fallthrough
+  }
   return true;
 }
 
