@@ -223,6 +223,13 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   const std::string &compoundStmtText = Util::getSourceTextBySourceRange(compoundStmt->getSourceRange(), SM, CI.getLangOpts());
 
+//  std::vector<clang::Stmt*> subStmtVec(compoundStmt->body_begin(), compoundStmt->body_end());
+//  std::vector<clang::Stmt*> subStmtVec(compoundStmt->child_begin(), compoundStmt->child_end());
+  std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
+  unsigned long subStmtCnt = subStmtVec.size();
+//  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, CI.getLangOpts());
+
+
 
   ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
   //此组合语句内的变量声明语句个数
@@ -280,10 +287,24 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   ///////////////处理  子语句列表 中每条语句
 
-  for(Stmt* stmt:subStmtLs){
-//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
-    processStmt(stmt,"TraverseCompoundStmt");
+
+  //subStmtVec中的stmtJ是否应该跳过
+  std::vector<bool> subStmtSkipVec(subStmtVec.size(),false);
+
+  // 使用普通for循环和整数循环下标遍历 child_range
+  for (std::size_t j = 0; j < subStmtCnt; ++j) {
+    clang::Stmt* stmtJ = subStmtVec[j];
+//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmtJ,true);
+    if(subStmtIsFallThroughVec[j]){
+      //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
+      int nextStmtIdx=(j+1)%(subStmtCnt+1);
+      subStmtSkipVec[nextStmtIdx]=true;
+    }
+    if(!subStmtSkipVec[j]){
+      processStmt(stmtJ, "TraverseCompoundStmt");
+    }
   }
+
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
