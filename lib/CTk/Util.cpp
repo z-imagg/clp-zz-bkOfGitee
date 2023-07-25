@@ -51,10 +51,8 @@ bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
       if(!attrJ){
         continue;
       }
-      attrJ->getSpellingListIndex();
-//      bool  zzz=attrJ->isAttributeSpellingListCalculated();
       attr::Kind attrJKind = attrJ->getKind();
-//      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
+      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
 //      std::cout << "AttributedStmt:" << attrJKind << "," << normalizedFullName << std::endl;
 //    AttributedStmt:24,gnu::fallthrough
       if(attrKind==attrJKind){
