@@ -253,9 +253,9 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond,SM,CI.getLangOpts());
   bool  endStmtIsFallThrough=subStmtIsFallThroughVec.empty()? false: subStmtIsFallThroughVec.back();
   if(endStmtIsFallThrough){
-    //如果块内最后一条语句是'[[gnu::fallthrough]];', 则释放语句 位置 在 倒数第二条语句之后.
-    // 若最后一条语句'[[gnu::fallthrough]];' 是以宏的形式出现的，在宏所占有位置前 插入 ，实际运行 发现 并没插入。 估计是   clang 不允许 在宏的位置范围内 插入。
-    insertLoc=negativeSecond->getEndLoc().getLocWithOffset(+1);//+1是为了到分号后面.
+    //如果块内最后一条语句是'[[gnu::fallthrough]];',  释放语句 位置 应该在 倒数第二条语句之后， 但是如果 fallthrough 是宏，宏周边位置不准，倒数第二个语句后紧挨着宏左边，不准，这时候为了能进行下去，退一步，插到倒数第二条语句左（如果倒数第二条语句本身是变量定义语句，这时候释放语句位置提前了）
+    //  TODO 宏周边位置不准，这个问题需要解决
+    insertLoc=negativeSecond->getBeginLoc();
   }
 
 
