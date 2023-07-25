@@ -121,6 +121,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
+  int beginLine,beginCol;
+  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
   SourceRange sourceRange=stmt->getSourceRange();
   FileID fileId = SM.getFileID(beginLoc);//C
 
@@ -173,7 +175,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   char msg[256];
   sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
+//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
   if( ( !_isInternalSysSourceFile )){
 
@@ -195,9 +197,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
     char msgz[256];
     if(whoInserted){
-      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr);
+      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr.get());
     }else{
-      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr);
+      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr.get());
     }
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
@@ -261,6 +263,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   ///////////////处理  子语句列表 中每条语句
 
   for(Stmt* stmt:subStmtLs){
+//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
     processStmt(stmt,"TraverseCompoundStmt");
   }
 ///////////////////// 自定义处理 完毕
@@ -487,6 +490,14 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   const SourceRange &sourceRange = functionDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
+  bool hasDefault = functionDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = functionDecl->isConstexpr();
   Stmt *body = functionDecl->getBody();
 
@@ -495,6 +506,14 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'RuleMatcher( ) = default;'
+  bool hasDefault = cxxConstructorDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
   Stmt *body = cxxConstructorDecl->getBody();
 
@@ -503,6 +522,14 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
+
+  //判断该方法是否有default修饰, 若有, 则不处理.
+  //default修饰举例: 'RuleMatcher &operator=(RuleMatcher &&Other) = default;'
+  bool hasDefault = cxxMethodDecl->isDefaulted();
+  if(hasDefault){
+    return true;
+  }
+
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
   Stmt *body = cxxMethodDecl->getBody();
 

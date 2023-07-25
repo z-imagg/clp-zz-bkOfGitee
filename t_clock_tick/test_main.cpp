@@ -55,6 +55,7 @@ namespace myNs1{
                 }
               }
             }
+            Product(Product &&Other) = default;
             Product &operator=(Product &&Other) = default;
 
             void switch_demo_func(){

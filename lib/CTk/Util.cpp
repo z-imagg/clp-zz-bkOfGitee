@@ -15,6 +15,12 @@
 using namespace llvm;
 using namespace clang;
 
+void Util::extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation, int& line, int& column) {
+  clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
+  line = presumedLoc.getLine();
+  column = presumedLoc.getColumn();
+}
+
 bool Util::parentIsCompound(ASTContext* astContext, const Stmt* currentStmt) {
   bool parentKindIsCompound= Util::parentKindIsSame(astContext, currentStmt, ASTNodeKind::getFromNodeKind<CompoundStmt>());
   bool parentClassIsCompound= Util::parentClassEqual(astContext, currentStmt, Stmt::CompoundStmtClass);

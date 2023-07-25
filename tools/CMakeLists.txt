@@ -3,6 +3,8 @@ CTkAlone
 )
 
 
+MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+#CMAKE_SOURCE_DIR: /pubx/clang_plugin_demo/clang-tutor
 
 set(CTkAlone_SOURCES
  "${CMAKE_CURRENT_SOURCE_DIR}/CTkMain.cpp"

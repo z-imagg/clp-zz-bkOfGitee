@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static void extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation, int& line, int& column);
     static bool parentIsCompound(ASTContext* astContext, const Stmt* currentStmt);
     static bool parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::StmtClass targetClass);
     static bool parentKindIsSame(ASTContext *Ctx, const Stmt* stmt, const ASTNodeKind& kind);
