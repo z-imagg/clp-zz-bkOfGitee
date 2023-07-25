@@ -15,9 +15,10 @@
 using namespace llvm;
 using namespace clang;
 
-std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond) {
+std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond,SourceManager& SM, LangOptions& langOptions) {
   std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
   unsigned long subStmtCnt = subStmtVec.size();
+  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, langOptions);
   if(subStmtCnt>=2){
     //倒数第二条语句
     negativeSecond=subStmtVec[subStmtCnt-2];
@@ -169,6 +170,15 @@ FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
   return NULL;
 }
 
+std::vector<std::string> Util::stmtLs2TextLs(std::vector<Stmt*> stmtVec, SourceManager & SM, const LangOptions & langOptions){
+  std::vector<std::string> textVec;
+
+  std::transform(stmtVec.begin(), stmtVec.end(), std::back_inserter(textVec), [&SM,&langOptions](Stmt* stmt) {
+      return getSourceTextBySourceRange(stmt->getSourceRange(),SM,langOptions); // 这里可以根据需要进行转换操作
+  });
+
+  return textVec;
+}
 /**
  * 获取 给定 位置范围 的源码文本
  * @param sourceRange

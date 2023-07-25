@@ -221,6 +221,14 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   int64_t compoundStmtID = compoundStmt->getID(*Ctx);
   const Stmt::child_range &subStmtLs = compoundStmt->children();
 
+  const std::string &compoundStmtText = Util::getSourceTextBySourceRange(compoundStmt->getSourceRange(), SM, CI.getLangOpts());
+
+//  std::vector<clang::Stmt*> subStmtVec(compoundStmt->body_begin(), compoundStmt->body_end());
+  std::vector<clang::Stmt*> subStmtVec(compoundStmt->child_begin(), compoundStmt->child_end());
+  unsigned long subStmtCnt = subStmtVec.size();
+  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, CI.getLangOpts());
+  //这里有个bug, 可能是所用clang15版本的bug, 组合语句的子节点textVec[3] 本来是 z++, 但这里得到是z
+
   ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
   //此组合语句内的变量声明语句个数
   int declStmtCnt=0;
@@ -242,7 +250,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   Stmt *endStmt = compoundStmt->body_back();
 
   Stmt* negativeSecond;
-  std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond);
+  std::vector<bool> subStmtIsFallThroughVec=Util::subStmtIsFallThroughVec(subStmtLs,negativeSecond,SM,CI.getLangOpts());
   bool  endStmtIsFallThrough=subStmtIsFallThroughVec.empty()? false: subStmtIsFallThroughVec.back();
   if(endStmtIsFallThrough){
     //如果块内最后一条语句是'[[gnu::fallthrough]];', 则释放语句 位置 在 倒数第二条语句之后.
