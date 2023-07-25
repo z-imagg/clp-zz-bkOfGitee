@@ -175,7 +175,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   char msg[256];
   sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, true);  //开发用打印
+//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
   if( ( !_isInternalSysSourceFile )){
 
