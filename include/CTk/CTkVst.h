@@ -13,6 +13,8 @@
 using namespace llvm;
 using namespace clang;
 
+//TODO 处理 要忽略 t_clock_tick.cpp 和 t_clock_tick.h
+
 //-----------------------------------------------------------------------------
 // RecursiveASTVisitor
 //-----------------------------------------------------------------------------
