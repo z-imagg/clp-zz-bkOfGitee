@@ -1,1 +1,0 @@
-void funcZZZ(int i, int j);
