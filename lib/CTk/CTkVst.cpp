@@ -262,18 +262,28 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   ///////////////处理  子语句列表 中每条语句
 
-  for(Stmt* stmt:subStmtLs){
-//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmt,true);
-    AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
-    if(attributedStmt){
-      const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
-      for(auto attrK:attrS){
-        std::cout<< "E:" << attrK->getKind() << "," << attrK->getNormalizedFullName() << std::endl;
-//    D:24,gnu::fallthrough
-      }
+  std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
+  unsigned long subStmtCnt = subStmtVec.size();
+
+  //subStmtVec中的stmtJ是否应该跳过
+  std::vector<bool> subStmtSkipVec(subStmtVec.size(),false);
+
+  // 使用普通for循环和整数循环下标遍历 child_range
+  for (std::size_t j = 0; j < subStmtVec.size(); ++j) {
+    clang::Stmt* stmtJ = subStmtVec[j];
+//    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmtJ,true);
+    bool isFallThrough=Util::hasAttrKind(stmtJ, attr::Kind::FallThrough);
+    if(isFallThrough){
+      //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
+      int nextStmtIdx=(j+1)%(subStmtCnt+1);
+      subStmtSkipVec[nextStmtIdx]=true;
     }
-    processStmt(stmt,"TraverseCompoundStmt");
+    if(!subStmtSkipVec[j]){
+      processStmt(stmtJ, "TraverseCompoundStmt");
+    }
   }
+
+
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)

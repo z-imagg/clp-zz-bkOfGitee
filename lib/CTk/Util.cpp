@@ -15,6 +15,25 @@
 using namespace llvm;
 using namespace clang;
 
+
+bool Util::hasAttrKind(Stmt *stmt, attr::Kind attrKind){
+  AttributedStmt* attributedStmt= static_cast<AttributedStmt*> (stmt);
+  if(attributedStmt){
+    const ArrayRef<const Attr *> &attrS = attributedStmt->getAttrs();
+    for(auto attrJ:attrS){
+      attr::Kind attrJKind = attrJ->getKind();
+      const std::string &normalizedFullName = attrJ->getNormalizedFullName();
+      std::cout << "AttributedStmt:" << attrJKind << "," << normalizedFullName << std::endl;
+//    AttributedStmt:24,gnu::fallthrough
+      if(attrKind==attrJKind){
+        return true;
+      }
+    }//for结束
+
+  }//if结束
+
+  return false;
+}
 void Util::extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation, int& line, int& column) {
   clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
   line = presumedLoc.getLine();
