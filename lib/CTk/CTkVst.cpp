@@ -197,9 +197,9 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
     char msgz[256];
     if(whoInserted){
-      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr);
+      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr.get());
     }else{
-      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr);
+      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr.get());
     }
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
