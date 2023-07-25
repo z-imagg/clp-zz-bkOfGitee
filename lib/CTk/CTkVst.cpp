@@ -121,6 +121,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
+  int beginLine,beginCol;
+  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
   SourceRange sourceRange=stmt->getSourceRange();
   FileID fileId = SM.getFileID(beginLoc);//C
 
