@@ -86,17 +86,17 @@ public:
       }
     }
     ~TickCache(){
-      _flushIfFull();
+      //此时估计是进程退出阶段，缓存无论是否满都要写盘，否则缓存中的数据就丢失了
+      _flushIf(true);
       if(fWriter.is_open()){
         fWriter.close();
       }
     }
 private:
-    bool _flushIfFull(){
-      /////若缓存满了, 则写盘 并 清空缓存.
-      bool full=curEndIdx==TickCacheSize-1;
+    bool _flushIf(bool condition){
+      /////若条件满足, 则写盘 并 清空缓存.
       //若缓存满了
-      if(full){
+      if(condition){
         //写盘
         for(int i=0; i <=curEndIdx; i++){
           std::string line;
@@ -112,7 +112,8 @@ private:
 public:
     void save(Tick & tick){
       /////若缓存满了, 则写盘 并 清空缓存.
-      _flushIfFull();
+      bool full=curEndIdx==TickCacheSize-1;
+      _flushIf(full);
 
       /////当前请求进缓存
       cache[curEndIdx]=tick;
