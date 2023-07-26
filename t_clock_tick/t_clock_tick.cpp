@@ -72,14 +72,25 @@ public:
 };
 
 ///////线程级滴答缓存
-#define TickCacheSize 5000
+#define TickCacheSize 500
 #define CacheIdxStart 0
 class TickCache {
 public:
+    bool inited;
     Tick cache[TickCacheSize];
     int curEndIdx;
     std::ofstream fWriter;
     TickCache(){
+      //构造函数被 "TLS init function for tickCache" 调用，发生在线程创建初始阶段，所以本函数最好少干事。
+      inited=false;
+    }
+
+    void my_init(){
+      if(inited){
+        return;
+      }
+
+      inited=true;
       curEndIdx=CacheIdxStart;
 
       int curThreadId=X__curThreadId();
@@ -93,6 +104,9 @@ public:
       }
     }
     ~TickCache(){
+      if(!inited){
+        return;
+      }
       //此时估计是进程退出阶段，缓存无论是否满都要写盘，否则缓存中的数据就丢失了
       _flushIf(true);
       if(fWriter.is_open()){
@@ -100,7 +114,7 @@ public:
       }
     }
 private:
-    bool _flushIf(bool condition){
+    void _flushIf(bool condition){//由于本函数写了返回bool，但少了return，再次导致执行流乱跳。
       /////若条件满足, 则写盘 并 清空缓存.
       //若缓存满了
       if(condition){
@@ -118,6 +132,10 @@ private:
     }
 public:
     void save(Tick & tick){
+      if(!inited){
+        my_init();
+      }
+
       /////若缓存满了, 则写盘 并 清空缓存.
       bool full=curEndIdx==TickCacheSize-1;
       _flushIf(full);
