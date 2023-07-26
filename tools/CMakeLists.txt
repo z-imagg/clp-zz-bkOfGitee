@@ -1,13 +1,13 @@
-set(CLANG_TUTOR_TOOLS
-CTkAlone
-)
 
 
 MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-#CMAKE_SOURCE_DIR: /pubx/clang_plugin_demo/clang-tutor
+#CMAKE_SOURCE_DIR: /pubx/clang-ctk/
+
+MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+#CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-ctk/tools
 
 set(CTkAlone_SOURCES
- "${CMAKE_CURRENT_SOURCE_DIR}/CTkMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../tools/CTkMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
@@ -15,25 +15,21 @@ set(CTkAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstCnsm.cpp"
 )
 
-# CONFIGURE THE TOOLS
-# ===================
-foreach( tool ${CLANG_TUTOR_TOOLS} )
     # Create a library corresponding to 'plugin'
     add_executable(
-      ${tool}
-      ${${tool}_SOURCES}
+        CTkAlone
+      ${CTkAlone_SOURCES}
       )
 
     # Configure include directories for 'tool'
     target_include_directories(
-      ${tool}
+    CTkAlone
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     )
 
-    # Link in the required libraries 
+    # Link in the required libraries
     target_link_libraries(
-      ${tool}
+    CTkAlone
       "clangTooling"
     )
-endforeach()
