@@ -40,7 +40,8 @@ void X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAlloc
   currentHeapObjCnt=currentHeapObjAllocCnt-currentHeapObjcFreeCnt;
 
   printf( "&滴答:%p,&栈当:%p,&堆当:%p,&栈生:%p,&栈死:%p,&堆生:%p,&堆死:%p\n",&t,&currentStackVarCnt,&currentHeapObjCnt,&currentStackVarAllocCnt,&currentStackVarFreeCnt,&currentHeapObjAllocCnt,&currentHeapObjcFreeCnt);
-  //实测结论:
+  //实测结果: 不同线程, 同一个全局变量 比如 t 的 地址 是 不同的，
+  //    实测结论: thread_local修饰的全局变量 是 每线程一份独立变量， 即 不同线程的thread_local同一个全局变量地址不同。
 
   printf( "滴答:%d,栈当:%d,堆当:%d,栈生:%d,栈死:%d,堆生:%d,堆死:%d\n",t,currentStackVarCnt,currentHeapObjCnt,currentStackVarAllocCnt,currentStackVarFreeCnt,currentHeapObjAllocCnt,currentHeapObjcFreeCnt);
 
