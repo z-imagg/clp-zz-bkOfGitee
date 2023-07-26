@@ -6,12 +6,12 @@
 
 
 // extern int t;//时钟
-// extern int currentStackVarAllocCnt;//当前栈变量分配数目
-// extern int currentStackVarFreeCnt;//当前栈变量释放数目
-// extern int currentStackVarCnt;//当前栈变量数目（冗余）
-// extern int currentHeapObjAllocCnt;//当前堆对象分配数目
-// extern int currentHeapObjcFreeCnt;//当前堆对象释放数目
-// extern int currentHeapObjCnt;//当前堆对象数目（冗余）
+// extern int sVarAllocCnt;//当前栈变量分配数目
+// extern int sVarFreeCnt;//当前栈变量释放数目
+// extern int sVarCnt;//当前栈变量数目（冗余）
+// extern int hVarAllocCnt;//当前堆对象分配数目
+// extern int hVarFreeCnt;//当前堆对象释放数目
+// extern int hVarCnt;//当前堆对象数目（冗余）
 
 /**
  *
@@ -25,6 +25,6 @@
 #define X__t_clock_tick  _Z15X__t_clock_tickiiii
 #endif
 
-void X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt);
+void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt);
 
 #endif //_T_CLOCK_TICK_H
