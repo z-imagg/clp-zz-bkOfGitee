@@ -1,14 +1,14 @@
 
 
+#include <stdio.h>
 
-int t;//时钟
-int currentStackVarAllocCnt=0;//当前栈变量分配数目
-int currentStackVarFreeCnt=0;//当前栈变量释放数目
-int currentStackVarCnt=0;//当前栈变量数目（冗余）
-int currentHeapObjAllocCnt=0;//当前堆对象分配数目
-int currentHeapObjcFreeCnt=0;//当前堆对象释放数目
-int currentHeapObjCnt=0;//当前堆对象数目（冗余）
-
+thread_local int t;//时钟
+thread_local int currentStackVarAllocCnt=0;//当前栈变量分配数目
+thread_local int currentStackVarFreeCnt=0;//当前栈变量释放数目
+thread_local int currentStackVarCnt=0;//当前栈变量数目（冗余）
+thread_local int currentHeapObjAllocCnt=0;//当前堆对象分配数目
+thread_local int currentHeapObjcFreeCnt=0;//当前堆对象释放数目
+thread_local int currentHeapObjCnt=0;//当前堆对象数目（冗余）
 /**
  *
  * @param stackVarAllocCnt  此次滴答期间， 栈变量分配数目
@@ -38,6 +38,11 @@ void X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAlloc
 
   //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
   currentHeapObjCnt=currentHeapObjAllocCnt-currentHeapObjcFreeCnt;
+
+  printf( "&滴答:%p,&栈当:%p,&堆当:%p,&栈生:%p,&栈死:%p,&堆生:%p,&堆死:%p\n",&t,&currentStackVarCnt,&currentHeapObjCnt,&currentStackVarAllocCnt,&currentStackVarFreeCnt,&currentHeapObjAllocCnt,&currentHeapObjcFreeCnt);
+  //实测结论:
+
+  printf( "滴答:%d,栈当:%d,堆当:%d,栈生:%d,栈死:%d,堆生:%d,堆死:%d\n",t,currentStackVarCnt,currentHeapObjCnt,currentStackVarAllocCnt,currentStackVarFreeCnt,currentHeapObjAllocCnt,currentHeapObjcFreeCnt);
 
   return;
 }
