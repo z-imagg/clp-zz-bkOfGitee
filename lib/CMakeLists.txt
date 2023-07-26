@@ -1,32 +1,27 @@
 # THE LIST OF PLUGINS AND THE CORRESPONDING SOURCE FILES
 # ======================================================
-set(CTk_PLUGINS
-        CTk
-    )
 
 
 set(CTk_SOURCES
-        ../include/CTk/CTkAstCnsm.h ../include/CTk/CTkVst.h ../include/CTk/Util.h ../include/CTk/FndCTkClROVst.h
-        CTk/Util.cpp CTk/CTkAstCnsm.cpp CTk/CTkAstAct.cpp CTk/CTkVst.cpp CTk/FndCTkClROVst.cpp)
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/Util.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstCnsm.cpp"
+)
 
 
-
-
-# CONFIGURE THE PLUGIN LIBRARIES
-# ==============================
-foreach( plugin ${CTk_PLUGINS} )
     # Create a library corresponding to 'plugin'
     add_library(
-      ${plugin}
+    CTk
       SHARED
-      ${${plugin}_SOURCES}
+      ${CTk_SOURCES}
       )
 
     # Configure include directories for 'plugin'
     target_include_directories(
-      ${plugin}
+    CTk
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     )
 
-endforeach()

@@ -1,13 +1,13 @@
-set(CLANG_TUTOR_TOOLS
-CTkAlone
-)
 
 
 MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-#CMAKE_SOURCE_DIR: /pubx/clang_plugin_demo/clang-tutor
+#CMAKE_SOURCE_DIR: /pubx/clang-ctk/
+
+MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+#CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-ctk/tools
 
 set(CTkAlone_SOURCES
- "${CMAKE_CURRENT_SOURCE_DIR}/CTkMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../tools/CTkMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
