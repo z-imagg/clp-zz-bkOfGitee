@@ -3,6 +3,27 @@
 #include <stdio.h>
 #include <thread>
 #include <sstream>
+#include <atomic>
+#include <fstream>
+
+//////自定义线程id实现
+// static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
+#define FirstThreadId 0
+static std::atomic<int> globalThreadIdCounter=FirstThreadId;
+int X__nextThreadId(){
+  globalThreadIdCounter++;
+  return globalThreadIdCounter;
+}
+#define ThreadIdInitVal -1
+thread_local int currentThreadId=ThreadIdInitVal;//当前线程id
+int X__curThreadId(){
+  if(currentThreadId==ThreadIdInitVal){
+    currentThreadId=X__nextThreadId();
+  }else{
+    return currentThreadId;
+  }
+}
+///////
 
 thread_local int t;//时钟
 thread_local int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
@@ -12,23 +33,89 @@ thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: curr
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
 
-void X__getCurrentThreadIdAsString(std::string& curThreadIdStr){
-  // 获取当前线程的ID
-  std::thread::id curThreadId = std::this_thread::get_id();
-  // 线程ID转换为整数类型, 貌似依赖平台, 因此不转整形
-//  std::uintptr_t threadIdInt = reinterpret_cast<std::uintptr_t>(curThreadId);
+class Tick{
+public:
+    int t;//时钟
+    int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
+    int sVarFreeCnt=0;//当前栈变量释放数目 sVarFreeCnt: currentStackVarFreeCnt
+    int sVarCnt=0;//当前栈变量数目（冗余） sVarCnt: currentStackVarCnt
+    int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
+    int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
+    int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+public:
+    Tick(int _t,int _sVarAllocCnt, int _sVarFreeCnt, int _sVarCnt, int _hVarAllocCnt, int _hVarFreeCnt, int _hVarCnt)
+    :
+    t(_t),
+    sVarAllocCnt(_sVarAllocCnt),
+    sVarFreeCnt(_sVarFreeCnt),
+    sVarCnt(_sVarCnt),
+    hVarAllocCnt(_hVarAllocCnt),
+    hVarFreeCnt(_hVarFreeCnt),
+    hVarCnt(_hVarCnt)
+    {
+//      sVarCnt=sVarAllocCnt-sVarFreeCnt;
+//      hVarCnt=hVarAllocCnt-hVarFreeCnt;
+    }
 
-//
-  // 将线程的唯一标识转换为字符串类型.  不同平台, 线程id转成的字符串样式不同.
-//  std::string curThreadIdStr = std::to_string(curThreadId); //只在c++11中有 std::to_string ?
+    Tick( ){
 
-  // 将线程的唯一标识转换为字符串类型.  不同平台, 线程id转成的字符串样式不同.
-  std::ostringstream outStrStream;
-  outStrStream << curThreadId;
-//  std::string curThreadIdStr = outStrStream.str();
-  curThreadIdStr = outStrStream.str();
+    }
 
-}
+    void toString(std::string & line){
+      char buf[128];
+      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d\n",t,sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt);
+      line.append(buf);
+    }
+};
+#define TickCacheSize 5000
+class TickCache {
+public:
+    Tick cache[TickCacheSize];
+    int curEndIdx;
+    std::ofstream fWriter;
+    TickCache(){
+      int curThreadId=X__curThreadId();
+      std::string filePath=std::to_string(curThreadId);
+      if(!fWriter.is_open()){
+        fWriter.open(filePath);
+      }
+    }
+    ~TickCache(){
+      _flushIfFull();
+      if(fWriter.is_open()){
+        fWriter.close();
+      }
+    }
+private:
+    bool _flushIfFull(){
+    }
+public:
+    void save(Tick & tick){
+      /////若缓存满了, 则写盘 并 清空缓存.
+      bool full=curEndIdx==TickCacheSize-1;
+      //若缓存满了
+      if(full){
+        //写盘
+        for(int i=0; i <=curEndIdx; i++){
+          std::string line;
+          cache[i].toString(line);
+          fWriter << line ;
+        }
+        fWriter.flush();
+
+        //清空缓存
+        curEndIdx=0;
+      }
+
+      /////当前请求进缓存
+      cache[curEndIdx]=tick;
+      ++curEndIdx;
+
+    }
+
+};
+thread_local TickCache tickCache;
+
 /**
  *
  * @param _sVarAllocCnt  此次滴答期间， 栈变量分配数目
@@ -59,16 +146,9 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
   //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
   hVarCnt= hVarAllocCnt - hVarFreeCnt;
 
-  std::string curThreadIdStr;
-  X__getCurrentThreadIdAsString(curThreadIdStr);
+  Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+  tickCache.save(tick);
 
-  const char *curThreadIdCStr = curThreadIdStr.c_str();
-
-  printf("当前线程id:%s,&滴答:%p,&栈当:%p,&堆当:%p,&栈生:%p,&栈死:%p,&堆生:%p,&堆死:%p\n", curThreadIdCStr,&t, &sVarCnt, &hVarCnt, &sVarAllocCnt, &sVarFreeCnt, &hVarAllocCnt, &hVarFreeCnt);
-  //实测结果: 不同线程, 同一个全局变量 比如 t 的 地址 是 不同的，
-  //    实测结论: thread_local修饰的全局变量 是 每线程一份独立变量， 即 不同线程的thread_local同一个全局变量地址不同。
-
-  printf("当前线程id:%s,滴答:%d,栈当:%d,堆当:%d,栈生:%d,栈死:%d,堆生:%d,堆死:%d\n", curThreadIdCStr,t, sVarCnt, hVarCnt, sVarAllocCnt, sVarFreeCnt, hVarAllocCnt, hVarFreeCnt);
 
   return;
 }
