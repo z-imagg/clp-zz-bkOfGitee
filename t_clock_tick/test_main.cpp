@@ -26,6 +26,10 @@ void GetCurrentThreadIdAsString(std::string& curThreadIdStr){
 }
 
 void thread1_func(int arg1, char & arg2){
+  std::string thread1IdStr;
+  GetCurrentThreadIdAsString(thread1IdStr);
+  printf("thread1 线程id:%s\n", thread1IdStr.c_str());
+
   float sum,max=0;
   sum=(float)(arg1+arg2);
   max=max>sum?max:sum;
@@ -38,6 +42,10 @@ void thread1_func(int arg1, char & arg2){
 }
 
 void thread2_func(int k, vector<int> arg2){
+  std::string thread2IdStr;
+  GetCurrentThreadIdAsString(thread2IdStr);
+  printf("thread2 线程id:%s\n",  thread2IdStr.c_str());
+
   int size=arg2.size();
   arg2[k]=size;
   int sum=0;
@@ -51,8 +59,7 @@ void thread2_func(int k, vector<int> arg2){
 int main(int argc, char** argv){
   std::string mainThreadIdStr;
   GetCurrentThreadIdAsString(mainThreadIdStr);
-  const char *mainThreadIdCStr = mainThreadIdStr.c_str();
-  printf("主线程的线程id:%s\n", mainThreadIdCStr);
+  printf("主线程 线程id:%s\n", mainThreadIdStr.c_str());
 
   int arg1=9;
   char arg2='A';
@@ -66,3 +73,17 @@ int main(int argc, char** argv){
 
   return 0;
 }
+/**
+主线程 线程id:140627888133120
+thread1 线程id:140627880703552
+thread2 线程id:140627880703552
+
+c++线程id: 单进程内单时刻唯一、单进程内两异时间段可相同
+ 1. 在单一进程内任意单一时刻 全部活着的线程id 唯一。
+ 2. 在单一进程内,  单一线程id 可以存活在 两个不同的时间段内。
+
+
+//主线程 等待 线程1执行完  后， 主线程 又等待 线程2 执行完。
+ 即 线程1 和 线程2  在时间轴上 没有重合。 因此 线程1的id 和 线程2的id  可以相同。  即 三个线程只有2个线程id
+
+ */
