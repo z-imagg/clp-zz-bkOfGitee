@@ -73,12 +73,15 @@ public:
 
 ///////线程级滴答缓存
 #define TickCacheSize 5000
+#define CacheIdxStart 0
 class TickCache {
 public:
     Tick cache[TickCacheSize];
     int curEndIdx;
     std::ofstream fWriter;
     TickCache(){
+      curEndIdx=CacheIdxStart;
+
       int curThreadId=X__curThreadId();
       std::string filePath=std::to_string(curThreadId);
       if(!fWriter.is_open()){
@@ -110,7 +113,7 @@ private:
         fWriter.flush();
 
         //清空缓存
-        curEndIdx=0;
+        curEndIdx=CacheIdxStart;
       }
     }
 public:
