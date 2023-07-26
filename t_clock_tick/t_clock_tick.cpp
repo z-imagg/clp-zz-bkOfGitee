@@ -83,6 +83,10 @@ public:
       std::string filePath=std::to_string(curThreadId);
       if(!fWriter.is_open()){
         fWriter.open(filePath);
+
+        //刚打开文件时，写入标题行
+        std::string title("滴答,栈生,栈死,栈净,堆生,堆死,堆净\n");
+        fWriter << title ;
       }
     }
     ~TickCache(){
