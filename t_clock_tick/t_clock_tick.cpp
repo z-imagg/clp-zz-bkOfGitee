@@ -9,7 +9,7 @@
 //////自定义线程id实现
 // static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
 #define FirstThreadId 0
-static std::atomic<int> globalThreadIdCounter=FirstThreadId;
+static std::atomic<int> globalThreadIdCounter(FirstThreadId);
 int X__nextThreadId(){
   globalThreadIdCounter++;
   return globalThreadIdCounter;
