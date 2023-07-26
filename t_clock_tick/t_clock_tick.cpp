@@ -23,7 +23,9 @@ int X__curThreadId(){
     return currentThreadId;
   }
 }
-///////
+
+
+///////本线程当前变量数目累积值
 
 thread_local int t;//时钟
 thread_local int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
@@ -33,6 +35,7 @@ thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: curr
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
 
+///////当前滴答
 class Tick{
 public:
     int t;//时钟
@@ -67,6 +70,8 @@ public:
       line.append(buf);
     }
 };
+
+///////线程级滴答缓存
 #define TickCacheSize 5000
 class TickCache {
 public:
@@ -88,9 +93,6 @@ public:
     }
 private:
     bool _flushIfFull(){
-    }
-public:
-    void save(Tick & tick){
       /////若缓存满了, 则写盘 并 清空缓存.
       bool full=curEndIdx==TickCacheSize-1;
       //若缓存满了
@@ -106,6 +108,11 @@ public:
         //清空缓存
         curEndIdx=0;
       }
+    }
+public:
+    void save(Tick & tick){
+      /////若缓存满了, 则写盘 并 清空缓存.
+      _flushIfFull();
 
       /////当前请求进缓存
       cache[curEndIdx]=tick;
@@ -146,6 +153,7 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
   //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
   hVarCnt= hVarAllocCnt - hVarFreeCnt;
 
+  //保存当前滴答
   Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
   tickCache.save(tick);
 
