@@ -149,6 +149,7 @@ public:
 };
 thread_local TickCache tickCache;
 
+const std::string X__true("true");
 /**
  *
  * @param _sVarAllocCnt  此次滴答期间， 栈变量分配数目
@@ -179,9 +180,12 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
   //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
   hVarCnt= hVarAllocCnt - hVarFreeCnt;
 
-  //保存当前滴答
-  Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
-  tickCache.save(tick);
+  //如果有设置环境变量tick_save,则保存当前滴答
+  const char* tick_save=std::getenv("tick_save");
+  if(X__true==tick_save){
+    Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+    tickCache.save(tick);
+  }
 
 
   return;
