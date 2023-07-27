@@ -223,15 +223,14 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
   const std::string &compoundStmtText = Util::getSourceTextBySourceRange(compoundStmt->getSourceRange(), SM, CI.getLangOpts());
 
-//  std::vector<clang::Stmt*> subStmtVec(compoundStmt->body_begin(), compoundStmt->body_end());
-//  std::vector<clang::Stmt*> subStmtVec(compoundStmt->child_begin(), compoundStmt->child_end());
   std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
   unsigned long subStmtCnt = subStmtVec.size();
 //  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, CI.getLangOpts());
 
 
 
-  ///////////////计算 子语句列表 中 变量声明语句个数，以生成释放语句 并插入
+  //////1. 在块尾插入释放语句
+  ////1.1 计算 块内子语句列表 中 变量声明语句个数 ，"1.6" 中用到
   //此组合语句内的变量声明语句个数
   int declStmtCnt=0;
 
@@ -246,9 +245,11 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 //    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",subStmt,true);
   }
 
-  //时钟语句默认插入位置是 组合语句 右花括号} 前
+  ////1.2 块尾释放语句插入位置
+  ///1.3 块尾释放语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
+  ///1.4 如果块内最后一条语句是FallThrough 块尾释放语句插入位置 改为 块内倒数第二条语句前
   Stmt *endStmt = compoundStmt->body_back();
 
   Stmt* negativeSecond;
@@ -260,7 +261,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     insertLoc=negativeSecond->getBeginLoc();
   }
 
-
+  ///1.5 如果块内最后一条语句是return 块尾释放语句插入位置 改为  该return语句前
   if(endStmt){
     Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
     //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
@@ -269,7 +270,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     }
   }
 
-  //本块内有声明变量，才会插入释放语句
+  ///1.6 本块内有声明变量 且 没有本块没插入过释放语句，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
@@ -282,11 +283,11 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 //  int insertLine, insertCol;//开发看行号用.
 //  Util::extractLineAndColumn(SM,insertLoc,insertLine,insertCol);
 
+  ///1.7  在上面算出的位置处, 插入释放语句
   insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
 
-  ///////////////处理  子语句列表 中每条语句
-
+  //////2. 处理  子语句列表 中每条语句
 
   //subStmtVec中的stmtJ是否应该跳过
   std::vector<bool> subStmtSkipVec(subStmtVec.size(),false);
@@ -295,12 +296,14 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   for (std::size_t j = 0; j < subStmtCnt; ++j) {
     clang::Stmt* stmtJ = subStmtVec[j];
 //    Util::printStmt(*Ctx,CI,"查看","组合语句的子语句",stmtJ,true);
+    ///2.1 FallThrough语句的下一条语句得跳过
     if(subStmtIsFallThroughVec[j]){
       //如果本行语句是'[[gnu::fallthrough]];'  , 那么下一行前不要插入时钟语句, 否则语法错误.
       int nextStmtIdx=(j+1)%(subStmtCnt+1);
       subStmtSkipVec[nextStmtIdx]=true;
     }
     if(!subStmtSkipVec[j]){
+    ///2.2 块内的其余语句 调用 processStmt ： 根据情况在该语句前是否插入 滴答语句
       processStmt(stmtJ, "TraverseCompoundStmt");
     }
   }
