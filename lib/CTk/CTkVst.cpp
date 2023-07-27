@@ -572,6 +572,7 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
+  int64_t functionDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -582,24 +583,19 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   }
 
   //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
-  if(functionDecl->hasBody() ) {
-    if(Stmt *body = functionDecl->getBody()){
-      if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(body)){
-        int64_t functionDeclID = functionDecl->getID();
-        const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
-        insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,"TraverseFunctionDecl");
-      }
-    }
+  Stmt* body = functionDecl->getBody();
+  if(functionDecl->hasBody() && body ) {
+    __wrap_insertAfter_X__funcEnter(body,functionDeclID,"TraverseFunctionDecl");
   }
   //endregion
 
   bool _isConstexpr = functionDecl->isConstexpr();
-  Stmt *body = functionDecl->getBody();
 
   return this->_Traverse_Func(sourceRange,_isConstexpr,body);
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
+  int64_t declID = cxxConstructorDecl->getID();
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -609,14 +605,20 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
     return true;
   }
 
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  Stmt* body = cxxConstructorDecl->getBody();
+  if(cxxConstructorDecl->hasBody() && body ) {
+    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
+  }
+  //endregion
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
-  Stmt *body = cxxConstructorDecl->getBody();
 
   return this->_Traverse_Func(sourceRange,_isConstexpr,body);
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  int64_t declID = cxxMethodDecl->getID();
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -625,9 +627,13 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   if(hasDefault){
     return true;
   }
-
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  Stmt* body = cxxMethodDecl->getBody();
+  if(cxxMethodDecl->hasBody() && body ) {
+    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
+  }
+  //endregion
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
-  Stmt *body = cxxMethodDecl->getBody();
 
   return this->_Traverse_Func(sourceRange,_isConstexpr,body);
 }
