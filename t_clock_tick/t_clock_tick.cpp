@@ -14,7 +14,12 @@ static std::atomic<int> globalThreadIdCounter(FirstThreadId);
 int X__nextThreadId(){
   globalThreadIdCounter++;
   int new_tid=globalThreadIdCounter;
-  printf("new_tid:%d\n", new_tid);
+  std::thread::id curThreadId = std::this_thread::get_id();
+  std::ostringstream outStrStream;
+  outStrStream << curThreadId;
+//  std::string curThreadIdStr = outStrStream.str();
+  std::string curThreadIdStr = outStrStream.str();
+  printf("new_tid:%d,curThreadIdStr:\n", new_tid,curThreadIdStr.c_str());
   return new_tid;
 }
 #define ThreadIdInitVal -1
