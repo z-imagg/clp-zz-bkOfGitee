@@ -13,7 +13,9 @@
 static std::atomic<int> globalThreadIdCounter(FirstThreadId);
 int X__nextThreadId(){
   globalThreadIdCounter++;
-  return globalThreadIdCounter;
+  int new_tid=globalThreadIdCounter;
+  printf("new_tid:%d\n", new_tid);
+  return new_tid;
 }
 #define ThreadIdInitVal -1
 thread_local int currentThreadId=ThreadIdInitVal;//当前线程id
