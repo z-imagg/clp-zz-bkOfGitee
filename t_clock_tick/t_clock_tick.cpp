@@ -7,6 +7,16 @@
 #include <fstream>
 #include <filesystem>
 
+
+std::string X__this_thread__get_id(){
+
+  std::thread::id curThreadId = std::this_thread::get_id();
+  std::ostringstream outStrStream;
+  outStrStream << curThreadId;
+  std::string curThreadIdStr = outStrStream.str();
+  return curThreadIdStr;
+}
+
 //////自定义线程id实现
 // static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
 #define FirstThreadId 0
@@ -14,12 +24,9 @@ static std::atomic<int> globalThreadIdCounter(FirstThreadId);
 int X__nextThreadId(){
   globalThreadIdCounter++;
   int new_tid=globalThreadIdCounter;
-  std::thread::id curThreadId = std::this_thread::get_id();
-  std::ostringstream outStrStream;
-  outStrStream << curThreadId;
-//  std::string curThreadIdStr = outStrStream.str();
-  std::string curThreadIdStr = outStrStream.str();
-  printf("new_tid:%d,curThreadIdStr:\n", new_tid,curThreadIdStr.c_str());
+
+  std::string curThreadIdStr = X__this_thread__get_id();
+  printf("X__nextThreadId:: new_tid:%d,curThreadIdStr:\n", new_tid,curThreadIdStr.c_str());
   return new_tid;
 }
 #define ThreadIdInitVal -1
@@ -181,6 +188,11 @@ public:
       #else
       bool tick_data_home_existed=std::filesystem::exists(tick_data_home);
       #endif
+
+
+      std::string curThreadIdStr = X__this_thread__get_id();
+      printf("TickCache::filePath:: TickCache's this:%p,curThreadIdStr:%d:\n", this,curThreadIdStr.c_str());
+
       if(tick_data_home_existed){
         std::string filePath=tick_data_home+"/"+fileName;
         return filePath;
@@ -193,6 +205,9 @@ public:
       if(inited){
         return;
       }
+
+      std::string curThreadIdStr = X__this_thread__get_id();
+      printf("TickCache::my_init:: TickCache's this:%p,curThreadIdStr:%d:\n", this,curThreadIdStr.c_str());
 
       inited=true;
       curEndIdx=CacheIdxStart;
