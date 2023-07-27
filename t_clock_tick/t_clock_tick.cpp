@@ -26,7 +26,7 @@ int X__nextThreadId(){
   int new_tid=globalThreadIdCounter;
 
   std::string curThreadIdStr = X__this_thread__get_id();
-  printf("X__nextThreadId:: new_tid:%d,curThreadIdStr:\n", new_tid,curThreadIdStr.c_str());
+  printf("X__nextThreadId:: new_tid:%d,curThreadIdStr:%s\n", new_tid,curThreadIdStr.c_str());
   return new_tid;
 }
 #define ThreadIdInitVal -1
@@ -191,7 +191,7 @@ public:
 
 
       std::string curThreadIdStr = X__this_thread__get_id();
-      printf("TickCache::filePath:: TickCache's this:%p,curThreadIdStr:%d:\n", this,curThreadIdStr.c_str());
+      printf("TickCache::filePath:: TickCache's this:%p,curThreadIdStr:%s\n", this,curThreadIdStr.c_str());
 
       if(tick_data_home_existed){
         std::string filePath=tick_data_home+"/"+fileName;
@@ -207,7 +207,7 @@ public:
       }
 
       std::string curThreadIdStr = X__this_thread__get_id();
-      printf("TickCache::my_init:: TickCache's this:%p,curThreadIdStr:%d:\n", this,curThreadIdStr.c_str());
+      printf("TickCache::my_init:: TickCache's this:%p,curThreadIdStr:%s\n", this,curThreadIdStr.c_str());
 
       inited=true;
       curEndIdx=CacheIdxStart;
