@@ -125,7 +125,7 @@ void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   sprintf(cStr_inserted, "X__funcEnter(/*函入*/);%s\n", _comment);
   llvm::StringRef strRef(cStr_inserted);
 
-  mRewriter_ptr->InsertTextAfter(funcBodyLBraceLoc.getLocWithOffset(+1), strRef);
+  mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   funcEnterInsertedNodeIDLs.insert(funcDeclId);
