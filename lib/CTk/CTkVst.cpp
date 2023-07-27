@@ -95,8 +95,8 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
 }
 
 
-void CTkVst::insertBefore_X__funcReturn( int64_t stmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
-  char cStr_X__t_clock_tick[256];
+void CTkVst::insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+  char cStr_inserted[256];
 
   char _comment[90]="";
   if(whoInserted){
@@ -104,17 +104,32 @@ void CTkVst::insertBefore_X__funcReturn( int64_t stmtId, SourceLocation stmtBegi
     sprintf(_comment,"//%s",whoInserted);
   }
 
-  //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
-  sprintf(cStr_X__t_clock_tick, "X__funcEnter(/*函入*/);%s\n",_comment);//"X__t_clock_tick(%d, %d, %d, %d)"
-  llvm::StringRef strRef(cStr_X__t_clock_tick);
+  sprintf(cStr_inserted, "X__funcReturn(/*函出*/);%s\n", _comment);
+  llvm::StringRef strRef_inserted(cStr_inserted);
 
-//  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
+  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_inserted);
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-    funcReturnInsertedNodeIDLs.insert(stmtId);
+    funcReturnInsertedNodeIDLs.insert(returnStmtId);
 }
 
+void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+  char cStr_inserted[256];
+
+  char _comment[90]="";
+  if(whoInserted){
+    //如果有提供，插入者信息，则放在注释中.
+    sprintf(_comment,"//%s",whoInserted);
+  }
+
+  sprintf(cStr_inserted, "X__funcEnter(/*函入*/);%s\n", _comment);
+  llvm::StringRef strRef(cStr_inserted);
+
+  mRewriter_ptr->InsertTextAfter(funcBodyLBraceLoc, strRef);
+
+  //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+  funcEnterInsertedNodeIDLs.insert(funcDeclId);
+}
 //TODO 暂时去掉不必要的打印
 //TODO 分配变量个数： 当前语句如果是VarDecl
 
@@ -566,6 +581,18 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
     return true;
   }
 
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  if(functionDecl->hasBody() ) {
+    if(Stmt *body = functionDecl->getBody()){
+      if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(body)){
+        int64_t functionDeclID = functionDecl->getID();
+        const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+        insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,"TraverseFunctionDecl");
+      }
+    }
+  }
+  //endregion
+
   bool _isConstexpr = functionDecl->isConstexpr();
   Stmt *body = functionDecl->getBody();
 
@@ -581,6 +608,7 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
   if(hasDefault){
     return true;
   }
+
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
   Stmt *body = cxxConstructorDecl->getBody();
@@ -657,9 +685,10 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-//粘接直接子节点到递归链条: TODO: 这段不知道怎么写
+//粘接直接子节点到递归链条: TODO: 这段不知道怎么写（得获得return xxx; 的xxx中可能的lambda表达式，并遍历该lambda表达式)， 也有可能不用写：
+//希望return true能继续遍历子节点吧，因为return中应该可以写lambda，lambada内有更复杂的函数结构
+  return true;
 //  Expr *xxx = returnStmt->getRetValue();
-  return true;//希望return true能继续遍历子节点吧，因为return中应该可以写lambda，lambada内有更复杂的函数结构
 }
 
 

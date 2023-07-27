@@ -45,7 +45,8 @@ public:
 
     static bool isInternalSysSourceFile(StringRef fn);
 
-    void insertBefore_X__funcReturn( int64_t stmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
+    void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
+    void insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
     void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
     /**遍历语句
