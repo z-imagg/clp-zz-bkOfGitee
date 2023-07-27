@@ -61,6 +61,7 @@ std::string X__getCurrentProcessCmdLine() {
 void splitGetFirst(std::string  line,std::string delimiter,std::string& firstSubStr ){
 //  std::string delimiter = " ";
   firstSubStr = line.substr(0, line.find(delimiter));
+  return;
 }
 void splitGetEnd(std::string  line,std::string delimiter,std::string& endSubStr ){
 //  std::string delimiter = " ";
@@ -68,6 +69,7 @@ void splitGetEnd(std::string  line,std::string delimiter,std::string& endSubStr 
   if(idxEndSubStr < line.size()){
     endSubStr = line.substr(idxEndSubStr);
   }
+  return;
 }
 /**
  * 不支持 进程名全路径中含有空格的 比如 /opt/my\ tool/app1
@@ -125,13 +127,14 @@ public:
     }
 
     Tick( ){
-
+      return;
     }
 
     void toString(std::string & line){
       char buf[128];
       sprintf(buf,"%d,%d,%d,%d,%d,%d,%d\n",t,sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt);
       line.append(buf);
+      return;
     }
 };
 
@@ -148,6 +151,7 @@ public:
     TickCache(){
       //构造函数被 "TLS init function for tickCache" 调用，发生在线程创建初始阶段，所以本函数最好少干事。
       inited=false;
+      return;
     }
 
     /**
@@ -194,6 +198,7 @@ public:
         std::string title("滴答,栈生,栈死,栈净,堆生,堆死,堆净\n");
         fWriter << title ;
       }
+      return;
     }
     ~TickCache(){
       if(!inited){
@@ -206,6 +211,7 @@ public:
       if(fWriter.is_open()){
         fWriter.close();
       }
+      return;
     }
 private:
     void _flushIf(bool condition){//由于本函数写了返回bool，但少了return，再次导致执行流乱跳。
@@ -223,6 +229,7 @@ private:
         //清空缓存
         curEndIdx=CacheIdxStart;
       }
+      return;
     }
 public:
     void save(Tick & tick){
@@ -238,6 +245,7 @@ public:
       cache[curEndIdx]=tick;
       ++curEndIdx;
 
+      return;
     }
 
 };
