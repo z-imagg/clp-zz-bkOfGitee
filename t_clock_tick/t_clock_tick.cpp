@@ -37,6 +37,10 @@ thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: curren
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
 
 ///////工具
+bool X__fileExists(const std::string& filePath) {
+  std::ifstream file(filePath);
+  return file.good();
+}
 std::string X__getCurrentProcessCmdLine() {
   std::ifstream file("/proc/self/cmdline");
   if (file) {
@@ -161,7 +165,12 @@ public:
       int curThreadId=X__curThreadId();
       std::string fileName(processName+"_"+std::to_string(processId)+"_"+std::to_string(milliseconds)+"_"+std::to_string(curThreadId));
 
+      // c++语言标准小于等于 C++14 时, 没有方法std::filesystem::exists, 用自定义方法X__fileExists替代.
+      #if __cplusplus <= 201402L
+      bool tick_data_home_existed=X__fileExists(tick_data_home);
+      #else
       bool tick_data_home_existed=std::filesystem::exists(tick_data_home);
+      #endif
       if(tick_data_home_existed){
         std::string filePath=tick_data_home+"/"+fileName;
         return filePath;
