@@ -217,7 +217,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
 bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
-  /////////////////////////对当前节点compoundStmt做 自定义处理
+/////////////////////对当前节点compoundStmt做 自定义处理
+  //region 0.准备、开发用语句
   int64_t compoundStmtID = compoundStmt->getID(*Ctx);
   const Stmt::child_range &subStmtLs = compoundStmt->children();
 
@@ -226,11 +227,10 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
   unsigned long subStmtCnt = subStmtVec.size();
 //  const std::vector<std::string> &textVec = Util::stmtLs2TextLs(subStmtVec, SM, CI.getLangOpts());
+  //endregion
 
-
-
-  //////1. 在块尾插入释放语句
-  ////1.1 计算 块内子语句列表 中 变量声明语句个数 ，"1.6" 中用到
+  //////1. 计算 块尾释放语句 插入位置, 并在该位置 插入 块尾释放语句
+  //region 1.1 计算 块内子语句列表 中 变量声明语句个数 ，"1.6" 中用到
   //此组合语句内的变量声明语句个数
   int declStmtCnt=0;
 
@@ -244,12 +244,12 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     }
 //    Util::printStmt(*Ctx,CI,"查看组合语句内子语句类型","",subStmt,true);
   }
+  //endregion
 
-  ////1.2 块尾释放语句插入位置
-  ///1.3 块尾释放语句默认插入位置是 组合语句 右花括号} 前
+  ///1.2 块尾释放语句默认插入位置是 组合语句 右花括号} 前
   SourceLocation insertLoc=compoundStmt->getRBracLoc();
 
-  ///1.4 如果块内最后一条语句是FallThrough 块尾释放语句插入位置 改为 块内倒数第二条语句前
+  //region 1.3 如果块内最后一条语句是FallThrough 块尾释放语句插入位置 改为 块内倒数第二条语句前
   Stmt *endStmt = compoundStmt->body_back();
 
   Stmt* negativeSecond;
@@ -260,8 +260,9 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
     //  TODO 宏周边位置不准，这个问题需要解决
     insertLoc=negativeSecond->getBeginLoc();
   }
+  //endregion
 
-  ///1.5 如果块内最后一条语句是return 块尾释放语句插入位置 改为  该return语句前
+  //region 1.4 如果块内最后一条语句是return 块尾释放语句插入位置 改为  该return语句前
   if(endStmt){
     Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
     //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
@@ -269,8 +270,9 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
       insertLoc=endStmt->getBeginLoc();
     }
   }
+  //endregion
 
-  ///1.6 本块内有声明变量 且 没有本块没插入过释放语句，才会插入释放语句
+  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
@@ -283,12 +285,13 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 //  int insertLine, insertCol;//开发看行号用.
 //  Util::extractLineAndColumn(SM,insertLoc,insertLine,insertCol);
 
+
   ///1.7  在上面算出的位置处, 插入释放语句
   insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
   }
+  //endregion
 
-  //////2. 处理  子语句列表 中每条语句
-
+  //region 2. 块内每条语句: FallThrough语句的下一条语句得跳过、根据情况在该语句前是否插入 滴答语句
   //subStmtVec中的stmtJ是否应该跳过
   std::vector<bool> subStmtSkipVec(subStmtVec.size(),false);
 
@@ -307,16 +310,18 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
       processStmt(stmtJ, "TraverseCompoundStmt");
     }
   }
-
+  //endregion
 ///////////////////// 自定义处理 完毕
 
-////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
+/////////////////////  将递归链条正确的接好:  对 当前节点compoundStmt 下一层节点stmt们 调用 顶层方法TraverseStmt(stmt)
+  //region E. 最后： 粘接直接子节点到递归链条
   for(Stmt* stmt:subStmtLs){
     TraverseStmt  (stmt);
   }
 
 //  Util::printStmt(*Ctx,CI,"查看","组合语句",compoundStmt,false);
   return true;
+  //endregion
 }
 
 
