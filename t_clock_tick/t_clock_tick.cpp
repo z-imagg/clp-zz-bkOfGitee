@@ -7,8 +7,12 @@
 #include <fstream>
 #include <filesystem>
 
+/**名称约定
+ * I__:即internal__:表示本源文件内部使用的函数
+ * X__:表示被外部调用的函数
+ */
 
-std::string X__this_thread__get_id(){
+std::string I__this_thread__get_id(){
 
   std::thread::id curThreadId = std::this_thread::get_id();
   std::ostringstream outStrStream;
@@ -21,19 +25,19 @@ std::string X__this_thread__get_id(){
 // static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
 #define FirstThreadId 0
 static std::atomic<int> globalThreadIdCounter(FirstThreadId);
-int X__nextThreadId(){
+int I__nextThreadId(){
   globalThreadIdCounter++;
   int new_tid=globalThreadIdCounter;
 
-  std::string curThreadIdStr = X__this_thread__get_id();
-  printf("X__nextThreadId:: new_tid:%d,curThreadIdStr:%s\n", new_tid,curThreadIdStr.c_str());
+  std::string curThreadIdStr = I__this_thread__get_id();
+  printf("I__nextThreadId:: new_tid:%d,curThreadIdStr:%s\n", new_tid,curThreadIdStr.c_str());
   return new_tid;
 }
 #define ThreadIdInitVal -1
 thread_local int currentThreadId=ThreadIdInitVal;//当前线程id
-int X__curThreadId(){
+int I__curThreadId(){
   if(currentThreadId==ThreadIdInitVal){
-    currentThreadId=X__nextThreadId();
+    currentThreadId= I__nextThreadId();
   }
   return currentThreadId;
 }
@@ -49,12 +53,14 @@ thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: curr
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
 
+thread_local int topFuncSVarCnt=0;//本线程 栈顶函数 当前 栈变量净数目
+
 ///////工具
-bool X__fileExists(const std::string& filePath) {
+bool I__fileExists(const std::string& filePath) {
   std::ifstream file(filePath);
   return file.good();
 }
-std::string X__getCurrentProcessCmdLine() {
+std::string I__getCurrentProcessCmdLine() {
   std::ifstream file("/proc/self/cmdline");
   if (file) {
     std::string name;
@@ -72,12 +78,12 @@ std::string X__getCurrentProcessCmdLine() {
  * @param delimiter
  * @param firstSubStr
  */
-void splitGetFirst(std::string  line,std::string delimiter,std::string& firstSubStr ){
+void I__splitGetFirst(std::string  line, std::string delimiter, std::string& firstSubStr ){
 //  std::string delimiter = " ";
   firstSubStr = line.substr(0, line.find(delimiter));
   return;
 }
-void splitGetEnd(std::string  line,std::string delimiter,std::string& endSubStr ){
+void I__splitGetEnd(std::string  line, std::string delimiter, std::string& endSubStr ){
 //  std::string delimiter = " ";
   std::string::size_type idxEndSubStr = line.rfind(delimiter)+1;
   if(idxEndSubStr < line.size()){
@@ -91,13 +97,13 @@ void splitGetEnd(std::string  line,std::string delimiter,std::string& endSubStr 
  * 输出: chrome
  * @return
  */
-std::string X__getCurrentProcessName() {
-  std::string cmdlineWithArgs=X__getCurrentProcessCmdLine();
+std::string I__getCurrentProcessName() {
+  std::string cmdlineWithArgs= I__getCurrentProcessCmdLine();
   std::string cmdline ;
-  splitGetFirst(cmdlineWithArgs," ",cmdline);
+  I__splitGetFirst(cmdlineWithArgs, " ", cmdline);
 
   std::string processName ;
-  splitGetEnd(cmdline,"/",processName);
+  I__splitGetEnd(cmdline, "/", processName);
 
   return processName;
 }
@@ -106,7 +112,7 @@ std::string X__getCurrentProcessName() {
  * 获取当前时刻毫秒数
  * @return
  */
-long X__getNowMilliseconds() {
+long I__getNowMilliseconds() {
   auto currentTime = std::chrono::system_clock::now();
   auto duration = currentTime.time_since_epoch();
 
@@ -175,11 +181,11 @@ public:
      */
     std::string filePath(){
       pid_t processId = getpid();
-      const std::string processName = X__getCurrentProcessName();
+      const std::string processName = I__getCurrentProcessName();
 
-      long milliseconds=X__getNowMilliseconds();
+      long milliseconds= I__getNowMilliseconds();
 
-      int curThreadId=X__curThreadId();
+      int curThreadId= I__curThreadId();
       std::string fileName(processName+"_"+std::to_string(processId)+"_"+std::to_string(milliseconds)+"_"+std::to_string(curThreadId));
 
       // c++语言标准小于等于 C++14 时, 没有方法std::filesystem::exists, 用自定义方法X__fileExists替代.
@@ -190,7 +196,7 @@ public:
       #endif
 
 
-      std::string curThreadIdStr = X__this_thread__get_id();
+      std::string curThreadIdStr = I__this_thread__get_id();
       printf("TickCache::filePath:: TickCache's this:%p,curThreadIdStr:%s\n", this,curThreadIdStr.c_str());
 
       if(tick_data_home_existed){
@@ -206,7 +212,7 @@ public:
         return;
       }
 
-      std::string curThreadIdStr = X__this_thread__get_id();
+      std::string curThreadIdStr = I__this_thread__get_id();
       printf("TickCache::my_init:: TickCache's this:%p,inited:%d,curThreadIdStr:%s\n", this,inited,curThreadIdStr.c_str());
 
       inited=true;
@@ -276,6 +282,8 @@ thread_local TickCache tickCache;
 const std::string TickCache::tick_data_home("/tick_data_home");
 
 const std::string X__true("true");
+
+
 /**
  *
  * @param _sVarAllocCnt  此次滴答期间， 栈变量分配数目
@@ -283,10 +291,12 @@ const std::string X__true("true");
  * @param _hVarAllocCnt   此次滴答期间， 堆对象分配数目
  * @param _hVarFreeCnt   此次滴答期间， 堆对象释放数目
  */
-void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
+void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
 
   //时钟滴答一下
-  t++;
+  if(plus1Tick){
+    t++;
+  }
 
   //更新 当前栈变量分配数目
   sVarAllocCnt+=_sVarAllocCnt;
@@ -316,4 +326,17 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
 
   return;
 }
+void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
+  I__t_clock_tick(true,_sVarAllocCnt, _sVarFreeCnt, _hVarAllocCnt, _hVarFreeCnt);
+}
 
+void X__funcEnter( ){
+  if(topFuncSVarCnt!=0){
+    printf("X__funcEnter:错误,topFuncSVarCnt(%d)应该为0,问题发生在上一个返回的函数,请确认当前函数中调用的全部函数中哪个return前没插入X__funcReturn语句\n",topFuncSVarCnt);
+  }
+}
+void X__funcReturn( ){
+  //释放本函数已经分配的全部栈变量，但不增加滴答。因为时刻贡献已经由X__t_clock_tick完成了。
+  I__t_clock_tick(false,0,topFuncSVarCnt,0,0);
+  topFuncSVarCnt=0;
+}

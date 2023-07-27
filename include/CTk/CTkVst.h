@@ -45,6 +45,8 @@ public:
 
     static bool isInternalSysSourceFile(StringRef fn);
 
+    void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
+    void insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
     void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
     /**遍历语句
@@ -249,6 +251,7 @@ public:
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
 
+
     /** 遍历  FunctionDecl 或 CXXMethodDecl
      * TraverseFunctionDecl 和 TraverseCXXMethodDecl 的 公共代码
      * @param funcSourceRange
@@ -262,6 +265,27 @@ public:
             Stmt *funcBodyStmt
     );
 
+
+    void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){
+      //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+      if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+//            int64_t functionDeclID = functionDecl->getID();
+        const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+        insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,whoInserted);
+      }
+      //endregion
+    }
+    /**
+     return语句  前 插入 释放栈变量语句： 以释放此时本函数已经分配的全部栈变量，有两个方案：
+     1. 运行时计数：这是简单方案，如下:
+     在运行时 算出  本函数当前已经申请的所有栈变量,
+          可以在栈变量分配时计数，这里目前使用此方案
+
+     2. 编译时解析各级父块栈变量分配： 这是复杂方案，如下：
+     编译源代码时解析语法结构 算出 本函数当前已经申请的所有栈变量 ，即 ：
+               当前块以及当前块的各级父亲块内已经申请的栈变量。
+     */
+    virtual bool TraverseReturnStmt(ReturnStmt *returnStmt);
 
 
 public:
@@ -284,6 +308,10 @@ public:
      */
     std::set<int64_t> allocInsertedNodeIDLs;
     std::set<int64_t> freeInsertedNodeIDLs;
+
+
+    std::set<int64_t> funcReturnInsertedNodeIDLs;
+    std::set<int64_t> funcEnterInsertedNodeIDLs;
 
 
 
