@@ -94,6 +94,27 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   }
 }
 
+
+void CTkVst::insertBefore_X__funcReturn( int64_t stmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+  char cStr_X__t_clock_tick[256];
+
+  char _comment[90]="";
+  if(whoInserted){
+    //如果有提供，插入者信息，则放在注释中.
+    sprintf(_comment,"//%s",whoInserted);
+  }
+
+  //X__t_clock_tick(int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt)
+  sprintf(cStr_X__t_clock_tick, "X__funcEnter(/*函入*/);%s\n",_comment);//"X__t_clock_tick(%d, %d, %d, %d)"
+  llvm::StringRef strRef(cStr_X__t_clock_tick);
+
+//  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
+  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
+
+  //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+    funcReturnInsertedNodeIDLs.insert(stmtId);
+}
+
 //TODO 暂时去掉不必要的打印
 //TODO 分配变量个数： 当前语句如果是VarDecl
 
@@ -616,6 +637,22 @@ bool CTkVst::_Traverse_Func(
 
   return true;
 
+}
+
+
+
+bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
+/////////////////////////对当前节点returnStmt做 自定义处理
+
+  int64_t returnStmtID = returnStmt->getID(*Ctx);
+  const SourceLocation &returnBeginLoc = returnStmt->getBeginLoc();
+  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt");
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+//粘接直接子节点到递归链条: TODO: 这段不知道怎么写
+//  Expr *xxx = returnStmt->getRetValue();
+  return true;//希望return true能继续遍历子节点吧，因为return中应该可以写lambda，lambada内有更复杂的函数结构
 }
 
 
