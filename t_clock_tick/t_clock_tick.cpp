@@ -166,7 +166,7 @@ public:
      * 如果不存在目录 /tick_data_home/, tick文件路径是 ./进程名_进程id_当前时刻毫秒数_线程id
      * @return
      */
-    static std::string filePath(){
+    std::string filePath(){
       pid_t processId = getpid();
       const std::string processName = X__getCurrentProcessName();
 
@@ -198,7 +198,7 @@ public:
       curEndIdx=CacheIdxStart;
 
       if(!fWriter.is_open()){
-        std::string filePath= TickCache::filePath();
+        std::string filePath= this->filePath();
         fWriter.open(filePath);
 
         //刚打开文件时，写入标题行
