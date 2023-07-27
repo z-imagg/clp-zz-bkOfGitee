@@ -207,7 +207,7 @@ public:
       }
 
       std::string curThreadIdStr = X__this_thread__get_id();
-      printf("TickCache::my_init:: TickCache's this:%p,curThreadIdStr:%s\n", this,curThreadIdStr.c_str());
+      printf("TickCache::my_init:: TickCache's this:%p,inited:%d,curThreadIdStr:%s\n", this,inited,curThreadIdStr.c_str());
 
       inited=true;
       curEndIdx=CacheIdxStart;
@@ -227,7 +227,7 @@ public:
         return;
       }
 //      printf("exit:%p,this->init:%d\n",this,this->inited);
-      inited=false;//thread_local对象对本线程只有一份，即 thread_local对象的析构函数一定只调用一次， 因此这句话有没有无所谓了
+//      inited=false;//thread_local对象对本线程只有一份，即 thread_local对象的析构函数一定只调用一次， 因此这句话有没有无所谓了
       //此时估计是进程退出阶段，缓存无论是否满都要写盘，否则缓存中的数据就丢失了
       _flushIf(true);
       if(fWriter.is_open()){
