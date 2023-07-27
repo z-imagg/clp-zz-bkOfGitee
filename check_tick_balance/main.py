@@ -110,6 +110,7 @@ if __name__ == '__main__':
 失衡:/pubx/llvm-project/llvm/lib/Transforms/IPO/OpenMPOpt.cpp,栈[栈死多,生:569,死:616];堆:[,生:0,死:0];
 """
 
+#这是纸面不平衡，确实要处理。但纸面不平衡 这里的结果是 死多 生少，而现象是 栈生在积累。  问题是出在： return语句 应该释放 本函数当前已经申请的所有栈变量。
 
 # 以下文本 贴给 https://chat.chatgptdemo.net/  ， 可以获得大致代码
 # python编程：请编写通用函数（不准使用for，只能使用map()、list()、列表解析等高级特性； 不准使用os.walk， 尽可能glob、pathlib；不准使用自带re，尽可能使用三方库re2 ），递归遍历给定目录下所有 .c、.cpp 源文件， 读取每个源文件，遍历该源文件中每行，  匹配行中的 X__t_clock_tick(/*栈生*/数A, /*栈死*/数B, /*堆生*/数C, /*堆死*/数D);   ， 若有匹配  打印 数A 、数B、 数C、 数D
