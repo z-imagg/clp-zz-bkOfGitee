@@ -309,7 +309,7 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
   //如果有设置环境变量tick_save,则保存当前滴答
   const char* tick_save=std::getenv("tick_save");
   if(tick_save && X__true==tick_save){
-    Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+    Tick tick(t,_sVarAllocCnt, _sVarFreeCnt, sVarCnt, _hVarAllocCnt,_hVarFreeCnt,hVarCnt);
     tickCache.save(tick);
   }
 
