@@ -646,6 +646,13 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
   int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &returnBeginLoc = returnStmt->getBeginLoc();
+  if(this->funcReturnInsertedNodeIDLs.count(returnStmtID) > 0){
+    //若 已经插入 释放栈当前已分配变量 语句，则不必插入，直接返回即可。
+    //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
+    return false;
+  }
+
+
   insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt");
 ///////////////////// 自定义处理 完毕
 
