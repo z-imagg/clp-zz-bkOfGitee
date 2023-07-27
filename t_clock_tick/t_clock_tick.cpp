@@ -20,9 +20,8 @@ thread_local int currentThreadId=ThreadIdInitVal;//当前线程id
 int X__curThreadId(){
   if(currentThreadId==ThreadIdInitVal){
     currentThreadId=X__nextThreadId();
-  }else{
-    return currentThreadId;
   }
+  return currentThreadId;
 }
 
 
