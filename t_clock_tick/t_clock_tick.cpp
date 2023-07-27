@@ -47,16 +47,53 @@ std::string X__getCurrentProcessCmdLine() {
   return "";
 }
 /**
+ * 分割后第一个子串
+ * 比如:
+ * 输入: line: /usr/bin/ls, delimiter:/
+ * 输出: ls
+ * @param line
+ * @param delimiter
+ * @param firstSubStr
+ */
+void splitGetFirst(std::string  line,std::string delimiter,std::string& firstSubStr ){
+//  std::string delimiter = " ";
+  firstSubStr = line.substr(0, line.find(delimiter));
+}
+void splitGetEnd(std::string  line,std::string delimiter,std::string& endSubStr ){
+//  std::string delimiter = " ";
+  std::string::size_type idxEndSubStr = line.rfind(delimiter)+1;
+  if(idxEndSubStr < line.size()){
+    endSubStr = line.substr(idxEndSubStr);
+  }
+}
+/**
  * 不支持 进程名全路径中含有空格的 比如 /opt/my\ tool/app1
  * 输入: /snap/chromium/2556/usr/lib/chromium-browser/chrome --type=gpu-process arg2
  * 输出: chrome
  * @return
  */
 std::string X__getCurrentProcessName() {
-  std::string cmdline=X__getCurrentProcessCmdLine();
-  std::string delimiter = " ";
-  std::string processName = cmdline.substr(0, cmdline.find(delimiter));
+  std::string cmdlineWithArgs=X__getCurrentProcessCmdLine();
+  std::string cmdline ;
+  splitGetFirst(cmdlineWithArgs," ",cmdline);
+
+  std::string processName ;
+  splitGetEnd(cmdline,"/",processName);
+
   return processName;
+}
+
+/**
+ * 获取当前时刻毫秒数
+ * @return
+ */
+long X__getNowMilliseconds() {
+  auto currentTime = std::chrono::system_clock::now();
+  auto duration = currentTime.time_since_epoch();
+
+  // Convert duration to milliseconds
+  auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  return milliseconds;
 }
 
 ///////当前滴答
@@ -111,16 +148,18 @@ public:
     }
 
     /**
-     * tick文件路径格式: /tick_data_home/进程名_进程id_线程id
-     * 如果不存在目录 /tick_data_home/, tick文件路径是 ./进程名_进程id_线程id
+     * tick文件路径格式: /tick_data_home/进程名_进程id_当前时刻毫秒数_线程id
+     * 如果不存在目录 /tick_data_home/, tick文件路径是 ./进程名_进程id_当前时刻毫秒数_线程id
      * @return
      */
     static std::string filePath(){
       pid_t processId = getpid();
       const std::string processName = X__getCurrentProcessName();
 
+      long milliseconds=X__getNowMilliseconds();
+
       int curThreadId=X__curThreadId();
-      std::string fileName(processName+"_"+std::to_string(processId)+"_"+std::to_string(curThreadId));
+      std::string fileName(processName+"_"+std::to_string(processId)+"_"+std::to_string(milliseconds)+"_"+std::to_string(curThreadId));
 
       bool tick_data_home_existed=std::filesystem::exists(tick_data_home);
       if(tick_data_home_existed){
@@ -152,6 +191,8 @@ public:
       if(!inited){
         return;
       }
+//      printf("exit:%p,this->init:%d\n",this,this->inited);
+      inited=false;//thread_local对象对本线程只有一份，即 thread_local对象的析构函数一定只调用一次， 因此这句话有没有无所谓了
       //此时估计是进程退出阶段，缓存无论是否满都要写盘，否则缓存中的数据就丢失了
       _flushIf(true);
       if(fWriter.is_open()){
@@ -194,7 +235,7 @@ public:
 };
 thread_local TickCache tickCache;
 
-const std::string TickCache::tick_data_home("/tick_data_home/");
+const std::string TickCache::tick_data_home("/tick_data_home");
 
 const std::string X__true("true");
 /**
