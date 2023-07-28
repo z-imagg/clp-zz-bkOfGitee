@@ -757,8 +757,12 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
     return false;
   }
 
+  //只有return语句直接处于块内时，才处理，否则插入会导致语法错误或语义不同,
+  //   比如'if(...) return;' 不应该在return前插入,否则语义不同。
+  if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
+    insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
+  }
 
-  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
