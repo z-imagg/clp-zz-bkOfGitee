@@ -337,6 +337,7 @@ void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int
 void X__funcEnter( ){
   if(topFuncSVarCnt!=0){
     printf("X__funcEnter:错误,topFuncSVarCnt(%d)应该为0,问题发生在上一个返回的函数,请确认当前函数中调用的全部函数中哪个return前没插入X__funcReturn语句\n",topFuncSVarCnt);
+    topFuncSVarCnt=0;
   }
 }
 void X__funcReturn( ){
