@@ -679,7 +679,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
+//  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
