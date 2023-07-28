@@ -56,12 +56,12 @@ const QualType &funcReturnType = functionDecl->getReturnType();
   if(funcReturnVoid || isa<CXXConstructorDecl>(*functionDecl)){
   //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
    Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
-    const SourceLocation &endStmtEndLoc = endStmtOfFuncBody->getEndLoc();
+    const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
     int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
     bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
     if(endStmtNotReturn){
     //函数体末尾语句非return
-      insertAfter_X__funcReturn(endStmtID,endStmtEndLoc,whoInserted);
+      insertBefore_X__funcReturn(endStmtID,funcBodyRBraceLoc,whoInserted);
     }
   }
 }
