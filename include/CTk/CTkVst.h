@@ -278,15 +278,14 @@ public:
   const char *whoInsertedFuncReturn);
 
 
-    void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){
-      //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
-      if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
-//            int64_t functionDeclID = functionDecl->getID();
-        const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
-        insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,whoInserted);
-      }
-      //endregion
-    }
+    /** 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+     *
+     * @param funcBody
+     * @param functionDeclID
+     * @param whoInserted
+     */
+    void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted);
+
     /**
      return语句  前 插入 释放栈变量语句： 以释放此时本函数已经分配的全部栈变量，有两个方案：
      1. 运行时计数：这是简单方案，如下:

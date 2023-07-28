@@ -731,6 +731,15 @@ bool CTkVst::_Traverse_Func(
 }
 
 
+void CTkVst::__wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+//            int64_t functionDeclID = functionDecl->getID();
+    const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,whoInserted);
+  }
+  //endregion
+}
 
 bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 /////////////////////////对当前节点returnStmt做 自定义处理
