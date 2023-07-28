@@ -57,6 +57,11 @@ const QualType &funcReturnType = functionDecl->getReturnType();
   //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
    Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
     const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
+
+    //看一下插入位置是不是被宏占据了
+    bool funcBodyRBraceLoc_isMacroLocation=Util::isMacroLocation(funcBodyRBraceLoc,SM);
+    std::cout<<"funcBodyRBraceLoc_isMacroLocation:"<<funcBodyRBraceLoc_isMacroLocation<<std::endl;
+
     int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
     bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
     if(endStmtNotReturn){

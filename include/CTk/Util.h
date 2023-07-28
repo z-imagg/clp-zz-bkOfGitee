@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static bool isMacroLocation(SourceLocation loc, SourceManager &SM);
     static std::string rewriteBufferToString(const RewriteBuffer &buffer);
     static void saveRewriteBuffer(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,FileID mainFileId,std::string filePath);
     static bool envVarEq(std::string varName, std::string varValue);

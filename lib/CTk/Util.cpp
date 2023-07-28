@@ -16,6 +16,12 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::isMacroLocation(SourceLocation loc, SourceManager &SM) {
+  bool isMacroArgExpansion = SM.isMacroArgExpansion(loc);
+  bool isMacroBodyExpansion= SM.isMacroBodyExpansion(loc);
+  bool isMacroLoc=isMacroArgExpansion || isMacroBodyExpansion;
+  return isMacroLoc;
+}
 bool Util::envVarEq(std::string varName, std::string varValue){
   if(varName.empty()){
     return false;
