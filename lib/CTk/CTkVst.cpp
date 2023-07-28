@@ -95,7 +95,15 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
 }
 
 
-void CTkVst::insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+void CTkVst::insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+  CTkVst::insert_X__funcReturn(true,returnStmtId,stmtBeginLoc,whoInserted);
+  return;
+}
+void CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
+  CTkVst::insert_X__funcReturn(false,funcBodyEndStmtId,funEndStmtEndLoc,whoInserted);
+  return;
+}
+void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
   char cStr_inserted[256];
 
   char _comment[90]="";
@@ -107,10 +115,15 @@ void CTkVst::insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stm
   sprintf(cStr_inserted, "X__funcReturn(/*函出*/);%s\n", _comment);
   llvm::StringRef strRef_inserted(cStr_inserted);
 
-  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_inserted);
+  if(before){
+    mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+  }else{
+    mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+  }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-    funcReturnInsertedNodeIDLs.insert(returnStmtId);
+  funcReturnInsertedNodeIDLs.insert(flagStmtId);
+  return;
 }
 
 void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
@@ -576,6 +589,7 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   int64_t funcDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
 
+
   //判断该方法是否有default修饰, 若有, 则不处理.
   //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
   bool hasDefault = functionDecl->isDefaulted();
@@ -586,6 +600,20 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   Stmt* body = functionDecl->getBody();
 
   bool _isConstexpr = functionDecl->isConstexpr();
+
+  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  const QualType &funcReturnType = functionDecl->getReturnType();
+  bool funcReturnVoid = funcReturnType->isVoidType();
+  if(funcReturnVoid){
+    Stmt *endStmt = Util::endStmtOfFunc(functionDecl);
+    const SourceLocation &endStmtEndLoc = endStmt->getEndLoc();
+    int64_t endStmtID = endStmt->getID(*Ctx);
+    bool endStmtNotReturn=!Util::isReturnStmtClass(endStmt);
+    if(endStmtNotReturn){
+      insertAfter_X__funcReturn(endStmtID,endStmtEndLoc,"TraverseFunctionDecl:void函数尾非return");
+    }
+  }
+
 
   return this->_Traverse_Func(sourceRange, _isConstexpr, functionDecl->hasBody(), funcDeclID, body, "TraverseFunctionDecl");
 }

@@ -15,6 +15,17 @@
 using namespace llvm;
 using namespace clang;
 
+Stmt* Util::endStmtOfFunc(FunctionDecl *funcDecl) {
+  Stmt *funcBody = funcDecl->getBody();
+  if (funcBody && isa<CompoundStmt>(funcBody)) {
+    CompoundStmt *compoundStmt = cast<CompoundStmt>(funcBody);
+    if (!compoundStmt->body_empty()) {
+      Stmt *lastStmt = compoundStmt->body_back();
+      return lastStmt;
+    }
+  }
+  return NULL;
+}
 bool Util::isReturnStmtClass(Stmt *stmt ){
   bool stmtIsReturn=false;
   if(stmt){
