@@ -21,7 +21,9 @@ public:
       LangOptions &langOptions = CI.getLangOpts();
       ASTContext &astContext = CI.getASTContext();
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
+      CI.getDiagnostics().setSourceManager(&SM);
       mRewriter_ptr->setSourceMgr(SM, langOptions);//A
+
       /**
 时间轴正向: C--->C'--->C'', 即'越多时刻越晚.
 各个C、C'、C''、C'''处的代码都是 Rewriter.overwriteChangedFiles()

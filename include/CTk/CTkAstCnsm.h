@@ -112,6 +112,11 @@ public:
         Util::saveRewrittenText(Ctx,insertVst.mRewriter_ptr,filePath+".overwriteChangedFiles");
         Util::saveRewriteBuffer(Ctx,insertVst.mRewriter_ptr,mainFileId,filePath+".getRewriteBufferFor");
       }
+
+      //CI.getDiagnostics().dump()会输出 本次编译文件、其包含的各个文件 诊断信息.
+      DiagnosticsEngine &diagnostics = CI.getDiagnostics();
+      diagnostics.dump();
+
       insertVst.mRewriter_ptr->overwriteChangedFiles();
 
 
