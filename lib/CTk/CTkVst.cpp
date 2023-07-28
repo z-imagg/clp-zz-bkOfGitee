@@ -298,21 +298,24 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   }
   //endregion
 
-  //region 1.4 如果块内最后一条语句是return 块尾释放语句插入位置 改为  该return语句前
+  //region 1.4 计算块尾语句是不是return
+  // 如果块内最后一条语句是return 则本块释放被 X__funcReturn 包含了, 不需要插入 块尾释放语句.
+  // 如果 块尾部的return前 既有 块尾释放语句 又有 X__funcReturn, 即 多释放了, 多释放的部分 是 本块变量.
+  bool compoundEndStmtIsReturn=false;
   if(endStmt){
     Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
     //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
     if(Stmt::ReturnStmtClass==endStmtClass){
-      insertLoc=endStmt->getBeginLoc();
+      compoundEndStmtIsReturn=true;
     }
   }
   //endregion
 
-  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句，才会插入释放语句
+  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
-  if(declStmtCnt>0 && freeNotInserted){
+  if(declStmtCnt>0 && freeNotInserted && (!compoundEndStmtIsReturn) ){
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
