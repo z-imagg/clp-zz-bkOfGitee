@@ -258,6 +258,8 @@ public:
     virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
+    //TODO: c++析构函数遍历
+//    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
 
 
     /** 遍历  FunctionDecl 或 CXXMethodDecl
