@@ -686,7 +686,7 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   }
 
 
-  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt");
+  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
