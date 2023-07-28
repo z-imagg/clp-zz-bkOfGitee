@@ -260,10 +260,12 @@ public:
      * @return
      */
     bool _Traverse_Func(
-            const SourceRange &funcSourceRange,
-            bool funcIsConstexpr,
-            Stmt *funcBodyStmt
-    );
+  const SourceRange &funcSourceRange,
+  bool funcIsConstexpr,
+  bool hasBody,
+  int64_t funcDeclID,
+  Stmt *funcBodyStmt,
+  const char *whoInsertedFuncReturn);
 
 
     void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){

@@ -575,7 +575,7 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
-  int64_t functionDeclID = functionDecl->getID();
+  int64_t funcDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -585,20 +585,15 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
     return true;
   }
 
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = functionDecl->getBody();
-  if(functionDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,functionDeclID,"TraverseFunctionDecl");
-  }
-  //endregion
 
   bool _isConstexpr = functionDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  return this->_Traverse_Func(sourceRange, _isConstexpr, functionDecl->hasBody(), funcDeclID, body, "TraverseFunctionDecl");
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
-  int64_t declID = cxxConstructorDecl->getID();
+  int64_t funcDeclID = cxxConstructorDecl->getID();
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -608,20 +603,16 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
     return true;
   }
 
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = cxxConstructorDecl->getBody();
-  if(cxxConstructorDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
-  }
-  //endregion
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  return this->_Traverse_Func(sourceRange, _isConstexpr, cxxConstructorDecl->hasBody(), funcDeclID, body,
+                              "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
-  int64_t declID = cxxMethodDecl->getID();
+  int64_t funcDeclID = cxxMethodDecl->getID();
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -630,22 +621,21 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   if(hasDefault){
     return true;
   }
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = cxxMethodDecl->getBody();
-  if(cxxMethodDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
-  }
-  //endregion
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  return this->_Traverse_Func(sourceRange, _isConstexpr, cxxMethodDecl->hasBody(), funcDeclID, body,
+                              "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::_Traverse_Func(
-        const SourceRange &funcSourceRange,
-        bool funcIsConstexpr,
-        Stmt *funcBodyStmt
-){
+  const SourceRange &funcSourceRange,
+  bool funcIsConstexpr,
+  bool hasBody,
+  int64_t funcDeclID,
+  Stmt *funcBodyStmt,
+  const char *whoInsertedFuncReturn)
+{
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
 
@@ -658,6 +648,12 @@ bool CTkVst::_Traverse_Func(
 // 函数体内栈变量分配个数 B :
 //    （不包括函数体内嵌套的语句块内的栈变量分配个数）
 // B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
+
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  if(hasBody && funcBodyStmt ) {
+    __wrap_insertAfter_X__funcEnter(funcBodyStmt,declID,"TraverseCXXConstructorDecl");
+  }
+  //endregion
 
   bool _isConstexpr = funcIsConstexpr;
 ///////////////////// 自定义处理 完毕
