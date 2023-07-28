@@ -300,9 +300,13 @@ void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _h
 
   //更新 当前栈变量分配数目
   sVarAllocCnt+=_sVarAllocCnt;
+  //更新 本线程 栈顶函数 当前 栈变量净数目
+  topFuncSVarCnt+=_sVarAllocCnt;
 
   //更新 当前栈变量释放数目
   sVarFreeCnt+=_sVarFreeCnt;
+  //更新 本线程 栈顶函数 当前 栈变量净数目
+  topFuncSVarCnt-=_sVarFreeCnt;
 
   //更新 当前栈变量数目 == 当前栈变量分配数目 - 当前栈变量释放数目
   sVarCnt= sVarAllocCnt - sVarFreeCnt;
