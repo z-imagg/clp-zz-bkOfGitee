@@ -15,6 +15,57 @@
 using namespace llvm;
 using namespace clang;
 
+
+bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context) {
+  auto parents = context.getParents(*stmt);
+
+  // 遍历父节点列表
+  for (auto it = parents.begin(); it != parents.end(); ++it) {
+    if (const FunctionDecl *func = it->get<FunctionDecl>()) {
+      // 检查CompoundStmt是否为最后一个块
+      Stmt *body = func->getBody();
+      if (body && body == stmt) {
+        return true;
+      }
+    } else if (const LambdaExpr *lambda = it->get<LambdaExpr>()) {
+      // 检查CompoundStmt是否为lambda表达式的最后一个块
+      Stmt *body = lambda->getBody();
+      if(body){
+        if (CompoundStmt *lambdaBody = dyn_cast<CompoundStmt>(body)) {
+          Stmt *lastStmt = lambdaBody->body_back();
+          if (lastStmt && lastStmt == stmt) {
+            return true;
+          }
+        }
+      }
+
+    }
+  }
+
+  return false;
+}
+FunctionDecl *Util::getContainingFunction(CompoundStmt *stmt, ASTContext &context) {
+  auto parents = context.getParents(*stmt);
+
+  // 遍历父节点列表
+  for (auto itJ = parents.begin(); itJ != parents.end(); ++itJ) {
+    if (const LambdaExpr *lambdaJ = itJ->get<LambdaExpr>()) {
+      // 返回包裹CompoundStmt的lambda
+      CXXMethodDecl *methodJ = lambdaJ->getCallOperator();
+      if (methodJ) {
+        return methodJ;
+      }
+    } else if (const FunctionDecl *funcJ = itJ->get<FunctionDecl>()) {
+      // 返回最近的FunctionDecl
+      return const_cast<FunctionDecl*>(funcJ);
+    }
+  }
+
+  return nullptr;
+}
+
+
+
 Stmt* Util::endStmtOfFunc(FunctionDecl *funcDecl) {
   Stmt *funcBody = funcDecl->getBody();
   if (funcBody && isa<CompoundStmt>(*funcBody)) {
@@ -112,6 +163,7 @@ bool Util::parentClassEqual(ASTContext* astContext, const Stmt* stmt, Stmt::Stmt
 
   return false;
 }
+
 
 bool Util::parentKindIsSame(ASTContext *Ctx, const Stmt* stmt, const ASTNodeKind& kind){
   if(!Ctx || !stmt){

@@ -337,11 +337,22 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   bool compoundEndStmtIsReturn=Util::isReturnStmtClass(endStmt);
   //endregion
 
-  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return，才会插入释放语句
+  //region 1.4B 计算块语句是不是函数的最后一个块
+  bool compoundIsLastBlockOfFunc=false;
+  if(FunctionDecl *containingFunc = Util::getContainingFunction(compoundStmt, *Ctx)){
+    if(  Stmt* funcBody=containingFunc->getBody() ){
+      if(funcBody==compoundStmt){
+        compoundIsLastBlockOfFunc=true;
+      }
+    }
+  }
+  //endregion
+
+  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return 且 块语句不是函数的最后一个块，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
-  if(declStmtCnt>0 && freeNotInserted && (!compoundEndStmtIsReturn) ){
+  if(declStmtCnt>0 && freeNotInserted && (!compoundEndStmtIsReturn)  && (!compoundIsLastBlockOfFunc) ){
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
