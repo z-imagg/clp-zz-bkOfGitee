@@ -16,7 +16,7 @@ using namespace llvm;
 using namespace clang;
 
 
-bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context) {
+bool Util::isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context) {
   auto parents = context.getParents(*stmt);
 
   // 遍历父节点列表

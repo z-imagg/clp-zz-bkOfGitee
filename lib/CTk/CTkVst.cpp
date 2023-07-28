@@ -338,14 +338,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   //endregion
 
   //region 1.4B 计算块语句是不是函数的最后一个块
-  bool compoundIsLastBlockOfFunc=false;
-  if(FunctionDecl *containingFunc = Util::getContainingFunction(compoundStmt, *Ctx)){
-    if(  Stmt* funcBody=containingFunc->getBody() ){
-      if(funcBody==compoundStmt){
-        compoundIsLastBlockOfFunc=true;
-      }
-    }
-  }
+  bool compoundIsLastBlockOfFunc=Util::isLastCompoundStmt(compoundStmt, *Ctx);
   //endregion
 
   //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return 且 块语句不是函数的最后一个块，才会插入释放语句

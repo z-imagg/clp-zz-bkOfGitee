@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
 
