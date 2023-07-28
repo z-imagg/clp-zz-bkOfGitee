@@ -651,7 +651,7 @@ bool CTkVst::_Traverse_Func(
 
   //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
-    __wrap_insertAfter_X__funcEnter(funcBodyStmt,declID,"TraverseCXXConstructorDecl");
+    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,"TraverseCXXConstructorDecl");
   }
   //endregion
 
