@@ -15,6 +15,17 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::isReturnStmtClass(Stmt *stmt ){
+  bool stmtIsReturn=false;
+  if(stmt){
+    Stmt::StmtClass endStmtClass = stmt->getStmtClass();
+    if(Stmt::ReturnStmtClass==endStmtClass){
+      stmtIsReturn=true;
+    }
+  }
+  return stmtIsReturn;
+}
+
 std::vector<bool>  Util::subStmtIsFallThroughVec(const Stmt::child_range &subStmtLs ,Stmt* &negativeSecond,SourceManager& SM, LangOptions& langOptions) {
   std::vector<clang::Stmt*> subStmtVec(subStmtLs.begin(), subStmtLs.end());
   unsigned long subStmtCnt = subStmtVec.size();

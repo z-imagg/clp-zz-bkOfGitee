@@ -146,6 +146,11 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   int64_t stmtId = stmt->getID(*Ctx);
 
+  //如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
+  if(bool stmtIsReturn=Util::isReturnStmtClass(stmt)){
+    return false;
+  }
+
   if(allocInsertedNodeIDLs.count(stmtId) > 0){
     //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
     //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
@@ -301,14 +306,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   //region 1.4 计算块尾语句是不是return
   // 如果块内最后一条语句是return 则本块释放被 X__funcReturn 包含了, 不需要插入 块尾释放语句.
   // 如果 块尾部的return前 既有 块尾释放语句 又有 X__funcReturn, 即 多释放了, 多释放的部分 是 本块变量.
-  bool compoundEndStmtIsReturn=false;
-  if(endStmt){
-    Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
-    //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
-    if(Stmt::ReturnStmtClass==endStmtClass){
-      compoundEndStmtIsReturn=true;
-    }
-  }
+  bool compoundEndStmtIsReturn=Util::isReturnStmtClass(endStmt);
   //endregion
 
   //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return，才会插入释放语句

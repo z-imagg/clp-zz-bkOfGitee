@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static bool isReturnStmtClass(Stmt *stmt );
     /**计算语句列表中各语句是否为FallThrough，附带返回倒数第二条语句
      *
      * @param subStmtLs
