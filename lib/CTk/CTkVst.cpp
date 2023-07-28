@@ -626,18 +626,26 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   bool _isConstexpr = functionDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, "TraverseFunctionDecl:void函数尾非return");
+//  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, "TraverseFunctionDecl:void函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
+          functionDecl,
           _isConstexpr,
           functionDecl->hasBody(),
           funcDeclID,
           body,
-          "TraverseFunctionDecl");
+          "TraverseFunctionDecl",
+          "TraverseFunctionDecl:void函数尾非return");
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
+  FileID mainFileId = SM.getMainFileID();
+  FileID fileId = SM.getFileID(cxxConstructorDecl->getLocation());
+  if(mainFileId!=fileId){
+    return false;
+  }
+
   int64_t funcDeclID = cxxConstructorDecl->getID();
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
 
@@ -653,19 +661,26 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
   //构造函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxConstructorDecl, "TraverseCXXConstructorDecl:构造函数尾非return");
+//  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxConstructorDecl, "TraverseCXXConstructorDecl:构造函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
+          cxxConstructorDecl,
           _isConstexpr,
           cxxConstructorDecl->hasBody(),
           funcDeclID,
           body,
-
-          "TraverseCXXConstructorDecl");
+          "TraverseCXXConstructorDecl",
+          "TraverseCXXConstructorDecl:构造函数尾非return");
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  FileID mainFileId = SM.getMainFileID();
+  FileID fileId = SM.getFileID(cxxMethodDecl->getLocation());
+  if(mainFileId!=fileId){
+    return false;
+  }
+
   int64_t funcDeclID = cxxMethodDecl->getID();
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
@@ -679,24 +694,28 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-//  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
+//  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:c++函数尾非return");
+//去掉上一行，能让 报错的llvm/lib/Support/Parallel.cpp 正常
 
   return this->_Traverse_Func(
           sourceRange,
+          cxxMethodDecl,
           _isConstexpr,
           cxxMethodDecl->hasBody(),
           funcDeclID,
           body,
-
-          "TraverseCXXConstructorDecl");
+          "TraverseCXXConstructorDecl",
+          "TraverseCXXMethodDecl:cpp函数尾非return");
 }
 
 bool CTkVst::_Traverse_Func(
   const SourceRange &funcSourceRange,
+  FunctionDecl *functionDecl,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
   Stmt *funcBodyStmt,
+  const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn)
 {
 
@@ -714,7 +733,8 @@ bool CTkVst::_Traverse_Func(
 
   //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
-    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,"TraverseCXXConstructorDecl");
+    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,whoInsertedFuncEnter);
+    insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, whoInsertedFuncReturn);
   }
   //endregion
 

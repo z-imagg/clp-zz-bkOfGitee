@@ -271,10 +271,12 @@ public:
      */
     bool _Traverse_Func(
   const SourceRange &funcSourceRange,
+  FunctionDecl *functionDecl,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
   Stmt *funcBodyStmt,
+  const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn);
 
 
