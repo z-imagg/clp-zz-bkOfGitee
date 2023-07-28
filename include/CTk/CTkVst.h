@@ -51,6 +51,12 @@ public:
     void insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
     void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
+    /**void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+     * @param functionDecl
+     * @param whoInserted
+     */
+    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted);
+
     /**遍历语句
      *
      * @param stmt

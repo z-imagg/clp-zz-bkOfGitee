@@ -17,9 +17,9 @@ using namespace clang;
 
 Stmt* Util::endStmtOfFunc(FunctionDecl *funcDecl) {
   Stmt *funcBody = funcDecl->getBody();
-  if (funcBody && isa<CompoundStmt>(funcBody)) {
-    CompoundStmt *compoundStmt = cast<CompoundStmt>(funcBody);
-    if (!compoundStmt->body_empty()) {
+  if (funcBody && isa<CompoundStmt>(*funcBody)) {
+    CompoundStmt *compoundStmt = dyn_cast<CompoundStmt>(funcBody);
+    if (compoundStmt &&  (!compoundStmt->body_empty() ) ) {
       Stmt *lastStmt = compoundStmt->body_back();
       return lastStmt;
     }

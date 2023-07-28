@@ -49,7 +49,22 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 
-
+void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted){
+  //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+const QualType &funcReturnType = functionDecl->getReturnType();
+  bool funcReturnVoid = funcReturnType->isVoidType();
+  if(funcReturnVoid || isa<CXXConstructorDecl>(*functionDecl)){
+  //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
+   Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
+    const SourceLocation &endStmtEndLoc = endStmtOfFuncBody->getEndLoc();
+    int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
+    bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
+    if(endStmtNotReturn){
+    //函数体末尾语句非return
+      insertAfter_X__funcReturn(endStmtID,endStmtEndLoc,whoInserted);
+    }
+  }
+}
 
 
 /**给定源文件路径是否系统源文件
@@ -602,20 +617,15 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   bool _isConstexpr = functionDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  const QualType &funcReturnType = functionDecl->getReturnType();
-  bool funcReturnVoid = funcReturnType->isVoidType();
-  if(funcReturnVoid){
-    Stmt *endStmt = Util::endStmtOfFunc(functionDecl);
-    const SourceLocation &endStmtEndLoc = endStmt->getEndLoc();
-    int64_t endStmtID = endStmt->getID(*Ctx);
-    bool endStmtNotReturn=!Util::isReturnStmtClass(endStmt);
-    if(endStmtNotReturn){
-      insertAfter_X__funcReturn(endStmtID,endStmtEndLoc,"TraverseFunctionDecl:void函数尾非return");
-    }
-  }
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, "TraverseFunctionDecl:void函数尾非return");
 
-
-  return this->_Traverse_Func(sourceRange, _isConstexpr, functionDecl->hasBody(), funcDeclID, body, "TraverseFunctionDecl");
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          functionDecl->hasBody(),
+          funcDeclID,
+          body,
+          "TraverseFunctionDecl");
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
@@ -633,8 +643,17 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange, _isConstexpr, cxxConstructorDecl->hasBody(), funcDeclID, body,
-                              "TraverseCXXConstructorDecl");
+  //构造函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxConstructorDecl, "TraverseCXXConstructorDecl:构造函数尾非return");
+
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          cxxConstructorDecl->hasBody(),
+          funcDeclID,
+          body,
+
+          "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
@@ -650,8 +669,17 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   Stmt* body = cxxMethodDecl->getBody();
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange, _isConstexpr, cxxMethodDecl->hasBody(), funcDeclID, body,
-                              "TraverseCXXConstructorDecl");
+  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
+
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          cxxMethodDecl->hasBody(),
+          funcDeclID,
+          body,
+
+          "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::_Traverse_Func(

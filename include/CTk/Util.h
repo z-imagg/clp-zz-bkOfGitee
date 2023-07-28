@@ -24,8 +24,6 @@ using namespace clang;
 
 class Util {
 public:
-    static void insert_X__funcReturn_whenVoidFuncNoEndReturn();
-
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
 
 
