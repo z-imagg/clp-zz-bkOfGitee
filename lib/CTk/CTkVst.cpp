@@ -650,7 +650,7 @@ bool CTkVst::_Traverse_Func(
 // B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
 
   //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
-  if(hasBody && funcBodyStmt ) {
+  if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
     __wrap_insertAfter_X__funcEnter(funcBodyStmt,declID,"TraverseCXXConstructorDecl");
   }
   //endregion
