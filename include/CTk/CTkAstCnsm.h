@@ -105,8 +105,14 @@ public:
 
 //////////////////4.应用修改到源文件
 
-        //不在这里写出修改，而是到 函数 EndSourceFileAction 中去 写出修改
-      insertVst.mRewriter_ptr->overwriteChangedFiles();//C''处崩溃, 即使没有对源文件有任何修改 C''处也崩溃
+
+      //overwriteChangedFiles引发 "1.	<eof> parser at end of file" 并以  "Program received signal SIGSEGV, Segmentation fault." 退出， 可能原因是修改后的源码有语法错误，侦察错误办法是 overwriteChangedFiles 之前 先调用getRewrittenText获得改后的源码文本，人工查看哪里有语法错误。
+//      const std::string &text = insertVst.mRewriter_ptr->getRewrittenText( Ctx.getTranslationUnitDecl()->getSourceRange());
+      if(Util::envVarEq("saveTextBefore_overwriteChangedFiles","true")){
+        Util::saveRewrittenText(Ctx,insertVst.mRewriter_ptr,filePath+".overwriteChangedFiles");
+        Util::saveRewriteBuffer(Ctx,insertVst.mRewriter_ptr,mainFileId,filePath+".getRewriteBufferFor");
+      }
+      insertVst.mRewriter_ptr->overwriteChangedFiles();
 
 
       //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。

@@ -10,12 +10,48 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 
 using namespace llvm;
 using namespace clang;
 
+bool Util::envVarEq(std::string varName, std::string varValue){
+  if(varName.empty()){
+    return false;
+  }
+  const char* _varValue=std::getenv(varName.c_str());
+  bool eq= (varValue==_varValue);
+  return eq;
+}
 
+void Util::saveRewrittenText(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,std::string filePath){
+  if(TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl()){
+    const std::string &text = rewriter_ptr->getRewrittenText( translationUnitDecl->getSourceRange());
+
+    std::ofstream fWriter;
+    fWriter.open(filePath);
+    fWriter << text ;
+    fWriter.close();
+
+    std::cout << "saveRewrittenText:" << filePath <<std::endl;
+  }
+}
+
+std::string Util::rewriteBufferToString(const RewriteBuffer &buffer) {
+  return std::string(buffer.begin(), buffer.end());
+}
+void Util::saveRewriteBuffer(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,FileID mainFileId,std::string filePath){
+  const RewriteBuffer *pRewriteBuffer = rewriter_ptr->getRewriteBufferFor(mainFileId);
+  std::string cppText = rewriteBufferToString(*pRewriteBuffer);
+
+  std::ofstream fWriter;
+  fWriter.open(filePath);
+  fWriter << cppText ;
+  fWriter.close();
+
+  std::cout << "saveRewriteBuffer:" << filePath <<std::endl;
+}
 bool Util::isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context) {
   auto parents = context.getParents(*stmt);
 

@@ -24,6 +24,10 @@ using namespace clang;
 
 class Util {
 public:
+    static std::string rewriteBufferToString(const RewriteBuffer &buffer);
+    static void saveRewriteBuffer(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,FileID mainFileId,std::string filePath);
+    static bool envVarEq(std::string varName, std::string varValue);
+    static void saveRewrittenText(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,std::string filePath);
     static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
