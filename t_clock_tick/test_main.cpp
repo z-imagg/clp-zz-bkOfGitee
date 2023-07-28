@@ -43,7 +43,7 @@ namespace myNs1{
         class Product{
         public:
             Product(){
-
+              int k=0;
             }
             Product(int id, bool ok, char cate='Z')
                     :id(id),ok(ok),cate(cate),owner_id(-1)
@@ -162,7 +162,7 @@ char topOutFunc(float f1, double d2){
 #include <exception>
 #include <iostream>
 
-static void* staticFunc(int* arg){
+static void staticFunc(int* arg){
   char (*funcPtr)(int, char, short)=0;
   try{
     int num=*arg;
