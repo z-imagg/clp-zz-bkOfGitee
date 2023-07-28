@@ -326,7 +326,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
 
   ///1.7  在上面算出的位置处, 插入释放语句
-  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
+  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt:块释放");
   }
   //endregion
 
