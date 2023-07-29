@@ -24,6 +24,14 @@ bool Util::isInternalSysSourceFile(StringRef fn) {
   bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
   return isInternal;
 }
+bool Util::sourceFileIsTick(StringRef fn) {
+  bool isTick =
+          fn.endswith("t_clock_tick.h")
+          || fn.endswith("t_clock_tick.c")
+          || fn.endswith("t_clock_tick.cpp")
+  ;
+  return isTick;
+}
 
 void Util::copySrcFile(std::string filePath,std::string destRootDir){
   //复制源文件 到 /tmp/, 方便开发查看. (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
