@@ -43,7 +43,6 @@ public:
     static const std::string funcName_TCTk ;//= "X__t_clock_tick";
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
-    static bool isInternalSysSourceFile(StringRef fn);
 
     void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
     void insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
@@ -63,7 +62,7 @@ public:
      * @return
      */
 //    bool VisitStmt(Stmt *S) { return true; } : grep '(Stmt'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
-    bool processStmt(Stmt *stmt,const char* whoInserted=NULL);
+    bool processStmt(Stmt *stmt,const char* whoInserted="");
 //    DEF_TRAVERSE_STMT(CallExpr      : grep '(CallExpr'  /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h
 //    virtual bool VisitCallExpr(CallExpr *callExpr);
 
@@ -271,10 +270,12 @@ public:
      */
     bool _Traverse_Func(
   const SourceRange &funcSourceRange,
+  FunctionDecl *functionDecl,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
   Stmt *funcBodyStmt,
+  const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn);
 
 

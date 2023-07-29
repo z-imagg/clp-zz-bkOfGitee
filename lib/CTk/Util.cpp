@@ -10,12 +10,93 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 
 
 using namespace llvm;
 using namespace clang;
 
+bool Util::isSysSrcFile(StringRef fn) {
+  bool startWithUsr=fn.startswith("/usr/");
+  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
+  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
+  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
+  return isInternal;
+}
+bool Util::isTickSrcFile(StringRef fn) {
+  bool isTick =
+          fn.endswith("t_clock_tick.h")
+          || fn.endswith("t_clock_tick.c")
+          || fn.endswith("t_clock_tick.cpp")
+  ;
+  return isTick;
+}
 
+void Util::copySrcFile(std::string filePath,std::string destRootDir){
+  //复制源文件 到 /tmp/, 方便开发查看. (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
+  //  取当前时刻毫秒数
+  std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  //  新文件路径、新文件目录构建、复制为新文件
+//  std::string filePathCopy="/tmp/"+filePath+"_"+std::to_string(millis);
+  std::string filePathCopy=destRootDir+"/"+filePath+"_"+std::to_string(millis);
+  std::filesystem::path fpCopy(filePathCopy);
+  const std::filesystem::path &dir = fpCopy.parent_path();
+  std::filesystem::create_directories(dir);
+  std::filesystem::copy(filePath, filePathCopy);
+  std::cout << "查看，复制文件路径:" << filePath << "到,文件路径:" << filePathCopy << std::endl;
+
+}
+bool Util::LocFileIDEqMainFileID(SourceManager& SM, SourceLocation Loc){
+  FileID mainFileId = SM.getMainFileID();
+  FileID fileId = SM.getFileID(Loc);
+  bool LocInMainFile=(mainFileId==fileId);
+  return LocInMainFile;
+}
+bool Util::isMacroLocation(SourceLocation loc, SourceManager &SM) {
+  bool isMacroArgExpansion = SM.isMacroArgExpansion(loc);
+  bool isMacroBodyExpansion= SM.isMacroBodyExpansion(loc);
+  bool isMacroLoc=isMacroArgExpansion || isMacroBodyExpansion;
+  return isMacroLoc;
+}
+bool Util::envVarEq(std::string varName, std::string varValueExpect){
+  if(varName.empty()){
+    return false;
+  }
+  const char* varValueReal=std::getenv(varName.c_str());
+  if(varValueReal == NULL){
+    return false;
+  }
+  bool eq= (varValueExpect == varValueReal);
+  return eq;
+}
+
+void Util::saveEditBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath) {
+  RewriteBuffer &editBuffer = rewriter_ptr->getEditBuffer(mainFileId);
+  Util::saveRewriteBuffer0(&editBuffer,filePath,"saveEditBuffer:");
+}
+
+std::string Util::rewriteBufferToString(const RewriteBuffer &buffer) {
+  return std::string(buffer.begin(), buffer.end());
+}
+void Util::saveRewriteBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath) {
+  const RewriteBuffer *pRewriteBuffer = rewriter_ptr->getRewriteBufferFor(mainFileId);
+  Util::saveRewriteBuffer0(pRewriteBuffer,filePath,"saveRewriteBuffer:");
+}
+
+void Util::saveRewriteBuffer0(const RewriteBuffer *pRewriteBuffer,std::string filePath,std::string title){
+//  const RewriteBuffer *pRewriteBuffer = rewriter_ptr->getRewriteBufferFor(mainFileId);
+  std::string cppText = rewriteBufferToString(*pRewriteBuffer);
+
+  std::ofstream fWriter;
+  fWriter.open(filePath);
+  fWriter << cppText ;
+  fWriter.close();
+
+  std::cout << title << filePath <<std::endl;
+}
 bool Util::isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context) {
   auto parents = context.getParents(*stmt);
 
@@ -227,7 +308,10 @@ void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, Sou
   }
 
 
-  mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
+  bool insertResult=mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
+  if(!insertResult){
+    std::cerr<<"05插入返回false"<<std::endl;
+  }
 }
 
 FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
@@ -321,6 +405,20 @@ std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const Sou
 
 void Util::printStmt(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *stmt,
                      bool printSourceText) {
+  //region title后面接上parent0的kind
+  DynTypedNodeList parentS=Ctx.getParents(*stmt);
+  size_t parentSSize=parentS.size();
+  if(parentSSize>0){
+    ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+    const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
+//    char msg[128];
+    //sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+//    sprintf(msg, ",parent0NodeKind:%s", parent0NodeKindCStr);
+    title.append(",parent0NodeKind:");
+    title.append(parent0NodeKindCStr);
+  }
+  //endregion
+
   int64_t stmtID = stmt->getID(Ctx);
   SourceManager & SM=CI.getSourceManager();
   const char *stmtClassName = stmt->getStmtClassName();

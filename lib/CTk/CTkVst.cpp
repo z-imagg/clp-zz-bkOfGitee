@@ -57,6 +57,7 @@ const QualType &funcReturnType = functionDecl->getReturnType();
   //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
    Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
     const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
+
     int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
     bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
     if(endStmtNotReturn){
@@ -67,23 +68,8 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 }
 
 
-/**给定源文件路径是否系统源文件
- * 系统源文件路径举例：
-/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
-/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
-/usr/include/x86_64-linux-gnu/bits/iscanonical.h
 
-/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
- * @param fn
- * @return
- */
-bool CTkVst::isInternalSysSourceFile(StringRef fn) {
-  bool startWithUsr=fn.startswith("/usr/");
-  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
-  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
-  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
-  return isInternal;
-}
+
 
 void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   char cStr_X__t_clock_tick[256];
@@ -99,8 +85,10 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
-
+  bool insertResult=mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
+  if(!insertResult){
+    std::cerr<<"01插入返回false"<<std::endl;
+  }
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   if(lifeStep == LifeStep::Alloc){
     allocInsertedNodeIDLs.insert(stmtId);
@@ -130,10 +118,17 @@ void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
   sprintf(cStr_inserted, "X__funcReturn(/*函出*/);%s\n", _comment);
   llvm::StringRef strRef_inserted(cStr_inserted);
 
+  bool insertResult=true;
   if(before){
-    mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+    insertResult=mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+    if(!insertResult){
+      std::cerr<<"02插入返回false"<<std::endl;
+    }
   }else{
-    mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+    insertResult=mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+    if(!insertResult){
+      std::cerr<<"03插入返回false"<<std::endl;
+    }
   }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
@@ -153,7 +148,10 @@ void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   sprintf(cStr_inserted, "X__funcEnter(/*函入*/);%s\n", _comment);
   llvm::StringRef strRef(cStr_inserted);
 
-  mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
+  bool insertResult=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
+  if(!insertResult){
+    std::cerr<<"04插入返回false"<<std::endl;
+  }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   funcEnterInsertedNodeIDLs.insert(funcDeclId);
@@ -174,109 +172,127 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   int64_t stmtId = stmt->getID(*Ctx);
 
-  //如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
+  //region 如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
   if(bool stmtIsReturn=Util::isReturnStmtClass(stmt)){
     return false;
   }
+  //endregion
 
+  //region 如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
+  //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
   if(allocInsertedNodeIDLs.count(stmtId) > 0){
-    //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
-    //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
     return false;
   }
+  //endregion
 
-//  SourceManager & SM = mRewriter.getSourceMgr();//此处的mRewriter的SourceMgr是空, 所以才会有C处崩溃，因为C处用 NULL.getFileID() 肯定崩溃。
   const LangOptions & langOpts = CI.getLangOpts();
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
-  int beginLine,beginCol;
-  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
-  SourceRange sourceRange=stmt->getSourceRange();
-  FileID fileId = SM.getFileID(beginLoc);//C
 
-  FileID mainFileId = SM.getMainFileID();
+  //region 之前开发，排错用代码
+//  int beginLine,beginCol;
+//  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
+//  SourceRange sourceRange=stmt->getSourceRange();
+//  FileID fileId = SM.getFileID(beginLoc);//C
+//  FileID mainFileId = SM.getMainFileID();
+//  std::string stmtFileAndRange=sourceRange.printToString(SM);
+//获取当前语句S的源码文本
+//  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  std::string stmtFileAndRange=sourceRange.printToString(SM);
+//  const char* stmtClassName = stmt->getStmtClassName();
 
-  //获取当前语句S的源码文本
-  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
+//  std::string fnStr=fn.str();
+
+//  auto parent0 = parentS[0];
+  //endregion
+
+
+  //region 说明: constexpr修饰的函数,无法进入processStmt，即constexpr函数内语句前不会被插入tick语句
 ///////若某函数 有 constexpr 修饰，则在TraverseCXXMethodDecl|TraverseFunctionDecl中被拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
+  //endregion
 
-  if(mainFileId!=fileId){
+
+  //region 跳过非MainFile
+  //何为MainFile: 即被clang编译的源文件, 如下:
+  // clang -c <MainFile>.cpp
+  //何为非MainFile: 即在MainFile中include的文件们
+  bool stmtIsInMainFile=Util::LocFileIDEqMainFileID(SM, beginLoc);
+  if(!stmtIsInMainFile){
 //    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
   }
+  //endregion
 
   Stmt::StmtClass stmtClass = stmt->getStmtClass();
-  const char* stmtClassName = stmt->getStmtClassName();
 
 
-//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  //{开发用，条件断点
-//  bool shouldBreakPointer=stmtSourceText=="f111(";
-//  bool shouldBreakPointer2=stmtSourceText=="!f111(";
-  bool BUG04= (stmtSourceText=="malloc(AllocSize");//BUG04出现条件
-  //}
-
+  //region 若当前语句是 没有父亲节点的, 则不处理此语句，直接返回.
   DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
+  if(parentSSize<=0){
+    return true;
+  }
+  //endregion
+
+  //region 此无业务作用 纯属学习用：若当前语句的父亲节点个数大于1,则打印当前语句源码.
+  //clang中: 节点node定义的地方 有个父亲节点， 该节点node 被使用的地方 也叫父亲节点。因此变量经常有多个父亲，但语句应该只有一个父亲节点。
   if(parentSSize>1){
     char msg[128];
     sprintf(msg,"注意:父节点个数大于1, 为:%d",parentSSize);
     Util::printStmt(*Ctx, CI, "查看", msg, stmt, true);
   }
-  if(parentSSize<=0){
-    return true;
-  }
-  auto parent0 = parentS[0];
-  ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
-  const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
+  //endregion
 
 
+  //region 若本源文件是系统文件或tick源文件 , 则不处理当前语句，直接返回
+  // tick源文件: {t_clock_tick.c,t_clock_tick.cpp,t_clock_tick.h}
   StringRef fn;
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
-  std::string fnStr=fn.str();
+  bool isSysSrcFile  = Util::isSysSrcFile(fn);
+  bool isTickSrcFile  = Util::isTickSrcFile(fn);
+  if(isSysSrcFile  || isTickSrcFile){
+//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
+    return true;
+  }
+  //endregion
 
-  bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
-
-  char msg[256];
-  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
-
-  if( ( !_isInternalSysSourceFile )){
-
-//    stmtClass=stmt->getStmtClass();
+  //region 此时才对当前语句前插入tick语句, 并结束本函数
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
-    if(stmtClass==Stmt::StmtClass::DeclStmtClass){
+    if(stmtClass==Stmt::StmtClass::DeclStmtClass){//判断269， TODO: 此判断和 判断271 有重复的感觉. 估计可以去掉本判断
       //如果当前语句是声明语句
-      DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
-      //取得声明语句declStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
-      stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
+      if (DeclStmt *declStmt = dyn_cast<DeclStmt>(stmt)) {//判断271
+//        DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
+        //取得声明语句declStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
+        stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
+      }
     }
     insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt, whoInserted);
 
 
 
-    char msgz[256];
-    if(whoInserted){
-      sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr.get());
-    }else{
-      sprintf(msgz,"插入时钟语句,Rwt:%p",mRewriter_ptr.get());
+    if(!whoInserted){
+      whoInserted="";
     }
+    std::string title;
+    title.append(whoInserted);
+    title.append(":插入时钟语句,Rwt:");
+    title.append( Util::pointerToString(mRewriter_ptr.get())  );
+//    char msgz[256];
+//    sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr.get());
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
-    Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
+    Util::printStmt(*Ctx, CI, "插入调用", title, stmt, false);  //开发用打印
 
-  }else{
-//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
-  }
   return true;
+  //endregion
 }
 
 
@@ -605,6 +621,12 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
+  //TraverseFunctionDecl: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,functionDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
   int64_t funcDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
 
@@ -621,18 +643,25 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
   bool _isConstexpr = functionDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, "TraverseFunctionDecl:void函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
+          functionDecl,
           _isConstexpr,
           functionDecl->hasBody(),
           funcDeclID,
           body,
-          "TraverseFunctionDecl");
+          "TraverseFunctionDecl",
+          "TraverseFunctionDecl:void函数尾非return");
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
+  //CXXConstructorDecl: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxConstructorDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
   int64_t funcDeclID = cxxConstructorDecl->getID();
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
 
@@ -648,19 +677,25 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
   //构造函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxConstructorDecl, "TraverseCXXConstructorDecl:构造函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
+          cxxConstructorDecl,
           _isConstexpr,
           cxxConstructorDecl->hasBody(),
           funcDeclID,
           body,
-
-          "TraverseCXXConstructorDecl");
+          "TraverseCXXConstructorDecl",
+          "TraverseCXXConstructorDecl:构造函数尾非return");
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  //TraverseCXXMethodDecl: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
   int64_t funcDeclID = cxxMethodDecl->getID();
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
@@ -674,24 +709,26 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
 
   return this->_Traverse_Func(
           sourceRange,
+          cxxMethodDecl,
           _isConstexpr,
           cxxMethodDecl->hasBody(),
           funcDeclID,
           body,
-
-          "TraverseCXXConstructorDecl");
+          "TraverseCXXConstructorDecl",
+          "TraverseCXXMethodDecl:cpp函数尾非return");
 }
 
 bool CTkVst::_Traverse_Func(
   const SourceRange &funcSourceRange,
+  FunctionDecl *functionDecl,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
   Stmt *funcBodyStmt,
+  const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn)
 {
 
@@ -709,7 +746,10 @@ bool CTkVst::_Traverse_Func(
 
   //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
-    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,"TraverseCXXConstructorDecl");
+    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,whoInsertedFuncEnter);
+
+    //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+    insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, whoInsertedFuncReturn);
   }
   //endregion
 
@@ -742,6 +782,12 @@ void CTkVst::__wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDecl
 }
 
 bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
+  //TraverseReturnStmt: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
 /////////////////////////对当前节点returnStmt做 自定义处理
 
   int64_t returnStmtID = returnStmt->getID(*Ctx);
@@ -752,8 +798,12 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
     return false;
   }
 
+  //只有return语句直接处于块内时，才处理，否则插入会导致语法错误或语义不同,
+  //   比如'if(...) return;' 不应该在return前插入,否则语义不同。
+  if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
+    insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
+  }
 
-  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)

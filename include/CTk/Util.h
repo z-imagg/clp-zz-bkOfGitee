@@ -24,6 +24,31 @@ using namespace clang;
 
 class Util {
 public:
+    static std::string pointerToString(void* ptr) {
+      return std::to_string(reinterpret_cast<long long>(ptr));
+    }
+    /**给定源文件路径是否系统源文件
+ * 系统源文件路径举例：
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h
+
+/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
+ * @param fn
+ * @return
+ */
+    static bool isSysSrcFile(StringRef fn);
+    static bool isTickSrcFile(StringRef fn) ;
+    static void copySrcFile(std::string srcFilePath,std::string destRootDir="/tmp/");
+    static bool LocFileIDEqMainFileID(SourceManager& SM, SourceLocation Loc);
+    static bool isMacroLocation(SourceLocation loc, SourceManager &SM);
+    static void saveEditBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath);
+    static std::string rewriteBufferToString(const RewriteBuffer &buffer);
+    static void
+    saveRewriteBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath);
+    static bool envVarEq(std::string varName, std::string varValueExpect);
+
+    static void saveRewriteBuffer0(const RewriteBuffer *pRewriteBuffer, std::string filePath, std::string title);
     static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
@@ -86,6 +111,7 @@ public:
       const char *category2FieldName=NULL,int category2Enum=EMPTY_ENUM_VAL,
       bool printSourceText=false);
     static const int EMPTY_ENUM_VAL=-1;
+
 };
 
 
