@@ -12,6 +12,7 @@
 #include <set>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/AST/ParentMapContext.h>
+#include <sstream>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -33,7 +34,7 @@ public:
      * @param args
      * @return
      */
-    template<typename... Args>
+    /*template<typename... Args>
     static std::string string_format(const std::string& format, Args... args) {
       // 获取格式化后的字符串长度
       size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
@@ -46,7 +47,55 @@ public:
 
 
       return result;
+    }*/
+
+// 辅助函数，用于递归处理参数并拼接到结果字符串中
+template<typename T>
+static std::string format_helper(const T& arg) {
+    return std::to_string(arg);
+}
+
+template<typename T, typename... Args>
+static std::string format_helper(const T& arg, Args... args) {
+    return std::to_string(arg) + Util::format_helper(args...);
+}
+
+// 安全的 string_format 函数
+template<typename... Args>
+static std::string string_format(const std::string& format, Args... args) {
+    std::string result;
+    size_t pos = 0;
+    size_t len = format.size();
+    size_t argIndex = 0;
+
+    while (pos < len) {
+        char ch = format[pos];
+
+        if (ch == '%' && pos + 1 < len && format[pos + 1] != '%') {
+            ++pos;
+
+            if (argIndex < sizeof...(args)) {
+                result += Util::format_helper(args...);
+                ++argIndex;
+            }
+            else {
+                result += "<missing argument>";
+            }
+        }
+        else if (ch == '%' && pos + 1 < len && format[pos + 1] == '%') {
+            result += '%';
+            ++pos;
+        }
+        else {
+            result += ch;
+        }
+
+        ++pos;
     }
+
+    return result;
+}
+
 
     static std::string pointerToString(void* ptr);
     /**给定源文件路径是否系统源文件
