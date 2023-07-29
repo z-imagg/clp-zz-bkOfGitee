@@ -114,8 +114,10 @@ public:
       }
 
       //CI.getDiagnostics().dump()会输出 本次编译文件、其包含的各个文件 诊断信息.
-      DiagnosticsEngine &diagnostics = CI.getDiagnostics();
-      diagnostics.dump();
+      if(Util::envVarEq("diagnostics_dump","true")){
+        DiagnosticsEngine &diagnostics = CI.getDiagnostics();
+        diagnostics.dump();
+      }
 
       insertVst.mRewriter_ptr->overwriteChangedFiles();
 
