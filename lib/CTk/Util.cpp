@@ -24,7 +24,7 @@ bool Util::isSysSrcFile(StringRef fn) {
   bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
   return isInternal;
 }
-bool Util::sourceFileIsTick(StringRef fn) {
+bool Util::isTickSrcFile(StringRef fn) {
   bool isTick =
           fn.endswith("t_clock_tick.h")
           || fn.endswith("t_clock_tick.c")

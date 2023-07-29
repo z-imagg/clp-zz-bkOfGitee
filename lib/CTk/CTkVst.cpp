@@ -240,13 +240,13 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   std::string fnStr=fn.str();
 
   bool isSysSrcFile  = Util::isSysSrcFile(fn);
-  bool sourceFileIsTick  = Util::sourceFileIsTick(fn);
+  bool isTickSrcFile  = Util::isTickSrcFile(fn);
 
   char msg[256];
   sprintf(msg, "parent0NodeKind:%s,isSysSrcFile:%d", parent0NodeKindCStr, isSysSrcFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
 //  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
-  if(( !isSysSrcFile ) && (!sourceFileIsTick)){
+  if(( !isSysSrcFile ) && (!isTickSrcFile)){
 
 //    stmtClass=stmt->getStmtClass();
     int stackVarAllocCnt=0;
