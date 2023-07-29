@@ -18,6 +18,15 @@ using namespace llvm;
 using namespace clang;
 
 
+bool Util::funcIsDefault(FunctionDecl *funcDecl){
+  bool isDefault=funcDecl->isExplicitlyDefaulted() || funcDecl->isDefaulted();
+  return isDefault;
+}
+bool Util::cxxConstructorIsDefault(CXXConstructorDecl *cxxCnstrDecl){
+  bool isDefault= cxxCnstrDecl->isExplicitlyDefaulted() || cxxCnstrDecl->isDefaulted() || cxxCnstrDecl->isDefaultConstructor();
+  return isDefault;
+}
+
 void Util::emptyStrIfNullStr(const char* &cstr){
 //  whoInserted=(whoInserted==NULL?"":whoInserted);
   cstr=(cstr==NULL?"":cstr);

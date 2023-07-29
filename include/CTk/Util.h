@@ -29,6 +29,22 @@ using namespace clang;
 
 class Util {
 public:
+    /**
+     * default函数体举例:
+     * 'void func1( ) = default;'
+     * 'void func2( ) {}'
+     * @param funcDecl
+     * @return
+     */
+    static bool funcIsDefault(FunctionDecl *funcDecl);
+    /**
+     * default构造函数体举例:
+     * 'User::User( ) = default;'
+     * 'User::User( ) {}'
+     * @param cxxCnstrDecl
+     * @return
+     */
+    static bool cxxConstructorIsDefault(CXXConstructorDecl *cxxCnstrDecl);
 
     static void emptyStrIfNullStr(const char* &cstr);
     /** c++11 手工实现 string_format

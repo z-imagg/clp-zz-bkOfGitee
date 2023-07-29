@@ -23,8 +23,8 @@
 #ifndef __cplusplus
 //如果当前是.c文件包含了此.h,  则强制使用#函数名到c++名字
 #define X__t_clock_tick  _Z15X__t_clock_tickiiii
-//#define X__funcEnter  TODO用elfviewer看一下t_clock_tick.o中函数X__funcEnter的c++名字，填在这里
-//#define X__funcReturn  TODO用elfviewer看一下t_clock_tick.o中函数X__funcReturn的c++名字，填在这里
+#define X__funcEnter  _Z12X__funcEnterv
+#define X__funcReturn _Z13X__funcReturnv
 #endif
 
 void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt);
