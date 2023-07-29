@@ -278,16 +278,11 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
                                  heapObjcFreeCnt, whoInserted);
 
 
-
-    if(!whoInserted){
-      whoInserted="";
-    }
-    std::string title;
-    title.append(whoInserted);
-    title.append(":插入时钟语句,Rwt:");
-    title.append( Util::pointerToString(mRewriter_ptr.get())  );
+    whoInserted=(whoInserted==NULL)?"":whoInserted;
+    std::string title = Util::string_format("%s:插入时钟语句,Rwt:%p", whoInserted ,mRewriter_ptr.get());
 //    char msgz[256];
-//    sprintf(msgz,"%s:插入时钟语句,Rwt:%p",whoInserted,mRewriter_ptr.get());
+//    sprintf(msgz,"msgz:%s:插入时钟语句,Rwt:%p\n",whoInserted,mRewriter_ptr.get());
+//    printf(msgz);
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", title, stmt, false);  //开发用打印
 

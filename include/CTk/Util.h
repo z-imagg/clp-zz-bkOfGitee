@@ -24,9 +24,28 @@ using namespace clang;
 
 class Util {
 public:
-    static std::string pointerToString(void* ptr) {
-      return std::to_string(reinterpret_cast<long long>(ptr));
+    /** c++11 手工实现 string_format
+     * @tparam Args
+     * @param format
+     * @param args
+     * @return
+     */
+    template<typename... Args>
+    static std::string string_format(const std::string& format, Args... args) {
+      // 获取格式化后的字符串长度
+      size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
+
+      //按长度构造字符串
+      std::string result(size, '\0');
+
+      // 将格式化后的字符串写入到result中
+      std::sprintf(&result[0], format.c_str(), args...);
+
+
+      return result;
     }
+
+    static std::string pointerToString(void* ptr);
     /**给定源文件路径是否系统源文件
  * 系统源文件路径举例：
 /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h

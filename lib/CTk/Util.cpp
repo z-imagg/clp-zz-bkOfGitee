@@ -17,6 +17,10 @@
 using namespace llvm;
 using namespace clang;
 
+
+std::string Util::pointerToString(void* ptr) {
+  return std::to_string(reinterpret_cast<long long>(ptr));
+}
 bool Util::isSysSrcFile(StringRef fn) {
   bool startWithUsr=fn.startswith("/usr/");
   bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
