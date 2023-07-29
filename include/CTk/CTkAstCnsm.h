@@ -52,18 +52,11 @@ public:
       FrontendOptions &frontendOptions = CI.getFrontendOpts();
       std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << "，Ctx.TUKind:" << Ctx.TUKind <<  std::endl;
 
-      //复制源文件 到 /tmp/, 方便开发查看. (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
-      //  取当前时刻毫秒数
-      std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-      auto duration = now.time_since_epoch();
-      auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-      //  新文件路径、新文件目录构建、复制为新文件
-      std::string filePathCopy="/tmp/"+filePath+"_"+std::to_string(millis);
-      std::filesystem::path fpCopy(filePathCopy);
-      const std::filesystem::path &dir = fpCopy.parent_path();
-      std::filesystem::create_directories(dir);
-      std::filesystem::copy(filePath, filePathCopy);
-      std::cout << "查看，复制文件路径:" << filePath << "到,文件路径:" << filePathCopy << std::endl;
+      //复制源文件 到 /build/srcCopy/, 开关copySrcFile=true.
+      // (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
+      if(Util::envVarEq("copySrcFile","true")){
+        Util::copySrcFile(filePath,"/build/srcCopy/");
+      }
 
 
 
