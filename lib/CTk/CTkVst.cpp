@@ -217,7 +217,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
 ///////若某函数 有 constexpr 修饰，则在TraverseCXXMethodDecl|TraverseFunctionDecl中被拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
 
-  if(mainFileId!=fileId){
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,beginLoc);
+  if(!_LocFileIDEqMainFileID){
 //    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
   }
@@ -647,9 +648,8 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
-  FileID mainFileId = SM.getMainFileID();
-  FileID fileId = SM.getFileID(cxxConstructorDecl->getLocation());
-  if(mainFileId!=fileId){
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxConstructorDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
     return false;
   }
 
@@ -681,9 +681,8 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
-  FileID mainFileId = SM.getMainFileID();
-  FileID fileId = SM.getFileID(cxxMethodDecl->getLocation());
-  if(mainFileId!=fileId){
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
     return false;
   }
 

@@ -16,6 +16,12 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::LocFileIDEqMainFileID(SourceManager& SM, SourceLocation Loc){
+  FileID mainFileId = SM.getMainFileID();
+  FileID fileId = SM.getFileID(Loc);
+  bool LocInMainFile=(mainFileId==fileId);
+  return LocInMainFile;
+}
 bool Util::isMacroLocation(SourceLocation loc, SourceManager &SM) {
   bool isMacroArgExpansion = SM.isMacroArgExpansion(loc);
   bool isMacroBodyExpansion= SM.isMacroBodyExpansion(loc);
