@@ -32,4 +32,5 @@ set(CTkAlone_SOURCES
     target_link_libraries(
     CTkAlone
       "clangTooling"
+    fmt::fmt
     )

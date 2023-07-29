@@ -10,6 +10,8 @@ using namespace clang;
 
 #include <iostream>
 #include <clang/AST/ParentMapContext.h>
+#include <fmt/core.h>
+
 
 using namespace llvm;
 using namespace clang;
@@ -75,11 +77,10 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
-//  std::string cStr_X__tick;
-  std::string funcName_TCTk(CTkVst::funcName_TCTk);
-  string_format(cStr_X__tick,
-      "%s(/*栈生*/%d, /*栈死*/%d, /*堆生*/%d, /*堆死*/%d);//%s\n",
-      funcName_TCTk,
+  std::string cStr_X__tick;
+  cStr_X__tick=fmt::format(
+      "{}(/*栈生*/{}, /*栈死*/{}, /*堆生*/{}, /*堆死*/{});//{}\n",
+      CTkVst::funcName_TCTk,
       stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,
       //如果有提供，插入者信息，则放在注释中.
       whoInserted
@@ -113,9 +114,8 @@ void CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocatio
 void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
-  std::string cStr_inserted;
-  string_format(cStr_inserted,
-          "X__funcReturn(/*函出*/);//%s\n",
+  std::string cStr_inserted=fmt::format(
+          "X__funcReturn(/*函出*/);//{}\n",
           //如果有提供，插入者信息，则放在注释中.
           whoInserted
   );
@@ -144,8 +144,8 @@ void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
 void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
-  std::string cStr_inserted; string_format(cStr_inserted,
-          "X__funcEnter(/*函入*/);//%s\n",
+  std::string cStr_inserted=fmt::format(
+          "X__funcEnter(/*函入*/);//{}\n",
           //如果有提供，插入者信息，则放在注释中.
           whoInserted
   );
@@ -246,7 +246,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   //region 此无业务作用 纯属学习用：若当前语句的父亲节点个数大于1,则打印当前语句源码.
   //clang中: 节点node定义的地方 有个父亲节点， 该节点node 被使用的地方 也叫父亲节点。因此变量经常有多个父亲，但语句应该只有一个父亲节点。
   if(parentSSize>1){
-    std::string msg; string_format(msg, "注意:父节点个数大于1, 为:%d",parentSSize);
+    std::string msg=fmt::format("注意:父节点个数大于1, 为:{}",parentSSize);
     Util::printStmt(*Ctx, CI, "查看", msg, stmt, true);
   }
   //endregion
@@ -283,7 +283,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
     Util::emptyStrIfNullStr(whoInserted);
 
-    std::string title; string_format(title, "%s:插入时钟语句,Rwt:%p", whoInserted ,mRewriter_ptr.get());
+    std::string title=fmt::format("{}:插入时钟语句,Rwt:{:x}", whoInserted , reinterpret_cast<uintptr_t> (mRewriter_ptr.get() ) );
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", title, stmt, false);  //开发用打印
 
