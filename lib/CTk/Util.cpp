@@ -18,6 +18,27 @@ using namespace llvm;
 using namespace clang;
 
 
+/** c++11 手工实现 string_format
+ * @tparam Args
+ * @param format
+ * @param args
+ * @return
+ */
+template<typename... Args>
+std::string Util::string_format(const std::string& format, Args... args) {
+  // 获取格式化后的字符串长度
+  size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
+
+  //按长度构造字符串
+  std::string result(size, '\0');
+
+  // 将格式化后的字符串写入到result中
+  std::sprintf(&result[0], format.c_str(), args...);
+
+
+  return result;
+}
+
 std::string Util::pointerToString(void* ptr) {
   return std::to_string(reinterpret_cast<long long>(ptr));
 }
