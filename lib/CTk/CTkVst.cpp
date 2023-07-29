@@ -172,83 +172,96 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   int64_t stmtId = stmt->getID(*Ctx);
 
-  //如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
+  //region 如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
   if(bool stmtIsReturn=Util::isReturnStmtClass(stmt)){
     return false;
   }
+  //endregion
 
+  //region 如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
+  //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
   if(allocInsertedNodeIDLs.count(stmtId) > 0){
-    //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
-    //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
     return false;
   }
+  //endregion
 
-//  SourceManager & SM = mRewriter.getSourceMgr();//此处的mRewriter的SourceMgr是空, 所以才会有C处崩溃，因为C处用 NULL.getFileID() 肯定崩溃。
   const LangOptions & langOpts = CI.getLangOpts();
 
 
   SourceLocation beginLoc=stmt->getBeginLoc();
-  int beginLine,beginCol;
-  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
-  SourceRange sourceRange=stmt->getSourceRange();
-  FileID fileId = SM.getFileID(beginLoc);//C
 
-  FileID mainFileId = SM.getMainFileID();
+  //region 之前开发，排错用代码
+//  int beginLine,beginCol;
+//  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
+//  SourceRange sourceRange=stmt->getSourceRange();
+//  FileID fileId = SM.getFileID(beginLoc);//C
+//  FileID mainFileId = SM.getMainFileID();
+//  std::string stmtFileAndRange=sourceRange.printToString(SM);
+//获取当前语句S的源码文本
+//  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  std::string stmtFileAndRange=sourceRange.printToString(SM);
+//  const char* stmtClassName = stmt->getStmtClassName();
 
-  //获取当前语句S的源码文本
-  std::string stmtSourceText=Util::getSourceTextBySourceRange(stmt->getSourceRange(), SM, langOpts);
+//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
+//  std::string fnStr=fn.str();
+
+//  auto parent0 = parentS[0];
+  //endregion
+
+
+  //region 说明: constexpr修饰的函数,无法进入processStmt，即constexpr函数内语句前不会被插入tick语句
 ///////若某函数 有 constexpr 修饰，则在TraverseCXXMethodDecl|TraverseFunctionDecl中被拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
+  //endregion
 
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,beginLoc);
-  if(!_LocFileIDEqMainFileID){
+
+  //region 跳过非MainFile
+  //何为MainFile: 即被clang编译的源文件, 如下:
+  // clang -c <MainFile>.cpp
+  //何为非MainFile: 即在MainFile中include的文件们
+  bool stmtIsInMainFile=Util::LocFileIDEqMainFileID(SM, beginLoc);
+  if(!stmtIsInMainFile){
 //    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
     return true;
   }
+  //endregion
 
   Stmt::StmtClass stmtClass = stmt->getStmtClass();
-  const char* stmtClassName = stmt->getStmtClassName();
 
 
-//  std::cout << "[#" << stmtSourceText << "#]:{#" << stmtClassName << "#}" ;  //开发用打印
 
-  //{开发用，条件断点
-//  bool shouldBreakPointer=stmtSourceText=="f111(";
-//  bool shouldBreakPointer2=stmtSourceText=="!f111(";
-  bool BUG04= (stmtSourceText=="malloc(AllocSize");//BUG04出现条件
-  //}
-
+  //region 若当前语句是 没有父亲节点的, 则不处理此语句，直接返回.
   DynTypedNodeList parentS=this->Ctx->getParents(*stmt);
   size_t parentSSize=parentS.size();
+  if(parentSSize<=0){
+    return true;
+  }
+  //endregion
+
+  //region 此无业务作用 纯属学习用：若当前语句的父亲节点个数大于1,则打印当前语句源码.
+  //clang中: 节点node定义的地方 有个父亲节点， 该节点node 被使用的地方 也叫父亲节点。因此变量经常有多个父亲，但语句应该只有一个父亲节点。
   if(parentSSize>1){
     char msg[128];
     sprintf(msg,"注意:父节点个数大于1, 为:%d",parentSSize);
     Util::printStmt(*Ctx, CI, "查看", msg, stmt, true);
   }
-  if(parentSSize<=0){
-    return true;
-  }
-  auto parent0 = parentS[0];
-  ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
-  const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
+  //endregion
 
 
+  //region 若本源文件是系统文件或tick源文件 , 则不处理当前语句，直接返回
+  // tick源文件: {t_clock_tick.c,t_clock_tick.cpp,t_clock_tick.h}
   StringRef fn;
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
-  std::string fnStr=fn.str();
-
   bool isSysSrcFile  = Util::isSysSrcFile(fn);
   bool isTickSrcFile  = Util::isTickSrcFile(fn);
+  if(isSysSrcFile  || isTickSrcFile){
+//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
+    return true;
+  }
+  //endregion
 
-  char msg[256];
-  sprintf(msg, "parent0NodeKind:%s,isSysSrcFile:%d", parent0NodeKindCStr, isSysSrcFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
-//  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
-
-  if(( !isSysSrcFile ) && (!isTickSrcFile)){
-
-//    stmtClass=stmt->getStmtClass();
+  //region 此时才对当前语句前插入tick语句, 并结束本函数
     int stackVarAllocCnt=0;
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
@@ -273,10 +286,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", msgz, stmt, false);  //开发用打印
 
-  }else{
-//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
-  }
   return true;
+  //endregion
 }
 
 

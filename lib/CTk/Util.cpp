@@ -405,6 +405,20 @@ std::tuple<std::string,std::string>  Util::get_FileAndRange_SourceText(const Sou
 
 void Util::printStmt(ASTContext &Ctx, CompilerInstance &CI, std::string tag, std::string title, clang::Stmt *stmt,
                      bool printSourceText) {
+  //region title后面接上parent0的kind
+  DynTypedNodeList parentS=Ctx.getParents(*stmt);
+  size_t parentSSize=parentS.size();
+  if(parentSSize>0){
+    ASTNodeKind parent0NodeKind=parentS[0].getNodeKind();
+    const char * parent0NodeKindCStr=parent0NodeKind.asStringRef().str().c_str();
+//    char msg[128];
+    //sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+//    sprintf(msg, ",parent0NodeKind:%s", parent0NodeKindCStr);
+    title.append(",parent0NodeKind:");
+    title.append(parent0NodeKindCStr);
+  }
+  //endregion
+
   int64_t stmtID = stmt->getID(Ctx);
   SourceManager & SM=CI.getSourceManager();
   const char *stmtClassName = stmt->getStmtClassName();
