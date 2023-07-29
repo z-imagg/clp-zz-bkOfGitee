@@ -20,6 +20,45 @@
 #include "clang/Basic/SourceManager.h"
 
 
+#include <sstream>
+
+// 定义可变参数宏string_format
+#define string_format(result, format, ...) \
+    do { \
+        std::ostringstream oss; \
+        oss << format; \
+        std::string temp = oss.str(); \
+        size_t pos = 0; \
+        size_t argIndex = 0; \
+        \
+        while ((pos = temp.find("%", pos)) != std::string::npos) { \
+            if (pos + 1 < temp.size() && temp[pos + 1] != '%') { \
+                if (argIndex < sizeof...(__VA_ARGS__)) { \
+                    std::ostringstream argStream; \
+                    argStream << std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__); \
+                    temp.replace(pos, 2, argStream.str()); \
+                    pos += argStream.str().size(); \
+                    ++argIndex; \
+                } \
+                else { \
+                    temp.replace(pos, 2, "<missing argument>"); \
+                    pos += 17; \
+                } \
+            } \
+            else { \
+                pos += 2; \
+            } \
+        } \
+        \
+        result = temp; \
+    } while (0)
+
+/**
+std::string str;
+string_format(str, "The answer is %d and the value of pi is %.2f", num, pi);
+*/
+
+
 using namespace llvm;
 using namespace clang;
 
@@ -34,67 +73,7 @@ public:
      * @param args
      * @return
      */
-    /*template<typename... Args>
-    static std::string string_format(const std::string& format, Args... args) {
-      // 获取格式化后的字符串长度
-      size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
-
-      //按长度构造字符串
-      std::string result(size, '\0');
-
-      // 将格式化后的字符串写入到result中
-      std::sprintf(&result[0], format.c_str(), args...);
-
-
-      return result;
-    }*/
-
-// 辅助函数，用于递归处理参数并拼接到结果字符串中
-template<typename T>
-static std::string format_helper(const T& arg) {
-    return std::to_string(arg);
-}
-
-template<typename T, typename... Args>
-static std::string format_helper(const T& arg, Args... args) {
-    return std::to_string(arg) + Util::format_helper(args...);
-}
-
-// 安全的 string_format 函数
-template<typename... Args>
-static std::string string_format(const std::string& format, Args... args) {
-    std::string result;
-    size_t pos = 0;
-    size_t len = format.size();
-    size_t argIndex = 0;
-
-    while (pos < len) {
-        char ch = format[pos];
-
-        if (ch == '%' && pos + 1 < len && format[pos + 1] != '%') {
-            ++pos;
-
-            if (argIndex < sizeof...(args)) {
-                result += Util::format_helper(args...);
-                ++argIndex;
-            }
-            else {
-                result += "<missing argument>";
-            }
-        }
-        else if (ch == '%' && pos + 1 < len && format[pos + 1] == '%') {
-            result += '%';
-            ++pos;
-        }
-        else {
-            result += ch;
-        }
-
-        ++pos;
-    }
-
-    return result;
-}
+    
 
 
     static std::string pointerToString(void* ptr);
