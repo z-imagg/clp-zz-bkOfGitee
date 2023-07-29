@@ -27,5 +27,6 @@ target_link_libraries(CTk
     CTk
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+      "${LIBFMT_INCLUDE}"
     )
 
