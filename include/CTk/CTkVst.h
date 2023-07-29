@@ -43,7 +43,6 @@ public:
     static const std::string funcName_TCTk ;//= "X__t_clock_tick";
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
-    static bool isInternalSysSourceFile(StringRef fn);
 
     void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
     void insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);

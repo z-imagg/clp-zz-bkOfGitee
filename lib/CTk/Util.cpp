@@ -17,6 +17,13 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::isInternalSysSourceFile(StringRef fn) {
+  bool startWithUsr=fn.startswith("/usr/");
+  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
+  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
+  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
+  return isInternal;
+}
 
 void Util::copySrcFile(std::string filePath,std::string destRootDir){
   //复制源文件 到 /tmp/, 方便开发查看. (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）

@@ -24,6 +24,17 @@ using namespace clang;
 
 class Util {
 public:
+    /**给定源文件路径是否系统源文件
+ * 系统源文件路径举例：
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
+/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h
+
+/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
+ * @param fn
+ * @return
+ */
+    static bool isInternalSysSourceFile(StringRef fn);
     static void copySrcFile(std::string srcFilePath,std::string destRootDir="/tmp/");
     static bool LocFileIDEqMainFileID(SourceManager& SM, SourceLocation Loc);
     static bool isMacroLocation(SourceLocation loc, SourceManager &SM);

@@ -68,23 +68,8 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 }
 
 
-/**给定源文件路径是否系统源文件
- * 系统源文件路径举例：
-/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
-/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/ext/type_traits.h
-/usr/include/x86_64-linux-gnu/bits/iscanonical.h
 
-/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/uintrintrin.h
- * @param fn
- * @return
- */
-bool CTkVst::isInternalSysSourceFile(StringRef fn) {
-  bool startWithUsr=fn.startswith("/usr/");
-  bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
-  bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
-  bool isInternal=(startWithUsr||isLLVM01||isLLVM02);
-  return isInternal;
-}
+
 
 void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   char cStr_X__t_clock_tick[256];
@@ -254,7 +239,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
-  bool _isInternalSysSourceFile  = isInternalSysSourceFile(fn);
+  bool _isInternalSysSourceFile  = Util::isInternalSysSourceFile(fn);
 
   char msg[256];
   sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
