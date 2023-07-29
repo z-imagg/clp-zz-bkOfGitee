@@ -633,11 +633,9 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 
   //判断该方法是否有default修饰, 若有, 则不处理.
   //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
-  bool hasDefault = functionDecl->isDefaulted();
-  if(hasDefault){
+  if(Util::funcIsDefault(functionDecl)){
     return true;
   }
-
   Stmt* body = functionDecl->getBody();
 
   bool _isConstexpr = functionDecl->isConstexpr();
@@ -667,8 +665,7 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 
   //判断该方法是否有default修饰, 若有, 则不处理.
   //default修饰举例: 'RuleMatcher( ) = default;'
-  bool hasDefault = cxxConstructorDecl->isDefaulted();
-  if(hasDefault){
+  if(Util::cxxConstructorIsDefault(cxxConstructorDecl)){
     return true;
   }
 
@@ -701,8 +698,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
 
   //判断该方法是否有default修饰, 若有, 则不处理.
   //default修饰举例: 'RuleMatcher &operator=(RuleMatcher &&Other) = default;'
-  bool hasDefault = cxxMethodDecl->isDefaulted();
-  if(hasDefault){
+  if(Util::funcIsDefault(cxxMethodDecl)){
     return true;
   }
   Stmt* body = cxxMethodDecl->getBody();
