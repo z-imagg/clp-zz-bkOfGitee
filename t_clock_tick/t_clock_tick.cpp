@@ -188,9 +188,9 @@ public:
       int curThreadId= I__curThreadId();
       std::string fileName(processName+"_"+std::to_string(processId)+"_"+std::to_string(milliseconds)+"_"+std::to_string(curThreadId));
 
-      // c++语言标准小于等于 C++14 时, 没有方法std::filesystem::exists, 用自定义方法X__fileExists替代.
+      // c++语言标准小于等于 C++14 时, 没有方法std::filesystem::exists, 用自定义方法I__fileExists替代.
       #if __cplusplus <= 201402L
-      bool tick_data_home_existed=X__fileExists(tick_data_home);
+      bool tick_data_home_existed=I__fileExists(tick_data_home);
       #else
       bool tick_data_home_existed=std::filesystem::exists(tick_data_home);
       #endif

@@ -245,10 +245,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   // tick源文件: {t_clock_tick.c,t_clock_tick.cpp,t_clock_tick.h}
   StringRef fn;
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
-  bool isSysSrcFile  = Util::isSysSrcFile(fn);
-  bool isTickSrcFile  = Util::isTickSrcFile(fn);
-  if(isSysSrcFile  || isTickSrcFile){
-//  Util::printStmt(CI,"不插入","not insert X__t_clock_tick",stmt, false);  //开发用打印
+  //若是系统文件 或 tick文件则跳过
+  if(Util::isSysSrcFile(fn)  || Util::isTickSrcFile(fn)){
     return true;
   }
   //endregion
