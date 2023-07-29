@@ -98,7 +98,7 @@ public:
      * @return
      */
     static int varCntInVarDecl(DeclStmt* stmt);
-    static void insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
+    static void insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr,bool& insertResult);
     static void insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, const std::shared_ptr<Rewriter> rewriter_ptr);
     static bool getSourceFilePathAtLoc(SourceLocation Loc, const SourceManager &SM,StringRef& fn);
     static void getSourceFilePathOfStmt(const Stmt *S, const SourceManager &SM,StringRef& fn);

@@ -10,6 +10,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
 
+#include <fmt/core.h>
 
 #include "CTk/CTkVst.h"
 #include "FndCTkClROVst.h"
@@ -108,9 +109,10 @@ public:
       //}
 //////////////////3.插入包含语句
 
-
-      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk, mainFileId, SM, insertVst.mRewriter_ptr);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
-      std::cout<< "插入include, 插入 include时钟语句 到文件头部:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << std::endl;
+      bool insertResult;
+      Util::insertIncludeToFileStart(CTkVst::IncludeStmt_TCTk, mainFileId, SM, insertVst.mRewriter_ptr,insertResult);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+      std::string msg=fmt::format("插入include到文件{},对mainFileId:{},结果:{}\n",filePath,mainFileId.getHashValue(),insertResult);
+      std::cout<< msg ;
 
 //////////////////4.应用修改到源文件
 
