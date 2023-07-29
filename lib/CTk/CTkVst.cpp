@@ -619,6 +619,12 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
+  //TraverseFunctionDecl: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,functionDecl->getLocation());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
   int64_t funcDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
 
@@ -648,6 +654,7 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
+  //CXXConstructorDecl: 跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxConstructorDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
@@ -681,6 +688,7 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  //TraverseCXXMethodDecl: 跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
