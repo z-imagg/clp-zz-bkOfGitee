@@ -25,10 +25,13 @@ using namespace clang;
 class Util {
 public:
     static bool isMacroLocation(SourceLocation loc, SourceManager &SM);
+    static void saveEditBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath);
     static std::string rewriteBufferToString(const RewriteBuffer &buffer);
-    static void saveRewriteBuffer(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,FileID mainFileId,std::string filePath);
+    static void
+    saveRewriteBuffer(const std::shared_ptr<Rewriter> rewriter_ptr, FileID mainFileId, std::string filePath);
     static bool envVarEq(std::string varName, std::string varValueExpect);
-    static void saveRewrittenText(ASTContext& Ctx, const std::shared_ptr<Rewriter> rewriter_ptr,std::string filePath);
+
+    static void saveRewriteBuffer0(const RewriteBuffer *pRewriteBuffer, std::string filePath, std::string title);
     static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
@@ -91,6 +94,7 @@ public:
       const char *category2FieldName=NULL,int category2Enum=EMPTY_ENUM_VAL,
       bool printSourceText=false);
     static const int EMPTY_ENUM_VAL=-1;
+
 };
 
 

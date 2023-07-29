@@ -109,8 +109,8 @@ public:
       //overwriteChangedFiles引发 "1.	<eof> parser at end of file" 并以  "Program received signal SIGSEGV, Segmentation fault." 退出， 可能原因是修改后的源码有语法错误，侦察错误办法是 overwriteChangedFiles 之前 先调用getRewrittenText获得改后的源码文本，人工查看哪里有语法错误。
 //      const std::string &text = insertVst.mRewriter_ptr->getRewrittenText( Ctx.getTranslationUnitDecl()->getSourceRange());
       if(Util::envVarEq("saveTextBefore_overwriteChangedFiles","true")){
-        Util::saveRewrittenText(Ctx,insertVst.mRewriter_ptr,filePath+".overwriteChangedFiles");
-        Util::saveRewriteBuffer(Ctx,insertVst.mRewriter_ptr,mainFileId,filePath+".getRewriteBufferFor");
+        Util::saveRewriteBuffer(insertVst.mRewriter_ptr, mainFileId, filePath + ".getRewriteBufferFor");
+        Util::saveEditBuffer(insertVst.mRewriter_ptr, mainFileId, filePath + ".getEditBuffer");
       }
 
       //CI.getDiagnostics().dump()会输出 本次编译文件、其包含的各个文件 诊断信息.
