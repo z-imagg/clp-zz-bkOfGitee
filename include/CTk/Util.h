@@ -21,9 +21,8 @@
 
 
 #include <sstream>
-
-// 定义可变参数宏string_format
-#define string_format(result, format, ...) \
+// 定义递归宏来处理可变参数
+#define STRING_FORMAT_HELPER(result, format, ...) \
     do { \
         std::ostringstream oss; \
         oss << format; \
@@ -52,6 +51,11 @@
         \
         result = temp; \
     } while (0)
+
+// 定义宏来调用递归宏并创建临时变量
+#define string_format(result, format, ...) \
+    std::string result; \
+    STRING_FORMAT_HELPER(result, format, __VA_ARGS__)
 
 /**
 std::string str;

@@ -75,7 +75,7 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
-  std::string cStr_X__tick;
+//  std::string cStr_X__tick;
   std::string funcName_TCTk(CTkVst::funcName_TCTk);
   string_format(cStr_X__tick,
       "%s(/*栈生*/%d, /*栈死*/%d, /*堆生*/%d, /*堆死*/%d);//%s\n",
