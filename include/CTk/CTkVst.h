@@ -46,8 +46,16 @@ public:
     static bool isInternalSysSourceFile(StringRef fn);
 
     void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
-    void insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
+    void insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
+    void insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
+    void insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
     void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
+
+    /**void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+     * @param functionDecl
+     * @param whoInserted
+     */
+    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted);
 
     /**遍历语句
      *
@@ -250,6 +258,8 @@ public:
     virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
+    //TODO: c++析构函数遍历
+//    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
 
 
     /** 遍历  FunctionDecl 或 CXXMethodDecl
@@ -260,21 +270,22 @@ public:
      * @return
      */
     bool _Traverse_Func(
-            const SourceRange &funcSourceRange,
-            bool funcIsConstexpr,
-            Stmt *funcBodyStmt
-    );
+  const SourceRange &funcSourceRange,
+  bool funcIsConstexpr,
+  bool hasBody,
+  int64_t funcDeclID,
+  Stmt *funcBodyStmt,
+  const char *whoInsertedFuncReturn);
 
 
-    void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){
-      //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
-      if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
-//            int64_t functionDeclID = functionDecl->getID();
-        const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
-        insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,whoInserted);
-      }
-      //endregion
-    }
+    /** 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+     *
+     * @param funcBody
+     * @param functionDeclID
+     * @param whoInserted
+     */
+    void __wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted);
+
     /**
      return语句  前 插入 释放栈变量语句： 以释放此时本函数已经分配的全部栈变量，有两个方案：
      1. 运行时计数：这是简单方案，如下:

@@ -49,7 +49,22 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 
-
+void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted){
+  //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+const QualType &funcReturnType = functionDecl->getReturnType();
+  bool funcReturnVoid = funcReturnType->isVoidType();
+  if(funcReturnVoid || isa<CXXConstructorDecl>(*functionDecl)){
+  //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
+   Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
+    const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
+    int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
+    bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
+    if(endStmtNotReturn){
+    //函数体末尾语句非return
+      insertBefore_X__funcReturn(endStmtID,funcBodyRBraceLoc,whoInserted);
+    }
+  }
+}
 
 
 /**给定源文件路径是否系统源文件
@@ -95,7 +110,15 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
 }
 
 
-void CTkVst::insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+void CTkVst::insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+  CTkVst::insert_X__funcReturn(true,returnStmtId,stmtBeginLoc,whoInserted);
+  return;
+}
+void CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
+  CTkVst::insert_X__funcReturn(false,funcBodyEndStmtId,funEndStmtEndLoc,whoInserted);
+  return;
+}
+void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
   char cStr_inserted[256];
 
   char _comment[90]="";
@@ -107,10 +130,15 @@ void CTkVst::insertBefore_X__funcReturn(int64_t returnStmtId, SourceLocation stm
   sprintf(cStr_inserted, "X__funcReturn(/*函出*/);%s\n", _comment);
   llvm::StringRef strRef_inserted(cStr_inserted);
 
-  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_inserted);
+  if(before){
+    mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+  }else{
+    mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+  }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-    funcReturnInsertedNodeIDLs.insert(returnStmtId);
+  funcReturnInsertedNodeIDLs.insert(flagStmtId);
+  return;
 }
 
 void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
@@ -145,6 +173,11 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   this->mRewriter_ptr->setSourceMgr(this->SM,CI.getLangOpts());
 
   int64_t stmtId = stmt->getID(*Ctx);
+
+  //如果当前语句是return 则  X__funcReturn 会被插入, 不需要插入 滴答语句了
+  if(bool stmtIsReturn=Util::isReturnStmtClass(stmt)){
+    return false;
+  }
 
   if(allocInsertedNodeIDLs.count(stmtId) > 0){
     //如果 本节点ID 已经被插入语句，则不必插入，直接返回即可。
@@ -298,21 +331,21 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
   }
   //endregion
 
-  //region 1.4 如果块内最后一条语句是return 块尾释放语句插入位置 改为  该return语句前
-  if(endStmt){
-    Stmt::StmtClass endStmtClass = endStmt->getStmtClass();
-    //若组合语句内最后一条语句是 return语句，则 时钟语句默认插入位置 改为 该return语句前.
-    if(Stmt::ReturnStmtClass==endStmtClass){
-      insertLoc=endStmt->getBeginLoc();
-    }
-  }
+  //region 1.4 计算块尾语句是不是return
+  // 如果块内最后一条语句是return 则本块释放被 X__funcReturn 包含了, 不需要插入 块尾释放语句.
+  // 如果 块尾部的return前 既有 块尾释放语句 又有 X__funcReturn, 即 多释放了, 多释放的部分 是 本块变量.
+  bool compoundEndStmtIsReturn=Util::isReturnStmtClass(endStmt);
   //endregion
 
-  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句，才会插入释放语句
+  //region 1.4B 计算块语句是不是函数的最后一个块
+  bool compoundIsLastBlockOfFunc=Util::isLastCompoundStmt(compoundStmt, *Ctx);
+  //endregion
+
+  //region 1.5 本块内有声明变量 且 没有本块没插入过释放语句 且 块尾语句不是return 且 块语句不是函数的最后一个块，才会插入释放语句
   //释放语句 未曾插入过吗？
   bool freeNotInserted=freeInsertedNodeIDLs.count(compoundStmtID) <= 0;
   //若 有 栈变量释放 且 未曾插入过 释放语句，则插入释放语句
-  if(declStmtCnt>0 && freeNotInserted){
+  if(declStmtCnt>0 && freeNotInserted && (!compoundEndStmtIsReturn)  && (!compoundIsLastBlockOfFunc) ){
   int stackVarAllocCnt=0;
   int stackVarFreeCnt=declStmtCnt;
   int heapObjAllocCnt=0;
@@ -323,7 +356,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
 
   ///1.7  在上面算出的位置处, 插入释放语句
-  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt");
+  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt:块释放");
   }
   //endregion
 
@@ -572,8 +605,9 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 ////////////////constexpr
 
 bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
-  int64_t functionDeclID = functionDecl->getID();
+  int64_t funcDeclID = functionDecl->getID();
   const SourceRange &sourceRange = functionDecl->getSourceRange();
+
 
   //判断该方法是否有default修饰, 若有, 则不处理.
   //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
@@ -582,20 +616,24 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
     return true;
   }
 
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = functionDecl->getBody();
-  if(functionDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,functionDeclID,"TraverseFunctionDecl");
-  }
-  //endregion
 
   bool _isConstexpr = functionDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(functionDecl, "TraverseFunctionDecl:void函数尾非return");
+
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          functionDecl->hasBody(),
+          funcDeclID,
+          body,
+          "TraverseFunctionDecl");
 }
 
 bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
-  int64_t declID = cxxConstructorDecl->getID();
+  int64_t funcDeclID = cxxConstructorDecl->getID();
   const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -605,20 +643,25 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
     return true;
   }
 
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = cxxConstructorDecl->getBody();
-  if(cxxConstructorDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
-  }
-  //endregion
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  //构造函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxConstructorDecl, "TraverseCXXConstructorDecl:构造函数尾非return");
+
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          cxxConstructorDecl->hasBody(),
+          funcDeclID,
+          body,
+
+          "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
-  int64_t declID = cxxMethodDecl->getID();
+  int64_t funcDeclID = cxxMethodDecl->getID();
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -627,22 +670,30 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   if(hasDefault){
     return true;
   }
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   Stmt* body = cxxMethodDecl->getBody();
-  if(cxxMethodDecl->hasBody() && body ) {
-    __wrap_insertAfter_X__funcEnter(body,declID,"TraverseCXXConstructorDecl");
-  }
-  //endregion
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
-  return this->_Traverse_Func(sourceRange,_isConstexpr,body);
+  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(cxxMethodDecl, "TraverseCXXMethodDecl:构造函数尾非return");
+
+  return this->_Traverse_Func(
+          sourceRange,
+          _isConstexpr,
+          cxxMethodDecl->hasBody(),
+          funcDeclID,
+          body,
+
+          "TraverseCXXConstructorDecl");
 }
 
 bool CTkVst::_Traverse_Func(
-        const SourceRange &funcSourceRange,
-        bool funcIsConstexpr,
-        Stmt *funcBodyStmt
-){
+  const SourceRange &funcSourceRange,
+  bool funcIsConstexpr,
+  bool hasBody,
+  int64_t funcDeclID,
+  Stmt *funcBodyStmt,
+  const char *whoInsertedFuncReturn)
+{
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
 
@@ -655,6 +706,12 @@ bool CTkVst::_Traverse_Func(
 // 函数体内栈变量分配个数 B :
 //    （不包括函数体内嵌套的语句块内的栈变量分配个数）
 // B部分在 函数体 作为 组合语句 那算过了, 简单解决 就是不解决 ： 让A占据一条 插入语句 B也占据一条插入语句 ，只是滴答数多了1次（没多大影响），  栈变量分配个数  还是A+B  没问题
+
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
+    __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,"TraverseCXXConstructorDecl");
+  }
+  //endregion
 
   bool _isConstexpr = funcIsConstexpr;
 ///////////////////// 自定义处理 完毕
@@ -674,6 +731,15 @@ bool CTkVst::_Traverse_Func(
 }
 
 
+void CTkVst::__wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDeclID , const char* whoInserted){
+  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
+  if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+//            int64_t functionDeclID = functionDecl->getID();
+    const SourceLocation &funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    insertAfter_X__funcEnter(functionDeclID,funcBodyLBraceLoc,whoInserted);
+  }
+  //endregion
+}
 
 bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 /////////////////////////对当前节点returnStmt做 自定义处理
@@ -687,7 +753,7 @@ bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   }
 
 
-  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt");
+  insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
