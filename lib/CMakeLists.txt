@@ -18,10 +18,15 @@ set(CTk_SOURCES
       ${CTk_SOURCES}
       )
 
+target_link_libraries(CTk
+        "${LIBFMT_STATIC}"   #/pubx/fmt/build/libfmt.a
+        )
+
     # Configure include directories for 'plugin'
     target_include_directories(
     CTk
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+      "${LIBFMT_INCLUDE}"
     )
 

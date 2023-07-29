@@ -26,10 +26,12 @@ set(CTkAlone_SOURCES
     CTkAlone
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+    "${LIBFMT_INCLUDE}"
     )
 
     # Link in the required libraries
     target_link_libraries(
     CTkAlone
       "clangTooling"
+   "${LIBFMT_STATIC}"  #/pubx/fmt/build/libfmt.a
     )
