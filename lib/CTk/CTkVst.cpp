@@ -772,6 +772,12 @@ void CTkVst::__wrap_insertAfter_X__funcEnter(Stmt *funcBody,int64_t functionDecl
 }
 
 bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
+  //TraverseReturnStmt: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
 /////////////////////////对当前节点returnStmt做 自定义处理
 
   int64_t returnStmtID = returnStmt->getID(*Ctx);
