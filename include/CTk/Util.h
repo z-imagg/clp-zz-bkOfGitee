@@ -34,7 +34,7 @@ public:
  * @param fn
  * @return
  */
-    static bool isInternalSysSourceFile(StringRef fn);
+    static bool isSysSrcFile(StringRef fn);
     static bool sourceFileIsTick(StringRef fn) ;
     static void copySrcFile(std::string srcFilePath,std::string destRootDir="/tmp/");
     static bool LocFileIDEqMainFileID(SourceManager& SM, SourceLocation Loc);

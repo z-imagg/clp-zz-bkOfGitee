@@ -239,14 +239,14 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
   Util::getSourceFilePathOfStmt(stmt, SM, fn);
   std::string fnStr=fn.str();
 
-  bool _isInternalSysSourceFile  = Util::isInternalSysSourceFile(fn);
+  bool isSysSrcFile  = Util::isSysSrcFile(fn);
   bool sourceFileIsTick  = Util::sourceFileIsTick(fn);
 
   char msg[256];
-  sprintf(msg,"parent0NodeKind:%s,_isInternalSysSourceFile:%d",parent0NodeKindCStr,_isInternalSysSourceFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
+  sprintf(msg, "parent0NodeKind:%s,isSysSrcFile:%d", parent0NodeKindCStr, isSysSrcFile);//sprintf中不要给 clang::StringRef类型，否则结果是怪异的。
 //  Util::printStmt(*Ctx, CI, "查看_VisitStmt", msg, stmt, false);  //开发用打印
 
-  if( ( !_isInternalSysSourceFile ) && (!sourceFileIsTick)){
+  if(( !isSysSrcFile ) && (!sourceFileIsTick)){
 
 //    stmtClass=stmt->getStmtClass();
     int stackVarAllocCnt=0;

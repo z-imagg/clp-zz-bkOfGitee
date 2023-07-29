@@ -17,7 +17,7 @@
 using namespace llvm;
 using namespace clang;
 
-bool Util::isInternalSysSourceFile(StringRef fn) {
+bool Util::isSysSrcFile(StringRef fn) {
   bool startWithUsr=fn.startswith("/usr/");
   bool isLLVM01=fn.startswith("/app/llvm_release_home/clang+llvm");
   bool isLLVM02=fn.startswith("/llvm_release_home/clang+llvm");
