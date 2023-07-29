@@ -22,12 +22,15 @@ bool Util::isMacroLocation(SourceLocation loc, SourceManager &SM) {
   bool isMacroLoc=isMacroArgExpansion || isMacroBodyExpansion;
   return isMacroLoc;
 }
-bool Util::envVarEq(std::string varName, std::string varValue){
+bool Util::envVarEq(std::string varName, std::string varValueExpect){
   if(varName.empty()){
     return false;
   }
-  const char* _varValue=std::getenv(varName.c_str());
-  bool eq= (varValue==_varValue);
+  const char* varValueReal=std::getenv(varName.c_str());
+  if(varValueReal == NULL){
+    return false;
+  }
+  bool eq= (varValueExpect == varValueReal);
   return eq;
 }
 
