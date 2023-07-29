@@ -21,46 +21,7 @@
 
 
 #include <sstream>
-// 定义递归宏来处理可变参数
-#define STRING_FORMAT_HELPER(result, format, ...) \
-    do { \
-        std::ostringstream oss; \
-        oss << format; \
-        std::string temp = oss.str(); \
-        size_t pos = 0; \
-        size_t argIndex = 0; \
-        \
-        while ((pos = temp.find("%", pos)) != std::string::npos) { \
-            if (pos + 1 < temp.size() && temp[pos + 1] != '%') { \
-                if (argIndex < sizeof...(__VA_ARGS__)) { \
-                    std::ostringstream argStream; \
-                    argStream << std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__); \
-                    temp.replace(pos, 2, argStream.str()); \
-                    pos += argStream.str().size(); \
-                    ++argIndex; \
-                } \
-                else { \
-                    temp.replace(pos, 2, "<missing argument>"); \
-                    pos += 17; \
-                } \
-            } \
-            else { \
-                pos += 2; \
-            } \
-        } \
-        \
-        result = temp; \
-    } while (0)
-
-// 定义宏来调用递归宏并创建临时变量
-#define string_format(result, format, ...) \
-    std::string result; \
-    STRING_FORMAT_HELPER(result, format, __VA_ARGS__)
-
-/**
-std::string str;
-string_format(str, "The answer is %d and the value of pi is %.2f", num, pi);
-*/
+// 放弃 c++11 string_format 宏实现、或std::sprintf实现
 
 
 using namespace llvm;
