@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 3.13.4)
 
+set(LIBFMT_DIR "/pubx/fmt/")
+#set(LIBFMT_STATIC /pubx/fmt/include)
+set(LIBFMT_INCLUDE "${LIBFMT_DIR}/include/")
+#set(LIBFMT_STATIC /pubx/fmt/build/libfmt.a)
+set(LIBFMT_STATIC "${LIBFMT_DIR}/build/libfmt.a")
+
+if (NOT EXISTS "${LIBFMT_STATIC}")
+  MESSAGE(FATAL_ERROR "libfmt静态库${LIBFMT_STATIC} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
+endif()
+
+if (NOT EXISTS "${LIBFMT_INCLUDE}")
+  MESSAGE(FATAL_ERROR "libfmt头文件目录${LIBFMT_INCLUDE} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
+endif()
+
 #===============================================================================
 # 0. GET CLANG INSTALLATION DIR
 #修改默认编译器
@@ -27,7 +41,6 @@ set(CT_LLVM_CMAKE_FILE "${CT_Clang_INSTALL_DIR}/lib/cmake/clang/ClangConfig.cmak
 list(APPEND CMAKE_PREFIX_PATH "${CT_Clang_INSTALL_DIR}/lib/cmake/clang/")
 
 find_package(Clang REQUIRED CONFIG)
-find_package(fmt REQUIRED)
 
 # Sanity check. As Clang does not expose e.g. `CLANG_VERSION_MAJOR` through
 # AddClang.cmake, we have to use LLVM_VERSION_MAJOR instead.

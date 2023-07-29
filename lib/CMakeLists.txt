@@ -19,7 +19,7 @@ set(CTk_SOURCES
       )
 
 target_link_libraries(CTk
-        /pubx/fmt/build/libfmt.a
+        "${LIBFMT_STATIC}"   #/pubx/fmt/build/libfmt.a
         )
 
     # Configure include directories for 'plugin'
