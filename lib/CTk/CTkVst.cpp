@@ -50,6 +50,8 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted){
+  Util::emptyStrIfNullStr(whoInserted);
+  
   //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
 const QualType &funcReturnType = functionDecl->getReturnType();
   bool funcReturnVoid = funcReturnType->isVoidType();
@@ -73,7 +75,7 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 
 void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   //region 构造插入语句
-  whoInserted=(whoInserted==NULL?"":whoInserted);
+  Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_X__tick = Util::string_format(
       "%s(/*栈生*/%d, /*栈死*/%d, /*堆生*/%d, /*堆死*/%d);//%s\n",
       CTkVst::funcName_TCTk.c_str(),
@@ -109,7 +111,7 @@ void CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocatio
 }
 void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
   //region 构造插入语句
-  whoInserted=(whoInserted==NULL?"":whoInserted);
+  Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_inserted = Util::string_format(
           "X__funcReturn(/*函出*/);//%s\n",
           //如果有提供，插入者信息，则放在注释中.
@@ -138,6 +140,7 @@ void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
 }
 
 void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+  Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted = Util::string_format(
           "X__funcEnter(/*函入*/);//%s\n",
@@ -276,7 +279,8 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
                                  heapObjcFreeCnt, whoInserted);
 
 
-    whoInserted=(whoInserted==NULL)?"":whoInserted;
+    Util::emptyStrIfNullStr(whoInserted);
+
     std::string title = Util::string_format("%s:插入时钟语句,Rwt:%p", whoInserted ,mRewriter_ptr.get());
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
     Util::printStmt(*Ctx, CI, "插入调用", title, stmt, false);  //开发用打印

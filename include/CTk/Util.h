@@ -24,6 +24,7 @@ using namespace clang;
 
 class Util {
 public:
+    static void emptyStrIfNullStr(const char* &cstr);
     /** c++11 手工实现 string_format
      * @tparam Args
      * @param format

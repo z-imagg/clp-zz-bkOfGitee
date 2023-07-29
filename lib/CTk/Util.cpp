@@ -18,6 +18,10 @@ using namespace llvm;
 using namespace clang;
 
 
+void Util::emptyStrIfNullStr(const char* &cstr){
+//  whoInserted=(whoInserted==NULL?"":whoInserted);
+  cstr=(cstr==NULL?"":cstr);
+}
 /** c++11 手工实现 string_format
  * @tparam Args
  * @param format
