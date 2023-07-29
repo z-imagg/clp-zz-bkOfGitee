@@ -74,7 +74,7 @@ const QualType &funcReturnType = functionDecl->getReturnType();
 
 
 
-void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
+bool CTkVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_X__tick;
@@ -91,27 +91,24 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   //endregion
 
   bool insertResult=mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
-  if(!insertResult){
-    std::cerr<<"01插入返回false"<<std::endl;
-  }
+
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   if(lifeStep == LifeStep::Alloc){
     allocInsertedNodeIDLs.insert(stmtId);
   }else if(lifeStep == LifeStep::Free){
     freeInsertedNodeIDLs.insert(stmtId);
   }
+  return insertResult;
 }
 
 
-void CTkVst::insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
-  CTkVst::insert_X__funcReturn(true,returnStmtId,stmtBeginLoc,whoInserted);
-  return;
+bool CTkVst::insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
+  return CTkVst::insert_X__funcReturn(true,returnStmtId,stmtBeginLoc,whoInserted);
 }
-void CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
-  CTkVst::insert_X__funcReturn(false,funcBodyEndStmtId,funEndStmtEndLoc,whoInserted);
-  return;
+bool CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
+  return CTkVst::insert_X__funcReturn(false,funcBodyEndStmtId,funEndStmtEndLoc,whoInserted);
 }
-void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
+bool CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_inserted=fmt::format(
@@ -122,26 +119,19 @@ void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
   llvm::StringRef strRef_inserted(cStr_inserted);
   //endregion
 
-
-  bool insertResult=true;
+  bool insertResult;
   if(before){
     insertResult=mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
-    if(!insertResult){
-      std::cerr<<"02插入返回false"<<std::endl;
-    }
   }else{
     insertResult=mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
-    if(!insertResult){
-      std::cerr<<"03插入返回false"<<std::endl;
-    }
   }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   funcReturnInsertedNodeIDLs.insert(flagStmtId);
-  return;
+  return insertResult;
 }
 
-void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+bool CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
@@ -153,12 +143,11 @@ void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   //endregion
 
   bool insertResult=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
-  if(!insertResult){
-    std::cerr<<"04插入返回false"<<std::endl;
-  }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   funcEnterInsertedNodeIDLs.insert(funcDeclId);
+
+  return insertResult;
 }
 //TODO 暂时去掉不必要的打印
 //TODO 分配变量个数： 当前语句如果是VarDecl
@@ -277,15 +266,22 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
         stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
       }
     }
-    insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
-                                 heapObjcFreeCnt, whoInserted);
+  bool insertResult=insertBefore_X__tick(
+          LifeStep::Alloc,
+          stmtId,
+          stmt->getBeginLoc(),
+          stackVarAllocCnt,
+          stackVarFreeCnt,
+          heapObjAllocCnt,
+          heapObjcFreeCnt,
+          whoInserted);
 
 
     Util::emptyStrIfNullStr(whoInserted);
 
-    std::string title=fmt::format("{}:插入时钟语句,Rwt:{:x}", whoInserted , reinterpret_cast<uintptr_t> (mRewriter_ptr.get() ) );
+    std::string title=fmt::format("{}插入结果:{},RwtPtr:{:x}", whoInserted , insertResult,reinterpret_cast<uintptr_t> (mRewriter_ptr.get() ) );
     //这里打印说明: mRewriter 地址 有两种值。有某个地方再次造了新的Rewriter，导致后一个结果覆盖了前一个结果，前一个结果丢失。应该一直用同一个mRewriter
-    Util::printStmt(*Ctx, CI, "插入调用", title, stmt, false);  //开发用打印
+    Util::printStmt(*Ctx, CI, "插入滴答语句", title, stmt, false);  //开发用打印
 
   return true;
   //endregion
@@ -366,9 +362,19 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 //  int insertLine, insertCol;//开发看行号用.
 //  Util::extractLineAndColumn(SM,insertLoc,insertLine,insertCol);
 
-
   ///1.7  在上面算出的位置处, 插入释放语句
-  insertBefore_X__t_clock_tick(LifeStep::Free, compoundStmtID, insertLoc, stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt, "TraverseCompoundStmt:块释放");
+    bool insertResult=insertBefore_X__tick(
+            LifeStep::Free,
+            compoundStmtID,
+            insertLoc,
+            stackVarAllocCnt,
+            stackVarFreeCnt,
+            heapObjAllocCnt,
+            heapObjcFreeCnt,
+            "TraverseCompoundStmt:块释放");
+    std::string title=fmt::format("插入结果:{},RwtPtr:{:x}",    insertResult,reinterpret_cast<uintptr_t> (mRewriter_ptr.get() ) );
+    Util::printStmt(*Ctx, CI, "TraverseCompoundStmt插入块释放", title, compoundStmt, false);  //开发用打印
+
   }
   //endregion
 

@@ -301,10 +301,11 @@ int Util::varCntInVarDecl(DeclStmt* declStmt) {
 void Util::insertIncludeToFileStartByLoc(StringRef includeStmtText,SourceLocation Loc, SourceManager &SM, const std::shared_ptr<Rewriter> mRewriter_ptr){
   FileID fileId = SM.getFileID(Loc);
 
-  insertIncludeToFileStart(includeStmtText,fileId,SM,mRewriter_ptr);
+  bool insertResult;
+  insertIncludeToFileStart(includeStmtText,fileId,SM,mRewriter_ptr,insertResult);
 }
 
-void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> mRewriter_ptr)   {
+void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, SourceManager &SM, const std::shared_ptr<Rewriter> mRewriter_ptr,bool& insertResult)   {
 //  SourceManager &SM = Context.getSourceManager();
 //  FileID MainFileID = SM.getMainFileID();
 
@@ -317,10 +318,8 @@ void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, Sou
   }
 
 
-  bool insertResult=mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
-  if(!insertResult){
-    std::cerr<<"05插入返回false"<<std::endl;
-  }
+  insertResult=mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
+  return  ;
 }
 
 FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){

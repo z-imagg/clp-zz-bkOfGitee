@@ -44,11 +44,11 @@ public:
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
 
-    void insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
-    void insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
-    void insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
-    void insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
-    void insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
+    bool insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
+    bool insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
+    bool insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
+    bool insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
+    bool insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
     /**void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
      * @param functionDecl
