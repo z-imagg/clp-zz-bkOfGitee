@@ -266,11 +266,13 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
     int stackVarFreeCnt=0;
     int heapObjAllocCnt=0;
     int heapObjcFreeCnt=0;
-    if(stmtClass==Stmt::StmtClass::DeclStmtClass){
+    if(stmtClass==Stmt::StmtClass::DeclStmtClass){//判断269， TODO: 此判断和 判断271 有重复的感觉. 估计可以去掉本判断
       //如果当前语句是声明语句
-      DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
-      //取得声明语句declStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
-      stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
+      if (DeclStmt *declStmt = dyn_cast<DeclStmt>(stmt)) {//判断271
+//        DeclStmt *declStmt = static_cast<DeclStmt *>(stmt);
+        //取得声明语句declStmt 中声明的变量个数. 比如 声明语句"int x=0,y;"中声明了2个变量
+        stackVarAllocCnt=Util::varCntInVarDecl(declStmt);
+      }
     }
     insertBefore_X__t_clock_tick(LifeStep::Alloc, stmtId, stmt->getBeginLoc(), stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt,
                                  heapObjcFreeCnt, whoInserted);
