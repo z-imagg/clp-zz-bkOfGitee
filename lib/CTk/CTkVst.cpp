@@ -100,8 +100,10 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   llvm::StringRef strRef_X__t_clock_tick(cStr_X__t_clock_tick);
 
 //  mRewriter.InsertTextAfter(S->getEndLoc(),"/**/");
-  mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
-
+  bool insertResult=mRewriter_ptr->InsertTextBefore(stmtBeginLoc, strRef_X__t_clock_tick);//B.   B处mRewriter和A处mRewriter 地址相同，但A处mRewriter.SourceMgr非空，B处mRewriter为空。
+  if(!insertResult){
+    std::cerr<<"01插入返回false"<<std::endl;
+  }
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   if(lifeStep == LifeStep::Alloc){
     allocInsertedNodeIDLs.insert(stmtId);
@@ -131,10 +133,17 @@ void CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
   sprintf(cStr_inserted, "X__funcReturn(/*函出*/);%s\n", _comment);
   llvm::StringRef strRef_inserted(cStr_inserted);
 
+  bool insertResult=true;
   if(before){
-    mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+    insertResult=mRewriter_ptr->InsertTextBefore(insertLoc, strRef_inserted);
+    if(!insertResult){
+      std::cerr<<"02插入返回false"<<std::endl;
+    }
   }else{
-    mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+    insertResult=mRewriter_ptr->InsertTextAfter(insertLoc, strRef_inserted);
+    if(!insertResult){
+      std::cerr<<"03插入返回false"<<std::endl;
+    }
   }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
@@ -154,7 +163,10 @@ void CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   sprintf(cStr_inserted, "X__funcEnter(/*函入*/);%s\n", _comment);
   llvm::StringRef strRef(cStr_inserted);
 
-  mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
+  bool insertResult=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
+  if(!insertResult){
+    std::cerr<<"04插入返回false"<<std::endl;
+  }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
   funcEnterInsertedNodeIDLs.insert(funcDeclId);

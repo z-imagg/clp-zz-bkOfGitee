@@ -272,7 +272,10 @@ void Util::insertIncludeToFileStart(StringRef includeStmtText,FileID fileId, Sou
   }
 
 
-  mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
+  bool insertResult=mRewriter_ptr->InsertText(startLoc, includeStmtText, true, true);
+  if(!insertResult){
+    std::cerr<<"05插入返回false"<<std::endl;
+  }
 }
 
 FunctionDecl* Util::findFuncDecByName(ASTContext *Ctx,std::string functionName){
