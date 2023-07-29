@@ -23,7 +23,7 @@ using namespace clang;
 
 
 利用  运行clang++的编译 带上本插件.so  实现 对源文件插入时钟滴答语句:
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-tutor/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c /pubx/clang-tutor/t_clock_tick/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-ctk/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c /pubx/clang-ctk/t_clock_tick/test_main.cpp
 
 
  */
