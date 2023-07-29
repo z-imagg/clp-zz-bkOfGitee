@@ -50,6 +50,11 @@ public:
       FileID mainFileId = SM.getMainFileID();
       auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
 
+      //若是系统文件 或 tick文件则跳过
+      if(Util::isSysSrcFile(filePath)  || Util::isTickSrcFile(filePath)){
+        return ;
+      }
+
       FrontendOptions &frontendOptions = CI.getFrontendOpts();
       std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << "，Ctx.TUKind:" << Ctx.TUKind <<  std::endl;
 
