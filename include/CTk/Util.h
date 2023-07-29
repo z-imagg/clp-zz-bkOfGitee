@@ -24,6 +24,9 @@ using namespace clang;
 
 class Util {
 public:
+    static std::string pointerToString(void* ptr) {
+      return std::to_string(reinterpret_cast<long long>(ptr));
+    }
     /**给定源文件路径是否系统源文件
  * 系统源文件路径举例：
 /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/bits/cpp_type_traits.h
