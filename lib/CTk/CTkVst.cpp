@@ -51,7 +51,7 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
-  
+
   //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
 const QualType &funcReturnType = functionDecl->getReturnType();
   bool funcReturnVoid = funcReturnType->isVoidType();
@@ -78,7 +78,7 @@ void CTkVst::insertBefore_X__t_clock_tick(LifeStep lifeStep, int64_t stmtId, Sou
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_X__tick = Util::string_format(
       "%s(/*栈生*/%d, /*栈死*/%d, /*堆生*/%d, /*堆死*/%d);//%s\n",
-      CTkVst::funcName_TCTk.c_str(),
+      CTkVst::funcName_TCTk.c_str() ,
       stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,
       //如果有提供，插入者信息，则放在注释中.
       whoInserted
