@@ -6,6 +6,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "CTk/FuncDesc.h"
 #include <clang/AST/ParentMapContext.h>
 
 #include <string>
@@ -17,7 +18,62 @@
 using namespace llvm;
 using namespace clang;
 
+bool Util::LocIdSetNotContains(std::unordered_set<LocId,LocId>& _set, LocId locId){
+  bool contains=(_set.count(locId) <= 0);
+  return contains;
+}
+void Util::getMainFileIDMainFilePath(SourceManager& SM,FileID& mainFileId,std::string& mainFilePath){
+  mainFileId = SM.getMainFileID();
+  mainFilePath=SM.getFileEntryForID(mainFileId)->getName().str();
+  return  ;
+}
+int Util::childrenCntOfCompoundStmt(CompoundStmt* stmt){
+  if(!stmt){
+    return 0;
+  }
+//  int cnt=std::distance(stmt->child_begin(),stmt->child_end());
+  return stmt->size();
+}
 
+/** void函数、构造函数 最后一条语句是return吗？
+ * @param funcDesc
+ * @return
+ */
+bool Util::isVoidFuncOrConstructorThenNoEndReturn(QualType funcReturnType, bool isaCXXConstructorDecl,Stmt *endStmtOfFuncBody){
+  //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  if(funcReturnType->isVoidType() || isaCXXConstructorDecl){
+    //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
+//    Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;
+    bool endStmtIsReturn=Util::isReturnStmtClass(endStmtOfFuncBody);
+    if(!endStmtIsReturn){
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Util::GetCompoundLRBracLoc(CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc){
+  if( compoundStmt ){
+    funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    funcBodyRBraceLoc = compoundStmt->getRBracLoc();
+    return true;
+  }
+  return false;
+}
+/**
+ *
+ * @param funcBody
+ * @param funcBodyLBraceLoc
+ * @return 若是组合语句(CompoundStmt) ，则取左花括号位置
+ */
+bool Util::funcBodyIsCompoundThenGetLRBracLoc(Stmt *funcBody, CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc){
+  if( compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+    funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    funcBodyRBraceLoc = compoundStmt->getRBracLoc();
+    return true;
+  }
+  return false;
+}
 bool Util::funcIsDefault(FunctionDecl *funcDecl){
   bool isDefault=funcDecl->isExplicitlyDefaulted() || funcDecl->isDefaulted();
   return isDefault;
@@ -167,6 +223,10 @@ FunctionDecl *Util::getContainingFunction(CompoundStmt *stmt, ASTContext &contex
 
 Stmt* Util::endStmtOfFunc(FunctionDecl *funcDecl) {
   Stmt *funcBody = funcDecl->getBody();
+  return Util::endStmtOfCompoundStmt(funcBody);
+}
+
+Stmt* Util::endStmtOfCompoundStmt(Stmt *funcBody){
   if (funcBody && isa<CompoundStmt>(*funcBody)) {
     CompoundStmt *compoundStmt = dyn_cast<CompoundStmt>(funcBody);
     if (compoundStmt &&  (!compoundStmt->body_empty() ) ) {

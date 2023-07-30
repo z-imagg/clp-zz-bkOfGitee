@@ -47,8 +47,9 @@ public:
         return;
       }
 
-      FileID mainFileId = SM.getMainFileID();
-      auto filePath=SM.getFileEntryForID(mainFileId)->getName().str();
+      FileID mainFileId;
+      std::string filePath;
+      Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
       //若是系统文件 或 tick文件则跳过
       if(Util::isSysSrcFile(filePath)  || Util::isTickSrcFile(filePath)){

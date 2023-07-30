@@ -18,9 +18,12 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
+#include "CTk/FuncDesc.h"
+#include "CTk/LocId.h"
 
 
 #include <sstream>
+#include <unordered_set>
 // 放弃 c++11 string_format 宏实现、或std::sprintf实现
 
 
@@ -29,6 +32,22 @@ using namespace clang;
 
 class Util {
 public:
+    static bool LocIdSetNotContains(std::unordered_set<LocId,LocId>& _set, LocId locId);
+    static void getMainFileIDMainFilePath(SourceManager& SM,FileID& mainFileId,std::string& mainFilePath);
+    static int childrenCntOfCompoundStmt(CompoundStmt* stmt);
+    /** void函数、构造函数 最后一条语句是return吗？
+     * @param funcDesc
+     * @return
+     */
+    static bool isVoidFuncOrConstructorThenNoEndReturn(QualType funcReturnType, bool isaCXXConstructorDecl,Stmt *endStmtOfFuncBody);
+    static bool GetCompoundLRBracLoc(CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc);
+    /**
+     *
+     * @param funcBody
+     * @param funcBodyLBraceLoc
+     * @return 是否组合语句,即是否CompoundStmt
+     */
+    static bool funcBodyIsCompoundThenGetLRBracLoc(Stmt *funcBody, CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc);
     /**
      * default函数体举例:
      * 'void func1( ) = default;'
@@ -83,6 +102,7 @@ public:
     static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
+    static  Stmt* endStmtOfCompoundStmt(Stmt *funcBody) ;
 
 
     static bool isReturnStmtClass(Stmt *stmt );
