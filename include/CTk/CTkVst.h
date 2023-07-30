@@ -256,7 +256,7 @@ public:
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     virtual bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     //TODO: c++析构函数遍历
-//    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
+    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
 
 
     /** 遍历  FunctionDecl 或 CXXMethodDecl

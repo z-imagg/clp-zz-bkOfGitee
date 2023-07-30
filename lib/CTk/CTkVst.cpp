@@ -851,6 +851,12 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
         "TraverseFunctionDecl:void函数尾非return"
         );
 }
+
+
+bool CTkVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
+  return false;
+}
+
 bool CTkVst::_Traverse_Func(
 //  std::function<FuncDesc( )> funcDescGetter,
   QualType funcReturnType,
