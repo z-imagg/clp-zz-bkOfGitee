@@ -167,6 +167,10 @@ FunctionDecl *Util::getContainingFunction(CompoundStmt *stmt, ASTContext &contex
 
 Stmt* Util::endStmtOfFunc(FunctionDecl *funcDecl) {
   Stmt *funcBody = funcDecl->getBody();
+  return Util::endStmtOfCompoundStmt(funcBody);
+}
+
+Stmt* Util::endStmtOfCompoundStmt(Stmt *funcBody){
   if (funcBody && isa<CompoundStmt>(*funcBody)) {
     CompoundStmt *compoundStmt = dyn_cast<CompoundStmt>(funcBody);
     if (compoundStmt &&  (!compoundStmt->body_empty() ) ) {

@@ -13,13 +13,33 @@
 using namespace llvm;
 using namespace clang;
 
-//TODO 处理 要忽略 t_clock_tick.cpp 和 t_clock_tick.h
 
 //-----------------------------------------------------------------------------
 // RecursiveASTVisitor
 //-----------------------------------------------------------------------------
 class CTkVst
         : public RecursiveASTVisitor<CTkVst> {
+public:
+    struct FuncDesc{
+    public:
+        const QualType &funcReturnType;
+        const bool isaCXXConstructorDecl;
+        Stmt *endStmtOfFuncBody;
+        const SourceLocation &funcBodyRBraceLoc;
+    public:
+        FuncDesc(const QualType &funcReturnType,
+        const bool isaCXXConstructorDecl,
+        Stmt *endStmtOfFuncBody,
+        const SourceLocation &funcBodyRBraceLoc)
+        :
+        funcReturnType(funcReturnType),
+        isaCXXConstructorDecl(isaCXXConstructorDecl),
+        endStmtOfFuncBody(endStmtOfFuncBody),
+        funcBodyRBraceLoc(funcBodyRBraceLoc)
+        {
+
+        }
+    };
 public:
     /**
      * 栈变量 或 堆对象 的 生命步骤（生命阶段）
@@ -54,7 +74,7 @@ public:
      * @param functionDecl
      * @param whoInserted
      */
-    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FunctionDecl *functionDecl , const char* whoInserted);
+    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FuncDesc& funcDesc , const char* whoInserted);
 
     /**遍历语句
      *
@@ -271,7 +291,7 @@ public:
      */
     bool _Traverse_Func(
   const SourceRange &funcSourceRange,
-  FunctionDecl *functionDecl,
+  FuncDesc& funcDesc,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,

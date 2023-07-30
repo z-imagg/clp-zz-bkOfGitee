@@ -83,6 +83,7 @@ public:
     static bool isLastCompoundStmt(CompoundStmt *stmt, ASTContext &context);
     static FunctionDecl *getContainingFunction(CompoundStmt *stmt, ASTContext &context);
     static  Stmt* endStmtOfFunc(FunctionDecl *funcDecl) ;
+    static  Stmt* endStmtOfCompoundStmt(Stmt *funcBody) ;
 
 
     static bool isReturnStmtClass(Stmt *stmt );
