@@ -322,8 +322,8 @@ public:
     std::set<int64_t> freeInsertedNodeIDLs;
 
 
-    std::unordered_set<LocId,LocId> funcReturnInsertedNodeIDLs;
-    std::unordered_set<LocId,LocId> funcEnterNodeSet;
+    std::unordered_set<LocId,LocId> funcReturnLocIdSet;
+    std::unordered_set<LocId,LocId> funcEnterLocIdSet;
 
 
 

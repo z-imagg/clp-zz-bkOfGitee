@@ -108,7 +108,7 @@ bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, Source
   }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-  funcReturnInsertedNodeIDLs.insert(funcBodyRBraceLocId);
+  funcReturnLocIdSet.insert(funcBodyRBraceLocId);
   return insertResult;
 }
 
@@ -126,7 +126,7 @@ bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId, SourceLocation funcBodyLB
   bool insertResult=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-  funcEnterNodeSet.insert(funcLocId);
+  funcEnterLocIdSet.insert(funcLocId);
 
   return insertResult;
 }
@@ -870,30 +870,13 @@ bool CTkVst::_Traverse_Func(
 {
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
-
-  //函数体内语句个数.
-//  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(funcBodyStmt);
-
-//  if(hasBody && funcBodyStmt && (!funcIsConstexpr) &&
-//  stmtCntInFuncBody > 0 //函数体内至少有一条语句
-//  ) {
-
-//    FuncDesc funcDesc=funcDescGetter();
-
-    FileID mainFileId;
-    std::string filePath;
-    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
-
+  Util::emptyStrIfNullStr(whoInsertedFuncEnter);
+  Util::emptyStrIfNullStr(whoInsertedFuncReturn);
 
 
     //region 插入 函数进入语句
-//    SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-//    CompoundStmt* compoundStmt;
-//    if(Util::funcBodyIsCompoundThenGetLRBracLoc(funcBodyStmt, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc)){
-//      LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
-//      LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
-      if(Util::LocIdSetNotContains(funcEnterNodeSet, funcBodyLBraceLocId)){//若没有
-        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterNodeSet)), funcBodyLBraceLocId.to_string(), funcBodyStmt, true);
+      if(Util::LocIdSetNotContains(funcEnterLocIdSet, funcBodyLBraceLocId)){//若没有
+        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterLocIdSet)), funcBodyLBraceLocId.to_string(), compoundStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
         insertAfter_X__funcEnter(funcBodyLBraceLocId, funcBodyLBraceLoc, whoInsertedFuncEnter);
       }
@@ -901,54 +884,51 @@ bool CTkVst::_Traverse_Func(
     //endregion
 
     //region void函数、构造函数 结尾语句若不是return，则在函数尾 插入 函数释放语句
-    Util::emptyStrIfNullStr(whoInsertedFuncReturn);
     if(Util::isVoidFuncOrConstructorThenNoEndReturn(funcReturnType, isaCXXConstructorDecl,endStmtOfFuncBody)){
-//      LocId funcDeclLocId=LocId::buildFor(filePath,funcBodyLBraceLoc,SM);
       insertBefore_X__funcReturn(funcBodyRBraceLocId,funcBodyRBraceLoc,whoInsertedFuncReturn);
     }
     //endregion
 //  }
 
-  bool _isConstexpr = funcIsConstexpr;
 ///////////////////// 自定义处理 完毕
 
 ////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxMethodDecl|functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-  Stmt *body = funcBodyStmt;
-  if(!_isConstexpr){
-    //若此函数 有 constexpr 修饰，则拒绝 粘接直接子节点到递归链条 ，这样该函数体 无法   经过 TraverseStmt(函数体) ---...--->TraverseCompoundStmt(函数体) 转交， 即   不可能 有  TraverseCompoundStmt(该函数体) ， 即  该该函数体中的每条子语句前都 不会 有机会 被  插入 时钟调用语句.
-    //    由此 变相实现了  constexpr_func_ls标记, 因此 constexpr_func_ls标记可以删除了.
-    if(body){
-      TraverseStmt(body);
+    // 粘接直接子节点到递归链条
+    if(compoundStmt){
+      TraverseStmt(compoundStmt);
     }
-  }
 
-  return true;
+  return false;
 
 }
 
 
 
 bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
-  //TraverseReturnStmt: 跳过非MainFile
+  //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
 
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+
 /////////////////////////对当前节点returnStmt做 自定义处理
 
-  int64_t returnStmtID = returnStmt->getID(*Ctx);
+//  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &returnBeginLoc = returnStmt->getBeginLoc();
-  if(this->funcReturnInsertedNodeIDLs.count(returnStmtID) > 0){
-    //若 已经插入 释放栈当前已分配变量 语句，则不必插入，直接返回即可。
-    //依据已插入语句的节点ID们可防重： 即使此次是重复的遍历， 但不会重复插入
+  LocId returnBeginLocId=LocId::buildFor(filePath,returnBeginLoc,SM);
+  if(this->funcReturnLocIdSet.count(returnBeginLocId) > 0){
+    //若 已插入  释放栈变量，则不必插入,防止重复。
     return false;
   }
 
-  //只有return语句直接处于块内时，才处理，否则插入会导致语法错误或语义不同,
-  //   比如'if(...) return;' 不应该在return前插入,否则语义不同。
   if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
-    insertBefore_X__funcReturn(returnStmtID,returnBeginLoc,"TraverseReturnStmt:函数释放");
+    insertBefore_X__funcReturn(returnBeginLocId,returnBeginLoc,"TraverseReturnStmt:函数释放");
   }
 
 ///////////////////// 自定义处理 完毕
