@@ -53,7 +53,6 @@ thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: curr
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
 
-thread_local int topFuncSVarCnt=0;//本线程 栈顶函数 当前 栈变量净数目
 
 ///////工具
 bool I__fileExists(const std::string& filePath) {
@@ -159,6 +158,8 @@ public:
 };
 
 ///////线程级滴答缓存
+
+const std::string X__true("true");
 #define TickCacheSize 500
 #define CacheIdxStart 0
 class TickCache {
@@ -260,6 +261,13 @@ private:
       return;
     }
 public:
+    //如果有设置环境变量tick_save,则保存当前滴答
+    void saveWrap(Tick & tick){
+      const char* tick_save=std::getenv("tick_save");
+      if(tick_save && X__true==tick_save){
+        this->save(tick);
+      }
+    }
     void save(Tick & tick){
       if(!inited){
         my_init();
@@ -281,7 +289,6 @@ thread_local TickCache tickCache;
 
 const std::string TickCache::tick_data_home("/tick_data_home");
 
-const std::string X__true("true");
 
 
 /**
@@ -291,7 +298,7 @@ const std::string X__true("true");
  * @param _hVarAllocCnt   此次滴答期间， 堆对象分配数目
  * @param _hVarFreeCnt   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
+void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt,int& topFuncSVarCnt){
 
   //时钟滴答一下
   if(plus1Tick){
@@ -321,27 +328,23 @@ void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _h
   hVarCnt= hVarAllocCnt - hVarFreeCnt;
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  const char* tick_save=std::getenv("tick_save");
-  if(tick_save && X__true==tick_save){
-    Tick tick(t,_sVarAllocCnt, _sVarFreeCnt, sVarCnt, _hVarAllocCnt,_hVarFreeCnt,hVarCnt);
-    tickCache.save(tick);
-  }
+  Tick tick(t,_sVarAllocCnt, _sVarFreeCnt, sVarCnt, _hVarAllocCnt,_hVarFreeCnt,hVarCnt);
+  tickCache.saveWrap(tick);
 
 
   return;
 }
-void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
-  I__t_clock_tick(true,_sVarAllocCnt, _sVarFreeCnt, _hVarAllocCnt, _hVarFreeCnt);
+void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt,int& topFuncSVarCnt){
+  I__t_clock_tick(true,_sVarAllocCnt, _sVarFreeCnt, _hVarAllocCnt, _hVarFreeCnt,topFuncSVarCnt);
 }
 
 void X__funcEnter( ){
-  if(topFuncSVarCnt!=0){
-//    printf("X__funcEnter:错误,topFuncSVarCnt(%d)应该为0,问题发生在上一个返回的函数,请确认当前函数中调用的全部函数中哪个return前没插入X__funcReturn语句\n",topFuncSVarCnt);
-    topFuncSVarCnt=0;
-  }
 }
-void X__funcReturn( ){
-  //释放本函数已经分配的全部栈变量，但不增加滴答。因为时刻贡献已经由X__t_clock_tick完成了。
-  I__t_clock_tick(false,0,topFuncSVarCnt,0,0);
+void X__funcReturn(int& topFuncSVarCnt ){
+  sVarFreeCnt+=topFuncSVarCnt;
+  sVarCnt-= topFuncSVarCnt;
+  Tick tick(t,sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+  tickCache.saveWrap(tick);
+
   topFuncSVarCnt=0;
 }

@@ -135,7 +135,7 @@ bool CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
-          "X__funcEnter(/*函入*/);//{}\n",
+          "int topFuncSVarCnt=0; X__funcEnter(/*函入*/);//{}\n",
           //如果有提供，插入者信息，则放在注释中.
           whoInserted
   );
