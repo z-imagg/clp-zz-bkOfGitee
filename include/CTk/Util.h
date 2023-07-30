@@ -18,8 +18,8 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
-#include "FuncDesc.h"
-#include "LocId.h"
+#include "CTk/FuncDesc.h"
+#include "CTk/LocId.h"
 
 
 #include <sstream>
