@@ -720,7 +720,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
           cxxMethodDecl->hasBody(),
           funcDeclID,
           body,
-          "TraverseCXXConstructorDecl",
+          "TraverseCXXMethodDecl",
           "TraverseCXXMethodDecl:cpp函数尾非return");
 }
 
@@ -802,7 +802,7 @@ bool CTkVst::_Traverse_Func(
 
     //region 插入 函数进入语句
     SourceLocation funcBodyLBraceLoc;
-    if(Util::funcBodyLBracLoc(funcBodyStmt,funcBodyLBraceLoc)){
+    if(Util::funcBodyIsCompoundThenGetLBracLoc(funcBodyStmt, funcBodyLBraceLoc)){
       insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
     }
     //endregion

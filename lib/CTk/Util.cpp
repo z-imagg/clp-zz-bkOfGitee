@@ -48,9 +48,9 @@ bool Util::isVoidFuncOrConstructorThenNoEndReturn(FuncDesc funcDesc ){
  *
  * @param funcBody
  * @param funcBodyLBraceLoc
- * @return 是否组合语句,即是否CompoundStmt
+ * @return 若是组合语句(CompoundStmt) ，则取左花括号位置
  */
-bool Util::funcBodyLBracLoc(Stmt *funcBody,SourceLocation& funcBodyLBraceLoc){
+bool Util::funcBodyIsCompoundThenGetLBracLoc(Stmt *funcBody, SourceLocation& funcBodyLBraceLoc){
   if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
     funcBodyLBraceLoc = compoundStmt->getLBracLoc();
     return true;
