@@ -639,7 +639,7 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
           funcDescGetter,
           _isConstexpr,
           functionDecl->hasBody(),
-          funcDeclID,
+//          funcDeclID,
           body,
           "TraverseFunctionDecl",
           "TraverseFunctionDecl:void函数尾非return");
@@ -680,7 +680,7 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
           fn,
           _isConstexpr,
           cxxConstructorDecl->hasBody(),
-          funcDeclID,
+//          funcDeclID,
           body,
           "TraverseCXXConstructorDecl",
           "TraverseCXXConstructorDecl:构造函数尾非return");
@@ -719,7 +719,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
           funcDescGetter,
           _isConstexpr,
           cxxMethodDecl->hasBody(),
-          funcDeclFileOffset,
+//          funcDeclFileOffset,
           body,
           "TraverseCXXMethodDecl",
           "TraverseCXXMethodDecl:cpp函数尾非return");
@@ -774,7 +774,7 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
           funcDescGetter,
           _isConstexpr,
           true,
-          funcDeclID,
+//          funcDeclID,
           body,
           "TraverseFunctionDecl",
           "TraverseFunctionDecl:void函数尾非return");
@@ -784,7 +784,7 @@ bool CTkVst::_Traverse_Func(
   std::function<FuncDesc( )> funcDescGetter,
   bool funcIsConstexpr,
   bool hasBody,
-  int64_t funcDeclID,
+//  int64_t funcDeclID,
   Stmt *funcBodyStmt,
   const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn)
@@ -801,11 +801,12 @@ bool CTkVst::_Traverse_Func(
   stmtCntInFuncBody > 0 //函数体内至少有一条语句
   ) {
 
+    int64_t funcDeclID = funcBodyStmt->getID(*Ctx);
     //region 插入 函数进入语句
     SourceLocation funcBodyLBraceLoc;
     if(Util::funcBodyIsCompoundThenGetLBracLoc(funcBodyStmt, funcBodyLBraceLoc)){
       if(this->funcEnterInsertedNodeIDLs.count(funcDeclID) <= 0){
-        Util::printStmt(*Ctx,CI,"差问题",std::to_string(funcDeclID),funcBodyStmt, true);
+        Util::printStmt(*Ctx,CI,fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterInsertedNodeIDLs)),std::to_string(funcDeclID),funcBodyStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
         insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
       }

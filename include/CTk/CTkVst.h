@@ -269,7 +269,7 @@ public:
   std::function<FuncDesc( )> funcDescGetter,
   bool funcIsConstexpr,
   bool hasBody,
-  int64_t funcDeclID,
+//  int64_t funcDeclID,
   Stmt *funcBodyStmt,
   const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn);
