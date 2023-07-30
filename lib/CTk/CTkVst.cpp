@@ -56,8 +56,7 @@ void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(std::func
   FuncDesc funcDesc=funcDescGetter();
 
   //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-const QualType &funcReturnType = funcDesc.funcReturnType;
-  bool funcReturnVoid = funcReturnType->isVoidType();
+  bool funcReturnVoid = funcDesc.funcReturnType->isVoidType();
   if(funcReturnVoid || funcDesc.isaCXXConstructorDecl){
   //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
    Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;

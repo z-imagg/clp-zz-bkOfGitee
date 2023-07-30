@@ -22,15 +22,15 @@ class CTkVst
 public:
     struct FuncDesc{
     public:
-        const QualType &funcReturnType;
-        const bool isaCXXConstructorDecl;
+        QualType funcReturnType;
+        bool isaCXXConstructorDecl;
         Stmt *endStmtOfFuncBody;
-        const SourceLocation &funcBodyRBraceLoc;
+        SourceLocation funcBodyRBraceLoc;
     public:
-        FuncDesc(const QualType &funcReturnType,
-        const bool isaCXXConstructorDecl,
+        FuncDesc(QualType funcReturnType,
+        bool isaCXXConstructorDecl,
         Stmt *endStmtOfFuncBody,
-        const SourceLocation &funcBodyRBraceLoc)
+        SourceLocation funcBodyRBraceLoc)
         :
         funcReturnType(funcReturnType),
         isaCXXConstructorDecl(isaCXXConstructorDecl),
