@@ -17,7 +17,19 @@
 using namespace llvm;
 using namespace clang;
 
-
+/**
+ *
+ * @param funcBody
+ * @param funcBodyLBraceLoc
+ * @return 是否组合语句,即是否CompoundStmt
+ */
+bool Util::funcBodyLBracLoc(Stmt *funcBody,SourceLocation& funcBodyLBraceLoc){
+  if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+    funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    return true;
+  }
+  return false;
+}
 bool Util::funcIsDefault(FunctionDecl *funcDecl){
   bool isDefault=funcDecl->isExplicitlyDefaulted() || funcDecl->isDefaulted();
   return isDefault;

@@ -30,6 +30,13 @@ using namespace clang;
 class Util {
 public:
     /**
+     *
+     * @param funcBody
+     * @param funcBodyLBraceLoc
+     * @return 是否组合语句,即是否CompoundStmt
+     */
+    static bool funcBodyLBracLoc(Stmt *funcBody,SourceLocation& funcBodyLBraceLoc);
+    /**
      * default函数体举例:
      * 'void func1( ) = default;'
      * 'void func2( ) {}'
