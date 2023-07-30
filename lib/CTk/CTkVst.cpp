@@ -60,7 +60,7 @@ bool CTkVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocat
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_X__tick;
   cStr_X__tick=fmt::format(
-      "{}(/*栈生*/{}, /*栈死*/{}, /*堆生*/{}, /*堆死*/{},topFuncSVarCnt);//{}\n",
+      "{}(/*栈生*/{}, /*栈死*/{}, /*堆生*/{}, /*堆死*/{},&topFuncSVarCnt);//{}\n",
       CTkVst::funcName_TCTk,
       stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,
       //如果有提供，插入者信息，则放在注释中.
@@ -93,7 +93,7 @@ bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, Source
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_inserted=fmt::format(
-          "X__funcReturn(topFuncSVarCnt/*函出*/);//{}\n",
+          "X__funcReturn(&topFuncSVarCnt/*函出*/);//{}\n",
           //如果有提供，插入者信息，则放在注释中.
           whoInserted
   );

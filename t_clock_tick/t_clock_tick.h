@@ -22,9 +22,9 @@
  */
 #ifndef __cplusplus
 //如果当前是.c文件包含了此.h,  则强制使用#函数名到c++名字
-#define X__t_clock_tick  _Z15X__t_clock_tickiiiiRi
+#define X__t_clock_tick  _Z15X__t_clock_tickiiiiPi
 #define X__funcEnter  _Z12X__funcEnterv
-#define X__funcReturn _Z13X__funcReturnRi
+#define X__funcReturn _Z13X__funcReturnPi
 #endif
 
 void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr);
