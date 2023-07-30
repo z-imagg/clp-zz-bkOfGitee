@@ -45,14 +45,17 @@ int I__curThreadId(){
 //endregion
 
 //region 本线程当前变量数目累积值
-
-thread_local int t;//时钟
-thread_local int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
-thread_local int sVarFreeCnt=0;//当前栈变量释放数目 sVarFreeCnt: currentStackVarFreeCnt
-thread_local int sVarCnt=0;//当前栈变量数目（冗余） sVarCnt: currentStackVarCnt
-thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
-thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
-thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+//tg_:thread global:线程级全局变量.
+//AC:Allocate Count:分配的变量数目
+//FC:Free Count:释放的变量数目
+//C:Count:净变量数目， 即 分配-释放
+thread_local int tg_t;//时钟
+thread_local int tg_sVarAC=0;//当前栈变量分配数目 tg_sVarAC: currentStackVarAllocCnt
+thread_local int tg_sVarFC=0;//当前栈变量释放数目 tg_sVarFC: currentStackVarFreeCnt
+thread_local int tg_sVarC=0;//当前栈变量数目（冗余） tg_sVarC: currentStackVarCnt
+thread_local int tg_hVarAC=0;//当前堆对象分配数目 tg_hVarAC: currentHeapObjAllocCnt, var即obj
+thread_local int tg_hVarFC=0;//当前堆对象释放数目 tg_hVarFC: currentHeapObjcFreeCnt, var即obj
+thread_local int tg_hVarC=0;//当前堆对象数目（冗余）tg_hVarC: currentHeapObjCnt, var即obj
 //endregion
 
 //region 工具
@@ -122,40 +125,43 @@ long I__getNowMilliseconds() {
 }
 //endregion
 
-//region 当前滴答
+//region 单滴答
 class Tick{
 public:
+//AC:Allocate Count:分配的变量数目
+//FC:Free Count:释放的变量数目
+//C:Count:净变量数目， 即 分配-释放
     int t;//时钟
-    int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
-    int sVarFreeCnt=0;//当前栈变量释放数目 sVarFreeCnt: currentStackVarFreeCnt
-    int sVarCnt=0;//当前栈变量数目（冗余） sVarCnt: currentStackVarCnt
-    int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
-    int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
-    int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+    int sVarAC=0;//当前栈变量分配数目 tg_sVarAC: currentStackVarAllocCnt
+    int sVarFC=0;//当前栈变量释放数目 tg_sVarFC: currentStackVarFreeCnt
+    int sVarC=0;//当前栈变量数目（冗余） tg_sVarC: currentStackVarCnt
+    int hVarAC=0;//当前堆对象分配数目 tg_hVarAC: currentHeapObjAllocCnt, var即obj
+    int hVarFC=0;//当前堆对象释放数目 tg_hVarFC: currentHeapObjcFreeCnt, var即obj
+    int hVarC=0;//当前堆对象数目（冗余）tg_hVarC: currentHeapObjCnt, var即obj
 
-    //d:delta
-    int dSVarAllocCnt;
-    int dSVarFreeCnt;
-    int dHVarAllocCnt;
-    int dHVarFreeCnt;
+    //d:delta:变化:单次滴答内的变量数目
+    int dSVarAC;//单滴答内栈变量分配数目
+    int dSVarFC;//单滴答内栈变量释放数目
+    int dHVarAC;//单滴答内堆变量分配数目
+    int dHVarFC;//单滴答内堆变量分配数目
 public:
     Tick(int _t,
  int dSVarAllocCnt, int dSVarFreeCnt,            int dHVarAllocCnt, int dHVarFreeCnt,
  int sVarAllocCnt, int sVarFreeCnt, int sVarCnt, int hVarAllocCnt, int hVarFreeCnt, int hVarCnt
  )
     :
-    t(_t),
-    dSVarAllocCnt(dSVarAllocCnt),
-    dSVarFreeCnt(dSVarFreeCnt),
-    dHVarAllocCnt(dHVarAllocCnt),
-    dHVarFreeCnt(dHVarFreeCnt),
+            t(_t),
+            dSVarAC(dSVarAllocCnt),
+            dSVarFC(dSVarFreeCnt),
+            dHVarAC(dHVarAllocCnt),
+            dHVarFC(dHVarFreeCnt),
 
-    sVarAllocCnt(sVarAllocCnt),
-    sVarFreeCnt(sVarFreeCnt),
-    sVarCnt(sVarCnt),
-    hVarAllocCnt(hVarAllocCnt),
-    hVarFreeCnt(hVarFreeCnt),
-    hVarCnt(hVarCnt)
+            sVarAC(sVarAllocCnt),
+            sVarFC(sVarFreeCnt),
+            sVarC(sVarCnt),
+            hVarAC(hVarAllocCnt),
+            hVarFC(hVarFreeCnt),
+            hVarC(hVarCnt)
     {
     }
 
@@ -165,10 +171,10 @@ public:
 
     void toString(std::string & line){
       char buf[128];
-      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
               t,
-              dSVarAllocCnt,dSVarFreeCnt,dHVarAllocCnt,dHVarFreeCnt,
-              sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt
+              dSVarAC, dSVarFC, dHVarAC, dHVarFC,
+              sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC
               );
       line.append(buf);
       return;
@@ -320,38 +326,38 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
 
   //时钟滴答一下
   if(plus1Tick){
-    t++;
+    tg_t++;
   }
 
   //更新 当前栈变量分配数目
-  sVarAllocCnt+=dSVarAllocCnt;
+  tg_sVarAC+=dSVarAllocCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
   //更新 当前栈变量释放数目
-  sVarFreeCnt+=dSVarFreeCnt;
+  tg_sVarFC+=dSVarFreeCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
   int dVarC=dSVarAllocCnt - dSVarFreeCnt;
 
   //更新 当前栈变量数目
-  sVarCnt+= dVarC;  //和原来的  sVarCnt= sVarAllocCnt - sVarFreeCnt;  意思一样，但更直接
+  tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
 
   topFuncSVarCnt+=dVarC;
 
   //更新 当前堆对象分配数目
-  hVarAllocCnt+=dHVarAllocCnt;
+  tg_hVarAC+=dHVarAllocCnt;
 
   //更新 当前堆对象释放数目
-  hVarFreeCnt+=dHVarFreeCnt;
+  tg_hVarFC+=dHVarFreeCnt;
 
   int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
   //更新 当前堆对象数目
-  hVarCnt+= dHVarC;//和原来的  hVarCnt= hVarAllocCnt - hVarFreeCnt;  意思一样，但更直接
+  tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(t,
-    dSVarAllocCnt, dSVarFreeCnt,        dHVarAllocCnt, dHVarFreeCnt,
-    sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt, hVarFreeCnt, hVarCnt
+  Tick tick(tg_t,
+            dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,
+            tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
   tickCache.saveWrap(tick);
 
@@ -365,11 +371,11 @@ void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int
 void X__funcEnter( ){
 }
 void X__funcReturn(int& topFuncSVarCnt ){
-  sVarFreeCnt+=topFuncSVarCnt;
-  sVarCnt-= topFuncSVarCnt;
-  Tick tick(t,
-            0,topFuncSVarCnt,0,0,
-            sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+  tg_sVarFC+=topFuncSVarCnt;
+  tg_sVarC-= topFuncSVarCnt;
+  Tick tick(tg_t,
+            0, topFuncSVarCnt, 0, 0,
+            tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
 
   topFuncSVarCnt=0;
