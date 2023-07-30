@@ -794,7 +794,6 @@ bool CTkVst::_Traverse_Func(
   const SourceRange &sourceRange = funcSourceRange;
 
 
-  //region 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
   if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
 
     //region 插入 函数进入语句
@@ -813,7 +812,6 @@ bool CTkVst::_Traverse_Func(
     }
     //endregion
   }
-  //endregion
 
   bool _isConstexpr = funcIsConstexpr;
 ///////////////////// 自定义处理 完毕
