@@ -17,6 +17,16 @@
 
 using namespace llvm;
 using namespace clang;
+
+
+int Util::childrenCntOfStmt(Stmt* stmt){
+  if(!stmt){
+    return 0;
+  }
+  int cnt=std::distance(stmt->child_begin(),stmt->child_end());
+  return cnt;
+}
+
 /** void函数、构造函数 最后一条语句是return吗？
  * @param funcDesc
  * @return

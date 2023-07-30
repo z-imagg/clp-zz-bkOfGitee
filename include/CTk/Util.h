@@ -30,6 +30,7 @@ using namespace clang;
 
 class Util {
 public:
+    static int childrenCntOfStmt(Stmt* stmt);
     /** void函数、构造函数 最后一条语句是return吗？
      * @param funcDesc
      * @return

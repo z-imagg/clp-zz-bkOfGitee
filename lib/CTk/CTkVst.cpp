@@ -793,8 +793,12 @@ bool CTkVst::_Traverse_Func(
 
   const SourceRange &sourceRange = funcSourceRange;
 
+  //函数体内语句个数.
+  int stmtCntInFuncBody=Util::childrenCntOfStmt(funcBodyStmt);
 
-  if(hasBody && funcBodyStmt && (!funcIsConstexpr) ) {
+  if(hasBody && funcBodyStmt && (!funcIsConstexpr) &&
+  stmtCntInFuncBody > 0 //函数体内至少有一条语句
+  ) {
 
     //region 插入 函数进入语句
     SourceLocation funcBodyLBraceLoc;
