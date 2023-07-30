@@ -35,7 +35,7 @@ public:
      * @param funcDesc
      * @return
      */
-    static bool hasEndReturnInVoidFuncOrConstructor(FuncDesc funcDesc );
+    static bool isVoidFuncOrConstructorThenNoEndReturn(FuncDesc funcDesc );
     /**
      *
      * @param funcBody

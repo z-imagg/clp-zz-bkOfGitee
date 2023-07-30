@@ -810,7 +810,7 @@ bool CTkVst::_Traverse_Func(
     //region void函数、构造函数 结尾语句若不是return，则在函数尾 插入 函数释放语句
     Util::emptyStrIfNullStr(whoInsertedFuncReturn);
     FuncDesc funcDesc=funcDescGetter();
-    if(!Util::hasEndReturnInVoidFuncOrConstructor(funcDesc)){
+    if(Util::isVoidFuncOrConstructorThenNoEndReturn(funcDesc)){
       int64_t endStmtID = funcDesc.endStmtOfFuncBody->getID(*Ctx);
       insertBefore_X__funcReturn(endStmtID,funcDesc.funcBodyRBraceLoc,whoInsertedFuncReturn);
     }
