@@ -6,6 +6,9 @@
 
 using namespace std;
 
+void empty_func(int z, float y){
+
+}
 
 void GetCurrentThreadIdAsString(std::string& curThreadIdStr){
   // 获取当前线程的ID
