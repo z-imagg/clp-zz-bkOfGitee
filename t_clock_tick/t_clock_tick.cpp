@@ -12,6 +12,9 @@
  * X__:表示被外部调用的函数
  */
 
+
+//region 自定义线程id实现
+//I__this_thread__get_id:只用作比对，没有业务意义
 std::string I__this_thread__get_id(){
 
   std::thread::id curThreadId = std::this_thread::get_id();
@@ -20,8 +23,6 @@ std::string I__this_thread__get_id(){
   std::string curThreadIdStr = outStrStream.str();
   return curThreadIdStr;
 }
-
-//////自定义线程id实现
 // static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
 #define FirstThreadId 0
 static std::atomic<int> globalThreadIdCounter(FirstThreadId);
@@ -41,9 +42,9 @@ int I__curThreadId(){
   }
   return currentThreadId;
 }
+//endregion
 
-
-///////本线程当前变量数目累积值
+//region 本线程当前变量数目累积值
 
 thread_local int t;//时钟
 thread_local int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
@@ -52,9 +53,9 @@ thread_local int sVarCnt=0;//当前栈变量数目（冗余） sVarCnt: currentS
 thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+//endregion
 
-
-///////工具
+//region 工具
 bool I__fileExists(const std::string& filePath) {
   std::ifstream file(filePath);
   return file.good();
@@ -119,8 +120,9 @@ long I__getNowMilliseconds() {
   auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
   return milliseconds;
 }
+//endregion
 
-///////当前滴答
+//region 当前滴答
 class Tick{
 public:
     int t;//时钟
@@ -156,9 +158,9 @@ public:
       return;
     }
 };
+//endregion
 
-///////线程级滴答缓存
-
+//region 线程级滴答缓存
 const std::string X__true("true");
 #define TickCacheSize 500
 #define CacheIdxStart 0
@@ -288,7 +290,7 @@ public:
 thread_local TickCache tickCache;
 
 const std::string TickCache::tick_data_home("/tick_data_home");
-
+//endregion
 
 
 /**
