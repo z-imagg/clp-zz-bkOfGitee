@@ -10,6 +10,14 @@ void empty_func(int z, float y){
 
 }
 
+class User{
+public:
+    ~User(){
+      int zero=9;
+      float x=3;
+    }
+};
+
 void GetCurrentThreadIdAsString(std::string& curThreadIdStr){
   // 获取当前线程的ID
   std::thread::id curThreadId = std::this_thread::get_id();
