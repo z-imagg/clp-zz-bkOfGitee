@@ -18,24 +18,32 @@
 using namespace llvm;
 using namespace clang;
 
-
-int Util::childrenCntOfStmt(Stmt* stmt){
+bool Util::LocIdSetNotContains(std::unordered_set<LocId,LocId>& _set, LocId locId){
+  bool contains=(_set.count(locId) <= 0);
+  return contains;
+}
+void Util::getMainFileIDMainFilePath(SourceManager& SM,FileID& mainFileId,std::string& mainFilePath){
+  mainFileId = SM.getMainFileID();
+  mainFilePath=SM.getFileEntryForID(mainFileId)->getName().str();
+  return  ;
+}
+int Util::childrenCntOfCompoundStmt(CompoundStmt* stmt){
   if(!stmt){
     return 0;
   }
-  int cnt=std::distance(stmt->child_begin(),stmt->child_end());
-  return cnt;
+//  int cnt=std::distance(stmt->child_begin(),stmt->child_end());
+  return stmt->size();
 }
 
 /** void函数、构造函数 最后一条语句是return吗？
  * @param funcDesc
  * @return
  */
-bool Util::isVoidFuncOrConstructorThenNoEndReturn(FuncDesc funcDesc ){
+bool Util::isVoidFuncOrConstructorThenNoEndReturn(QualType funcReturnType, bool isaCXXConstructorDecl,Stmt *endStmtOfFuncBody){
   //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  if(funcDesc.funcReturnType->isVoidType() || funcDesc.isaCXXConstructorDecl){
+  if(funcReturnType->isVoidType() || isaCXXConstructorDecl){
     //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
-    Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;
+//    Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;
     bool endStmtIsReturn=Util::isReturnStmtClass(endStmtOfFuncBody);
     if(!endStmtIsReturn){
       return true;
@@ -44,15 +52,24 @@ bool Util::isVoidFuncOrConstructorThenNoEndReturn(FuncDesc funcDesc ){
   return false;
 }
 
+bool Util::GetCompoundLRBracLoc(CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc){
+  if( compoundStmt ){
+    funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    funcBodyRBraceLoc = compoundStmt->getRBracLoc();
+    return true;
+  }
+  return false;
+}
 /**
  *
  * @param funcBody
  * @param funcBodyLBraceLoc
  * @return 若是组合语句(CompoundStmt) ，则取左花括号位置
  */
-bool Util::funcBodyIsCompoundThenGetLBracLoc(Stmt *funcBody, SourceLocation& funcBodyLBraceLoc){
-  if(CompoundStmt* compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
+bool Util::funcBodyIsCompoundThenGetLRBracLoc(Stmt *funcBody, CompoundStmt*& compoundStmt, SourceLocation& funcBodyLBraceLoc, SourceLocation& funcBodyRBraceLoc){
+  if( compoundStmt = dyn_cast<CompoundStmt>(funcBody)){
     funcBodyLBraceLoc = compoundStmt->getLBracLoc();
+    funcBodyRBraceLoc = compoundStmt->getRBracLoc();
     return true;
   }
   return false;

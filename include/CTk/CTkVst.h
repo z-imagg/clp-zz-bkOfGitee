@@ -5,11 +5,13 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <set>
 #include <clang/Frontend/CompilerInstance.h>
+#include <unordered_set>
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
 #include "FuncDesc.h"
+#include "LocId.h"
 
 using namespace llvm;
 using namespace clang;
@@ -45,10 +47,10 @@ public:
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
 
-    bool insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
-    bool insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted);
-    bool insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
-    bool insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
+    bool insertAfter_X__funcEnter(LocId funcLocId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
+    bool insertBefore_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funcBodyRBraceLoc , const char* whoInserted);
+    bool insertAfter_X__funcReturn( LocId funcBodyRBraceLocId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
+    bool insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, SourceLocation insertLoc , const char* whoInserted);
     bool insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
 
     /**遍历语句
@@ -249,9 +251,9 @@ public:
     //这里应该有 所有能带块的语句: if块、while块、else块、for块、switch块、try块、catch块...
 
     /////////constexpr
-    virtual bool TraverseFunctionDecl(FunctionDecl* functionDecl);
-    virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl);
-    virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl);
+    virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
+    virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);
+    virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     virtual bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     //TODO: c++析构函数遍历
 //    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
@@ -265,14 +267,16 @@ public:
      * @return
      */
     bool _Traverse_Func(
-  const SourceRange &funcSourceRange,
-  std::function<FuncDesc( )> funcDescGetter,
-  bool funcIsConstexpr,
-  bool hasBody,
-//  int64_t funcDeclID,
-  Stmt *funcBodyStmt,
-  const char *whoInsertedFuncEnter,
-  const char *whoInsertedFuncReturn);
+    QualType funcReturnType,
+    bool isaCXXConstructorDecl,
+    Stmt *endStmtOfFuncBody,
+    SourceLocation funcBodyLBraceLoc,
+    SourceLocation funcBodyRBraceLoc,
+    LocId funcBodyLBraceLocId,
+    LocId funcBodyRBraceLocId,
+    CompoundStmt* compoundStmt,
+    const char *whoInsertedFuncEnter,
+    const char *whoInsertedFuncReturn);
 
 
     /** 函数入口  前 插入 检查语句: 检查 上一个返回的 是否 释放栈中其已分配变量 ，如果没 则要打印出错误消息，以方便排查问题。
@@ -318,8 +322,8 @@ public:
     std::set<int64_t> freeInsertedNodeIDLs;
 
 
-    std::set<int64_t> funcReturnInsertedNodeIDLs;
-    std::set<int64_t> funcEnterInsertedNodeIDLs;
+    std::unordered_set<LocId,LocId> funcReturnInsertedNodeIDLs;
+    std::unordered_set<LocId,LocId> funcEnterNodeSet;
 
 
 

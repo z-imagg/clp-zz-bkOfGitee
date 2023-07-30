@@ -83,13 +83,13 @@ bool CTkVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocat
 }
 
 
-bool CTkVst::insertBefore_X__funcReturn( int64_t returnStmtId, SourceLocation stmtBeginLoc , const char* whoInserted){
-  return CTkVst::insert_X__funcReturn(true,returnStmtId,stmtBeginLoc,whoInserted);
+bool CTkVst::insertBefore_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funcBodyRBraceLoc , const char* whoInserted){
+  return CTkVst::insert_X__funcReturn(true, funcBodyRBraceLocId, funcBodyRBraceLoc, whoInserted);
 }
-bool CTkVst::insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
-  return CTkVst::insert_X__funcReturn(false,funcBodyEndStmtId,funEndStmtEndLoc,whoInserted);
+bool CTkVst::insertAfter_X__funcReturn( LocId funcBodyRBraceLocId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
+  return CTkVst::insert_X__funcReturn(false,funcBodyRBraceLocId,funEndStmtEndLoc,whoInserted);
 }
-bool CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted){
+bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, SourceLocation insertLoc , const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_inserted=fmt::format(
@@ -108,11 +108,11 @@ bool CTkVst::insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocatio
   }
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-  funcReturnInsertedNodeIDLs.insert(flagStmtId);
+  funcReturnInsertedNodeIDLs.insert(funcBodyRBraceLocId);
   return insertResult;
 }
 
-bool CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
@@ -126,7 +126,7 @@ bool CTkVst::insertAfter_X__funcEnter(int64_t funcDeclId, SourceLocation funcBod
   bool insertResult=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef);
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-  funcEnterInsertedNodeIDLs.insert(funcDeclId);
+  funcEnterNodeSet.insert(funcLocId);
 
   return insertResult;
 }
@@ -601,227 +601,313 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 
 ////////////////constexpr
 
-bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
-  //TraverseFunctionDecl: 跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,functionDecl->getLocation());
+bool CTkVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
+  //跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
-
-  int64_t funcDeclID = functionDecl->getID();
-  const SourceRange &sourceRange = functionDecl->getSourceRange();
-
-
-  //判断该方法是否有default修饰, 若有, 则不处理.
-  //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
-  if(Util::funcIsDefault(functionDecl)){
-    return true;
+  //跳过 default
+  if(Util::funcIsDefault(funcDecl)){
+    return false;
   }
-  Stmt* body = functionDecl->getBody();
+  //跳过 无函数体
+  bool hasBody=funcDecl->hasBody();
+  if(!hasBody){
+    return false;
+  }
+  //跳过 constexpr
+  bool _isConstexpr = funcDecl->isConstexpr();
+  if(_isConstexpr){
+    return false;
+  }
 
-  bool _isConstexpr = functionDecl->isConstexpr();
+  //获得 函数体、左右花括号
+  Stmt* body  = funcDecl->getBody();
+  CompoundStmt* compoundStmt;
+  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
+  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
-  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  //跳过 函数体内无语句
+  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  if(stmtCntInFuncBody<=0){
+    return false;
+  }
 
-  std::function<FuncDesc( )>   funcDescGetter=[functionDecl](){
-      const QualType funcReturnType = functionDecl->getReturnType();
-      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*functionDecl);
-      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
-      const SourceLocation funcBodyRBraceLoc = functionDecl->getBodyRBrace();
-      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+  //获取最后一条语句
+  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
 
-      return funcDesc;
-  };
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+  //按照左右花括号，构建位置id，防止重复插入
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
+
+  //获取返回类型
+  const QualType funcReturnType = funcDecl->getReturnType();
 
 
   return this->_Traverse_Func(
-          sourceRange,
-          funcDescGetter,
-          _isConstexpr,
-          functionDecl->hasBody(),
-//          funcDeclID,
-          body,
-          "TraverseFunctionDecl",
-          "TraverseFunctionDecl:void函数尾非return");
+      funcReturnType,
+      false,
+      endStmtOfFuncBody,
+      funcBodyLBraceLoc,
+      funcBodyRBraceLoc,
+      funcBodyLBraceLocId,funcBodyRBraceLocId,
+      compoundStmt,
+      "TraverseFunctionDecl",
+      "TraverseFunctionDecl:void函数尾非return"
+      );
 }
 
-bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
-  //CXXConstructorDecl: 跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxConstructorDecl->getLocation());
+bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
+  //跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, cxxCnstrDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
-
-  int64_t funcDeclID = cxxConstructorDecl->getID();
-  const SourceRange &sourceRange = cxxConstructorDecl->getSourceRange();
-
-  //判断该方法是否有default修饰, 若有, 则不处理.
-  //default修饰举例: 'RuleMatcher( ) = default;'
-  if(Util::cxxConstructorIsDefault(cxxConstructorDecl)){
+  //跳过 default
+  if(Util::cxxConstructorIsDefault(cxxCnstrDecl)){
     return true;
   }
+  //跳过 无函数体
+  bool hasBody=cxxCnstrDecl->hasBody();
+  if(!hasBody){
+    return false;
+  }
+  //跳过 constexpr
+  bool _isConstexpr = cxxCnstrDecl->isConstexpr();
+  if(_isConstexpr){
+    return false;
+  }
 
-  Stmt* body = cxxConstructorDecl->getBody();
+  //获得 函数体、左右花括号
+  Stmt* body  = cxxCnstrDecl->getBody();
+  CompoundStmt* compoundStmt;
+  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
+  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
-  bool _isConstexpr = cxxConstructorDecl->isConstexpr();
+  //跳过 函数体内无语句
+  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  if(stmtCntInFuncBody<=0){
+    return false;
+  }
 
-  std::function<FuncDesc( )>   fn=[cxxConstructorDecl](){
-      const QualType funcReturnType = cxxConstructorDecl->getReturnType();
-      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxConstructorDecl);
-      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxConstructorDecl);
-      const SourceLocation funcBodyRBraceLoc = cxxConstructorDecl->getBodyRBrace();
-      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
-      return funcDesc;
-  };
+  //获取最后一条语句
+  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+  //按照左右花括号，构建位置id，防止重复插入
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
+
+  //获取返回类型
+  const QualType funcReturnType = cxxCnstrDecl->getReturnType();
 
 
   return this->_Traverse_Func(
-          sourceRange,
-          fn,
-          _isConstexpr,
-          cxxConstructorDecl->hasBody(),
-//          funcDeclID,
-          body,
-          "TraverseCXXConstructorDecl",
-          "TraverseCXXConstructorDecl:构造函数尾非return");
+        funcReturnType,
+        true,
+        endStmtOfFuncBody,
+        funcBodyLBraceLoc,
+        funcBodyRBraceLoc,
+        funcBodyLBraceLocId,funcBodyRBraceLocId,
+        compoundStmt,
+        "TraverseCXXConstructorDecl",
+        "TraverseCXXConstructorDecl:构造函数尾非return"
+        );
 }
 
-bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
-  const SourceLocation cxxMethodDeclLoc = cxxMethodDecl->getLocation();
-  //TraverseCXXMethodDecl: 跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDeclLoc);
+bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
+  //跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
-
-  unsigned int funcDeclFileOffset = SM.getFileOffset(cxxMethodDeclLoc);
-  const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
-
-  //判断该方法是否有default修饰, 若有, 则不处理.
-  //default修饰举例: 'RuleMatcher &operator=(RuleMatcher &&Other) = default;'
-  if(Util::funcIsDefault(cxxMethodDecl)){
-    return true;
+  //跳过 default
+  if(Util::funcIsDefault(cxxMethDecl)){
+    return false;
   }
-  Stmt* body = cxxMethodDecl->getBody();
-  bool _isConstexpr = cxxMethodDecl->isConstexpr();
+  //跳过 无函数体
+  bool hasBody=cxxMethDecl->hasBody();
+  if(!hasBody){
+    return false;
+  }
+  //跳过 constexpr
+  bool _isConstexpr = cxxMethDecl->isConstexpr();
+  if(_isConstexpr){
+    return false;
+  }
 
-  std::function<FuncDesc( )>   funcDescGetter=[cxxMethodDecl](){
-      const QualType funcReturnType = cxxMethodDecl->getReturnType();
-      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxMethodDecl);
-      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxMethodDecl);
-      const SourceLocation funcBodyRBraceLoc = cxxMethodDecl->getBodyRBrace();
-      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
-      return funcDesc;
-  };
+  //获得 函数体、左右花括号
+  Stmt* body = cxxMethDecl->getBody();
+  CompoundStmt* compoundStmt;
+  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
+  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+
+  //跳过 函数体内无语句
+  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  if(stmtCntInFuncBody<=0){
+    return false;
+  }
+
+  //获取最后一条语句
+  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+  //按照左右花括号，构建位置id，防止重复插入
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
+
+  //获取返回类型
+  const QualType funcReturnType = cxxMethDecl->getReturnType();
 
   return this->_Traverse_Func(
-          sourceRange,
-          funcDescGetter,
-          _isConstexpr,
-          cxxMethodDecl->hasBody(),
-//          funcDeclFileOffset,
-          body,
-          "TraverseCXXMethodDecl",
-          "TraverseCXXMethodDecl:cpp函数尾非return");
+      funcReturnType,
+      false,
+      endStmtOfFuncBody,
+      funcBodyLBraceLoc,
+      funcBodyRBraceLoc,
+      funcBodyLBraceLocId,funcBodyRBraceLocId,
+      compoundStmt,
+      "TraverseCXXMethodDecl",
+      "TraverseCXXMethodDecl:cpp函数尾非return"
+      );
 }
 
 
 bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
-  //TraverseLambdaExpr: 跳过非MainFile
+  //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
-  int64_t funcDeclID = lambdaExpr->getID(*Ctx);
-  const SourceRange &sourceRange = lambdaExpr->getSourceRange();
+  //跳过 default
+  //跳过 无函数体
+  //跳过 constexpr
 
-  //lambda不存在default体之说
+  //获得 函数体、左右花括号
+//  Stmt* body  = funcDecl->getBody();
+  CompoundStmt* compoundStmt = lambdaExpr->getCompoundStmtBody();
+//  CompoundStmt* compoundStmt;
+  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
+  Util::GetCompoundLRBracLoc( compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
-//  Stmt* body = lambdaExpr->getBody();
-  CompoundStmt* body = lambdaExpr->getCompoundStmtBody();
+  //跳过 函数体内无语句
+  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  if(stmtCntInFuncBody<=0){
+    return false;
+  }
 
-  //lambda不存在Constexpr之说
-  bool _isConstexpr = false;
+  //获取最后一条语句
+  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
 
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
+  //按照左右花括号，构建位置id，防止重复插入
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
 
+  //获取返回类型
+  CXXRecordDecl *cxxRecordDecl = lambdaExpr->getLambdaClass();
+  // funcReturnType:
+  //        优先lambdaExpr->getLambdaClass()->getLambdaTypeInfo()->getType()，
+  //        其次lambdaExpr->getCallOperator()->getReturnType()
+  QualType funcReturnType;
+  TypeSourceInfo *typeSourceInfo=NULL;
+  if(cxxRecordDecl && (typeSourceInfo = cxxRecordDecl->getLambdaTypeInfo()) ){
+    funcReturnType=typeSourceInfo->getType();
+  }else
+  if(CXXMethodDecl *cxxMethodDecl=lambdaExpr->getCallOperator()){
+    funcReturnType=cxxMethodDecl->getReturnType();
+  }
 
+  //lambda一定有body
 
-  std::function<FuncDesc( )>   funcDescGetter=[lambdaExpr,body](){
-
-      CXXRecordDecl *cxxRecordDecl = lambdaExpr->getLambdaClass();
-      //funcReturnType: 优先lambdaExpr->getLambdaClass()->getLambdaTypeInfo()->getType()，其次lambdaExpr->getCallOperator()->getReturnType()
-      QualType funcReturnType;
-      TypeSourceInfo *typeSourceInfo=NULL;
-      if(cxxRecordDecl && (typeSourceInfo = cxxRecordDecl->getLambdaTypeInfo()) ){
-        funcReturnType=typeSourceInfo->getType();
-      }else
-      if(CXXMethodDecl *cxxMethodDecl=lambdaExpr->getCallOperator()){
-        funcReturnType=cxxMethodDecl->getReturnType();
-      }
-
-
-      const bool isaCXXConstructorDecl=false;
-      Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(body);
-      const SourceLocation funcBodyRBraceLoc = body->getRBracLoc();
-      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
-
-      return funcDesc;
-  };
 
   return this->_Traverse_Func(
-          sourceRange,
-          funcDescGetter,
-          _isConstexpr,
-          true,
-//          funcDeclID,
-          body,
-          "TraverseFunctionDecl",
-          "TraverseFunctionDecl:void函数尾非return");
+        funcReturnType,
+        false,
+        endStmtOfFuncBody,
+        funcBodyLBraceLoc,
+        funcBodyRBraceLoc,
+        funcBodyLBraceLocId,funcBodyRBraceLocId,
+        compoundStmt,
+        "TraverseFunctionDecl",
+        "TraverseFunctionDecl:void函数尾非return"
+        );
 }
 bool CTkVst::_Traverse_Func(
-  const SourceRange &funcSourceRange,
-  std::function<FuncDesc( )> funcDescGetter,
-  bool funcIsConstexpr,
-  bool hasBody,
+//  std::function<FuncDesc( )> funcDescGetter,
+  QualType funcReturnType,
+  bool isaCXXConstructorDecl,
+  Stmt *endStmtOfFuncBody,
+  SourceLocation funcBodyLBraceLoc,
+  SourceLocation funcBodyRBraceLoc,
+  LocId funcBodyLBraceLocId,
+  LocId funcBodyRBraceLocId,
+  CompoundStmt* compoundStmt,
+//  bool funcIsConstexpr,
+//  bool hasBody,
 //  int64_t funcDeclID,
-  Stmt *funcBodyStmt,
+//  Stmt *funcBodyStmt,
   const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn)
 {
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
 
-  const SourceRange &sourceRange = funcSourceRange;
-
   //函数体内语句个数.
-  int stmtCntInFuncBody=Util::childrenCntOfStmt(funcBodyStmt);
+//  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(funcBodyStmt);
 
-  if(hasBody && funcBodyStmt && (!funcIsConstexpr) &&
-  stmtCntInFuncBody > 0 //函数体内至少有一条语句
-  ) {
+//  if(hasBody && funcBodyStmt && (!funcIsConstexpr) &&
+//  stmtCntInFuncBody > 0 //函数体内至少有一条语句
+//  ) {
 
-    int64_t funcDeclID = funcBodyStmt->getID(*Ctx);
+//    FuncDesc funcDesc=funcDescGetter();
+
+    FileID mainFileId;
+    std::string filePath;
+    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+
+
     //region 插入 函数进入语句
-    SourceLocation funcBodyLBraceLoc;
-    if(Util::funcBodyIsCompoundThenGetLBracLoc(funcBodyStmt, funcBodyLBraceLoc)){
-      if(this->funcEnterInsertedNodeIDLs.count(funcDeclID) <= 0){
-        Util::printStmt(*Ctx,CI,fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterInsertedNodeIDLs)),std::to_string(funcDeclID),funcBodyStmt, true);
+//    SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
+//    CompoundStmt* compoundStmt;
+//    if(Util::funcBodyIsCompoundThenGetLRBracLoc(funcBodyStmt, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc)){
+//      LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+//      LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
+      if(Util::LocIdSetNotContains(funcEnterNodeSet, funcBodyLBraceLocId)){//若没有
+        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterNodeSet)), funcBodyLBraceLocId.to_string(), funcBodyStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
-        insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
+        insertAfter_X__funcEnter(funcBodyLBraceLocId, funcBodyLBraceLoc, whoInsertedFuncEnter);
       }
-    }
+//    }
     //endregion
 
     //region void函数、构造函数 结尾语句若不是return，则在函数尾 插入 函数释放语句
     Util::emptyStrIfNullStr(whoInsertedFuncReturn);
-    FuncDesc funcDesc=funcDescGetter();
-    if(Util::isVoidFuncOrConstructorThenNoEndReturn(funcDesc)){
-      int64_t endStmtID = funcDesc.endStmtOfFuncBody->getID(*Ctx);
-      insertBefore_X__funcReturn(endStmtID,funcDesc.funcBodyRBraceLoc,whoInsertedFuncReturn);
+    if(Util::isVoidFuncOrConstructorThenNoEndReturn(funcReturnType, isaCXXConstructorDecl,endStmtOfFuncBody)){
+//      LocId funcDeclLocId=LocId::buildFor(filePath,funcBodyLBraceLoc,SM);
+      insertBefore_X__funcReturn(funcBodyRBraceLocId,funcBodyRBraceLoc,whoInsertedFuncReturn);
     }
     //endregion
-  }
+//  }
 
   bool _isConstexpr = funcIsConstexpr;
 ///////////////////// 自定义处理 完毕
