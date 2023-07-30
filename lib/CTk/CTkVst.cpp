@@ -803,7 +803,10 @@ bool CTkVst::_Traverse_Func(
     //region 插入 函数进入语句
     SourceLocation funcBodyLBraceLoc;
     if(Util::funcBodyIsCompoundThenGetLBracLoc(funcBodyStmt, funcBodyLBraceLoc)){
-      insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
+      if(this->funcEnterInsertedNodeIDLs.count(funcDeclID) <= 0){
+        //若 本函数还 没有 插入 函数进入语句，才插入。
+        insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
+      }
     }
     //endregion
 
