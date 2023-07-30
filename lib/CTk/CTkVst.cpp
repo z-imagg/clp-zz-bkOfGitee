@@ -51,8 +51,9 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 
-void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FuncDesc& funcDesc , const char* whoInserted){
+void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(std::function<FuncDesc( )> funcDescGetter , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
+  FuncDesc funcDesc=funcDescGetter();
 
   //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
 const QualType &funcReturnType = funcDesc.funcReturnType;
@@ -642,15 +643,20 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *functionDecl) {
 
   //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
 
-  const QualType &funcReturnType = functionDecl->getReturnType();
-  const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*functionDecl);
-  Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
-  const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
-  FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+  std::function<FuncDesc( )>   funcDescGetter=[functionDecl](){
+      const QualType &funcReturnType = functionDecl->getReturnType();
+      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*functionDecl);
+      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(functionDecl);
+      const SourceLocation &funcBodyRBraceLoc = functionDecl->getBodyRBrace();
+      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+
+      return funcDesc;
+  };
+
 
   return this->_Traverse_Func(
           sourceRange,
-          funcDesc,
+          funcDescGetter,
           _isConstexpr,
           functionDecl->hasBody(),
           funcDeclID,
@@ -679,15 +685,19 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 
   bool _isConstexpr = cxxConstructorDecl->isConstexpr();
 
-  const QualType &funcReturnType = cxxConstructorDecl->getReturnType();
-  const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxConstructorDecl);
-  Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxConstructorDecl);
-  const SourceLocation &funcBodyRBraceLoc = cxxConstructorDecl->getBodyRBrace();
-  FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+  std::function<FuncDesc( )>   fn=[cxxConstructorDecl](){
+      const QualType &funcReturnType = cxxConstructorDecl->getReturnType();
+      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxConstructorDecl);
+      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxConstructorDecl);
+      const SourceLocation &funcBodyRBraceLoc = cxxConstructorDecl->getBodyRBrace();
+      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+      return funcDesc;
+  };
+
 
   return this->_Traverse_Func(
           sourceRange,
-          funcDesc,
+          fn,
           _isConstexpr,
           cxxConstructorDecl->hasBody(),
           funcDeclID,
@@ -714,15 +724,18 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
   Stmt* body = cxxMethodDecl->getBody();
   bool _isConstexpr = cxxMethodDecl->isConstexpr();
 
-  const QualType &funcReturnType = cxxMethodDecl->getReturnType();
-  const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxMethodDecl);
-  Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxMethodDecl);
-  const SourceLocation &funcBodyRBraceLoc = cxxMethodDecl->getBodyRBrace();
-  FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+  std::function<FuncDesc( )>   funcDescGetter=[cxxMethodDecl](){
+      const QualType &funcReturnType = cxxMethodDecl->getReturnType();
+      const bool isaCXXConstructorDecl=isa<CXXConstructorDecl>(*cxxMethodDecl);
+      Stmt *endStmtOfFuncBody = Util::endStmtOfFunc(cxxMethodDecl);
+      const SourceLocation &funcBodyRBraceLoc = cxxMethodDecl->getBodyRBrace();
+      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+      return funcDesc;
+  };
 
   return this->_Traverse_Func(
           sourceRange,
-          funcDesc,
+          funcDescGetter,
           _isConstexpr,
           cxxMethodDecl->hasBody(),
           funcDeclID,
@@ -750,20 +763,28 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   bool _isConstexpr = false;
 
 
-  //优先funcReturnType0，其次funcReturnType1
-  CXXRecordDecl *cxxRecordDecl = lambdaExpr->getLambdaClass();
-  const QualType &funcReturnType0 = cxxRecordDecl->getLambdaTypeInfo()->getType();
-  const QualType &funcReturnType1 = lambdaExpr->getCallOperator()->getReturnType();
 
-  const QualType &funcReturnType = funcReturnType0;
-  const bool isaCXXConstructorDecl=false;
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(body);
-  const SourceLocation &funcBodyRBraceLoc = body->getRBracLoc();//getRBracLoc
-  FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+
+
+  std::function<FuncDesc( )>   funcDescGetter=[lambdaExpr,body](){
+
+      //优先funcReturnType0，其次funcReturnType1
+      CXXRecordDecl *cxxRecordDecl = lambdaExpr->getLambdaClass();
+      const QualType &funcReturnType0 = cxxRecordDecl->getLambdaTypeInfo()->getType();
+      const QualType &funcReturnType1 = lambdaExpr->getCallOperator()->getReturnType();
+
+      const QualType &funcReturnType = funcReturnType0;
+      const bool isaCXXConstructorDecl=false;
+      Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(body);
+      const SourceLocation &funcBodyRBraceLoc = body->getRBracLoc();
+      FuncDesc funcDesc(funcReturnType,isaCXXConstructorDecl,endStmtOfFuncBody,funcBodyRBraceLoc);
+
+      return funcDesc;
+  };
 
   return this->_Traverse_Func(
           sourceRange,
-          funcDesc,//这里写不下去了
+          funcDescGetter,
           _isConstexpr,
           true,
           funcDeclID,
@@ -773,7 +794,7 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
 }
 bool CTkVst::_Traverse_Func(
   const SourceRange &funcSourceRange,
-  FuncDesc& funcDesc,
+  std::function<FuncDesc( )> funcDescGetter,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
@@ -792,7 +813,7 @@ bool CTkVst::_Traverse_Func(
     __wrap_insertAfter_X__funcEnter(funcBodyStmt,funcDeclID,whoInsertedFuncEnter);
 
     //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-    insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(funcDesc, whoInsertedFuncReturn);
+    insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(funcDescGetter, whoInsertedFuncReturn);
   }
   //endregion
 

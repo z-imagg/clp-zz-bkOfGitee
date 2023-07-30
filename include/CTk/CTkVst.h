@@ -74,7 +74,7 @@ public:
      * @param functionDecl
      * @param whoInserted
      */
-    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(FuncDesc& funcDesc , const char* whoInserted);
+    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(std::function<FuncDesc( )> funcDescGetter , const char* whoInserted);
 
     /**遍历语句
      *
@@ -291,7 +291,7 @@ public:
      */
     bool _Traverse_Func(
   const SourceRange &funcSourceRange,
-  FuncDesc& funcDesc,
+  std::function<FuncDesc( )> funcDescGetter,
   bool funcIsConstexpr,
   bool hasBody,
   int64_t funcDeclID,
