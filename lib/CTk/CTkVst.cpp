@@ -876,7 +876,7 @@ bool CTkVst::_Traverse_Func(
 
     //region 插入 函数进入语句
       if(Util::LocIdSetNotContains(funcEnterLocIdSet, funcBodyLBraceLocId)){//若没有
-        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterLocIdSet)), funcBodyLBraceLocId.to_string(), compoundStmt, true);
+//        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterLocIdSet)), funcBodyLBraceLocId.to_string(), compoundStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
         insertAfter_X__funcEnter(funcBodyLBraceLocId, funcBodyLBraceLoc, whoInsertedFuncEnter);
       }
