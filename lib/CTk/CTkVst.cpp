@@ -861,7 +861,7 @@ bool CTkVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
   return CTkVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
 }
 bool CTkVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
-  return false;
+  return CTkVst::I__TraverseCXXMethodDecl(cxxDestructorDecl,"CXXDestructorDecl");
 }
 
 bool CTkVst::_Traverse_Func(
