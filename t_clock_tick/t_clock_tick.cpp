@@ -165,7 +165,11 @@ public:
 
     void toString(std::string & line){
       char buf[128];
-      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d\n",t,sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt);
+      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+              t,
+              dSVarAllocCnt,dSVarFreeCnt,dHVarAllocCnt,dHVarFreeCnt,
+              sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt
+              );
       line.append(buf);
       return;
     }
@@ -238,7 +242,7 @@ public:
         fWriter.open(filePath);
 
         //刚打开文件时，写入标题行
-        std::string title("滴答,栈生,栈死,栈净,堆生,堆死,堆净\n");
+        std::string title("滴答,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净\n");
         fWriter << title ;
       }
       return;
@@ -341,7 +345,7 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
   hVarFreeCnt+=dHVarFreeCnt;
 
   int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
-  //更新 当前堆对象数目  
+  //更新 当前堆对象数目
   hVarCnt+= dHVarC;//和原来的  hVarCnt= hVarAllocCnt - hVarFreeCnt;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
