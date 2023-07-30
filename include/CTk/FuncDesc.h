@@ -21,14 +21,6 @@ public:
     FuncDesc(QualType funcReturnType,
              bool isaCXXConstructorDecl,
              Stmt *endStmtOfFuncBody,
-             SourceLocation funcBodyRBraceLoc)
-            :
-            funcReturnType(funcReturnType),
-            isaCXXConstructorDecl(isaCXXConstructorDecl),
-            endStmtOfFuncBody(endStmtOfFuncBody),
-            funcBodyRBraceLoc(funcBodyRBraceLoc)
-    {
-
-    }
+             SourceLocation funcBodyRBraceLoc);
 };
 #endif //FuncDesc_H
