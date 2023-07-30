@@ -12,6 +12,9 @@
  * X__:表示被外部调用的函数
  */
 
+
+//region 自定义线程id实现
+//I__this_thread__get_id:只用作比对，没有业务意义
 std::string I__this_thread__get_id(){
 
   std::thread::id curThreadId = std::this_thread::get_id();
@@ -20,8 +23,6 @@ std::string I__this_thread__get_id(){
   std::string curThreadIdStr = outStrStream.str();
   return curThreadIdStr;
 }
-
-//////自定义线程id实现
 // static std::atomic<int> 用作全局线程id计数器、  thread_local 线程id：  实现自定义进程内全时间唯一线程id
 #define FirstThreadId 0
 static std::atomic<int> globalThreadIdCounter(FirstThreadId);
@@ -41,9 +42,9 @@ int I__curThreadId(){
   }
   return currentThreadId;
 }
+//endregion
 
-
-///////本线程当前变量数目累积值
+//region 本线程当前变量数目累积值
 
 thread_local int t;//时钟
 thread_local int sVarAllocCnt=0;//当前栈变量分配数目 sVarAllocCnt: currentStackVarAllocCnt
@@ -52,10 +53,9 @@ thread_local int sVarCnt=0;//当前栈变量数目（冗余） sVarCnt: currentS
 thread_local int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
 thread_local int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
 thread_local int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+//endregion
 
-thread_local int topFuncSVarCnt=0;//本线程 栈顶函数 当前 栈变量净数目
-
-///////工具
+//region 工具
 bool I__fileExists(const std::string& filePath) {
   std::ifstream file(filePath);
   return file.good();
@@ -120,8 +120,9 @@ long I__getNowMilliseconds() {
   auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
   return milliseconds;
 }
+//endregion
 
-///////当前滴答
+//region 当前滴答
 class Tick{
 public:
     int t;//时钟
@@ -131,19 +132,31 @@ public:
     int hVarAllocCnt=0;//当前堆对象分配数目 hVarAllocCnt: currentHeapObjAllocCnt, var即obj
     int hVarFreeCnt=0;//当前堆对象释放数目 hVarFreeCnt: currentHeapObjcFreeCnt, var即obj
     int hVarCnt=0;//当前堆对象数目（冗余）hVarCnt: currentHeapObjCnt, var即obj
+
+    //d:delta
+    int dSVarAllocCnt;
+    int dSVarFreeCnt;
+    int dHVarAllocCnt;
+    int dHVarFreeCnt;
 public:
-    Tick(int _t,int _sVarAllocCnt, int _sVarFreeCnt, int _sVarCnt, int _hVarAllocCnt, int _hVarFreeCnt, int _hVarCnt)
+    Tick(int _t,
+ int dSVarAllocCnt, int dSVarFreeCnt,            int dHVarAllocCnt, int dHVarFreeCnt,
+ int sVarAllocCnt, int sVarFreeCnt, int sVarCnt, int hVarAllocCnt, int hVarFreeCnt, int hVarCnt
+ )
     :
     t(_t),
-    sVarAllocCnt(_sVarAllocCnt),
-    sVarFreeCnt(_sVarFreeCnt),
-    sVarCnt(_sVarCnt),
-    hVarAllocCnt(_hVarAllocCnt),
-    hVarFreeCnt(_hVarFreeCnt),
-    hVarCnt(_hVarCnt)
+    dSVarAllocCnt(dSVarAllocCnt),
+    dSVarFreeCnt(dSVarFreeCnt),
+    dHVarAllocCnt(dHVarAllocCnt),
+    dHVarFreeCnt(dHVarFreeCnt),
+
+    sVarAllocCnt(sVarAllocCnt),
+    sVarFreeCnt(sVarFreeCnt),
+    sVarCnt(sVarCnt),
+    hVarAllocCnt(hVarAllocCnt),
+    hVarFreeCnt(hVarFreeCnt),
+    hVarCnt(hVarCnt)
     {
-//      sVarCnt=sVarAllocCnt-sVarFreeCnt;
-//      hVarCnt=hVarAllocCnt-hVarFreeCnt;
     }
 
     Tick( ){
@@ -152,13 +165,19 @@ public:
 
     void toString(std::string & line){
       char buf[128];
-      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d\n",t,sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt);
+      sprintf(buf,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+              t,
+              dSVarAllocCnt,dSVarFreeCnt,dHVarAllocCnt,dHVarFreeCnt,
+              sVarAllocCnt,sVarFreeCnt,sVarCnt,hVarAllocCnt,hVarFreeCnt,hVarCnt
+              );
       line.append(buf);
       return;
     }
 };
+//endregion
 
-///////线程级滴答缓存
+//region 线程级滴答缓存
+const std::string X__true("true");
 #define TickCacheSize 500
 #define CacheIdxStart 0
 class TickCache {
@@ -223,7 +242,7 @@ public:
         fWriter.open(filePath);
 
         //刚打开文件时，写入标题行
-        std::string title("滴答,栈生,栈死,栈净,堆生,堆死,堆净\n");
+        std::string title("滴答,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净\n");
         fWriter << title ;
       }
       return;
@@ -260,6 +279,13 @@ private:
       return;
     }
 public:
+    //如果有设置环境变量tick_save,则保存当前滴答
+    void saveWrap(Tick & tick){
+      const char* tick_save=std::getenv("tick_save");
+      if(tick_save && X__true==tick_save){
+        this->save(tick);
+      }
+    }
     void save(Tick & tick){
       if(!inited){
         my_init();
@@ -280,18 +306,17 @@ public:
 thread_local TickCache tickCache;
 
 const std::string TickCache::tick_data_home("/tick_data_home");
-
-const std::string X__true("true");
+//endregion
 
 
 /**
  *
- * @param _sVarAllocCnt  此次滴答期间， 栈变量分配数目
- * @param _sVarFreeCnt   此次滴答期间， 栈变量释放数目
- * @param _hVarAllocCnt   此次滴答期间， 堆对象分配数目
- * @param _hVarFreeCnt   此次滴答期间， 堆对象释放数目
+ * @param dSVarAllocCnt  此次滴答期间， 栈变量分配数目
+ * @param dSVarFreeCnt   此次滴答期间， 栈变量释放数目
+ * @param dHVarAllocCnt   此次滴答期间， 堆对象分配数目
+ * @param dHVarFreeCnt   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
+void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt, int& topFuncSVarCnt){
 
   //时钟滴答一下
   if(plus1Tick){
@@ -299,49 +324,53 @@ void I__t_clock_tick(bool plus1Tick, int _sVarAllocCnt, int _sVarFreeCnt, int _h
   }
 
   //更新 当前栈变量分配数目
-  sVarAllocCnt+=_sVarAllocCnt;
+  sVarAllocCnt+=dSVarAllocCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
-  topFuncSVarCnt+=_sVarAllocCnt;
 
   //更新 当前栈变量释放数目
-  sVarFreeCnt+=_sVarFreeCnt;
+  sVarFreeCnt+=dSVarFreeCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
-  topFuncSVarCnt-=_sVarFreeCnt;
 
-  //更新 当前栈变量数目 == 当前栈变量分配数目 - 当前栈变量释放数目
-  sVarCnt= sVarAllocCnt - sVarFreeCnt;
+  int dVarC=dSVarAllocCnt - dSVarFreeCnt;
+
+  //更新 当前栈变量数目
+  sVarCnt+= dVarC;  //和原来的  sVarCnt= sVarAllocCnt - sVarFreeCnt;  意思一样，但更直接
+
+  topFuncSVarCnt+=dVarC;
 
   //更新 当前堆对象分配数目
-  hVarAllocCnt+=_hVarAllocCnt;
+  hVarAllocCnt+=dHVarAllocCnt;
 
   //更新 当前堆对象释放数目
-  hVarFreeCnt+=_hVarFreeCnt;
+  hVarFreeCnt+=dHVarFreeCnt;
 
-  //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
-  hVarCnt= hVarAllocCnt - hVarFreeCnt;
+  int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
+  //更新 当前堆对象数目
+  hVarCnt+= dHVarC;//和原来的  hVarCnt= hVarAllocCnt - hVarFreeCnt;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  const char* tick_save=std::getenv("tick_save");
-  if(tick_save && X__true==tick_save){
-    Tick tick(t,_sVarAllocCnt, _sVarFreeCnt, sVarCnt, _hVarAllocCnt,_hVarFreeCnt,hVarCnt);
-    tickCache.save(tick);
-  }
+  Tick tick(t,
+    dSVarAllocCnt, dSVarFreeCnt,        dHVarAllocCnt, dHVarFreeCnt,
+    sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt, hVarFreeCnt, hVarCnt
+  );
+  tickCache.saveWrap(tick);
 
 
   return;
 }
-void X__t_clock_tick(int _sVarAllocCnt, int _sVarFreeCnt, int _hVarAllocCnt, int _hVarFreeCnt){
-  I__t_clock_tick(true,_sVarAllocCnt, _sVarFreeCnt, _hVarAllocCnt, _hVarFreeCnt);
+void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int& topFuncSVarCnt){
+  I__t_clock_tick(true,dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,topFuncSVarCnt);
 }
 
 void X__funcEnter( ){
-  if(topFuncSVarCnt!=0){
-//    printf("X__funcEnter:错误,topFuncSVarCnt(%d)应该为0,问题发生在上一个返回的函数,请确认当前函数中调用的全部函数中哪个return前没插入X__funcReturn语句\n",topFuncSVarCnt);
-    topFuncSVarCnt=0;
-  }
 }
-void X__funcReturn( ){
-  //释放本函数已经分配的全部栈变量，但不增加滴答。因为时刻贡献已经由X__t_clock_tick完成了。
-  I__t_clock_tick(false,0,topFuncSVarCnt,0,0);
+void X__funcReturn(int& topFuncSVarCnt ){
+  sVarFreeCnt+=topFuncSVarCnt;
+  sVarCnt-= topFuncSVarCnt;
+  Tick tick(t,
+            0,topFuncSVarCnt,0,0,
+            sVarAllocCnt, sVarFreeCnt, sVarCnt, hVarAllocCnt,hVarFreeCnt,hVarCnt);
+  tickCache.saveWrap(tick);
+
   topFuncSVarCnt=0;
 }
