@@ -9,6 +9,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
+#include "FuncDesc.h"
 
 using namespace llvm;
 using namespace clang;
@@ -20,26 +21,6 @@ using namespace clang;
 class CTkVst
         : public RecursiveASTVisitor<CTkVst> {
 public:
-    struct FuncDesc{
-    public:
-        QualType funcReturnType;
-        bool isaCXXConstructorDecl;
-        Stmt *endStmtOfFuncBody;
-        SourceLocation funcBodyRBraceLoc;
-    public:
-        FuncDesc(QualType funcReturnType,
-        bool isaCXXConstructorDecl,
-        Stmt *endStmtOfFuncBody,
-        SourceLocation funcBodyRBraceLoc)
-        :
-        funcReturnType(funcReturnType),
-        isaCXXConstructorDecl(isaCXXConstructorDecl),
-        endStmtOfFuncBody(endStmtOfFuncBody),
-        funcBodyRBraceLoc(funcBodyRBraceLoc)
-        {
-
-        }
-    };
 public:
     /**
      * 栈变量 或 堆对象 的 生命步骤（生命阶段）
@@ -69,12 +50,6 @@ public:
     bool insertAfter_X__funcReturn( int64_t funcBodyEndStmtId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
     bool insert_X__funcReturn(bool before, int64_t flagStmtId, SourceLocation insertLoc , const char* whoInserted);
     bool insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted=NULL);
-
-    /**void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-     * @param functionDecl
-     * @param whoInserted
-     */
-    void insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(std::function<FuncDesc( )> funcDescGetter , const char* whoInserted);
 
     /**遍历语句
      *

@@ -18,6 +18,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
+#include "FuncDesc.h"
 
 
 #include <sstream>
@@ -29,6 +30,11 @@ using namespace clang;
 
 class Util {
 public:
+    /** void函数、构造函数 最后一条语句是return吗？
+     * @param funcDesc
+     * @return
+     */
+    static bool hasEndReturnInVoidFuncOrConstructor(FuncDesc funcDesc );
     /**
      *
      * @param funcBody

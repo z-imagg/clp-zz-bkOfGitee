@@ -6,6 +6,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "CTk/FuncDesc.h"
 #include <clang/AST/ParentMapContext.h>
 
 #include <string>
@@ -16,6 +17,20 @@
 
 using namespace llvm;
 using namespace clang;
+/** void函数、构造函数 最后一条语句是return吗？
+ * @param funcDesc
+ * @return
+ */
+bool Util::hasEndReturnInVoidFuncOrConstructor(FuncDesc funcDesc ){
+  //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+  if(funcDesc.funcReturnType->isVoidType() || funcDesc.isaCXXConstructorDecl){
+    //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
+    Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;
+    bool endStmtIsReturn=Util::isReturnStmtClass(endStmtOfFuncBody);
+    return endStmtIsReturn;
+  }
+  return false;
+}
 
 /**
  *

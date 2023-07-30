@@ -51,25 +51,6 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 
-void CTkVst::insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(std::function<FuncDesc( )> funcDescGetter , const char* whoInserted){
-  Util::emptyStrIfNullStr(whoInserted);
-  FuncDesc funcDesc=funcDescGetter();
-
-  //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-  bool funcReturnVoid = funcDesc.funcReturnType->isVoidType();
-  if(funcReturnVoid || funcDesc.isaCXXConstructorDecl){
-  //是void函数 或是 构造函数: 此两者都可以末尾不显示写出return语句
-   Stmt *endStmtOfFuncBody = funcDesc.endStmtOfFuncBody;
-    const SourceLocation &funcBodyRBraceLoc = funcDesc.funcBodyRBraceLoc;
-
-    int64_t endStmtID = endStmtOfFuncBody->getID(*Ctx);
-    bool endStmtNotReturn=!Util::isReturnStmtClass(endStmtOfFuncBody);
-    if(endStmtNotReturn){
-    //函数体末尾语句非return
-      insertBefore_X__funcReturn(endStmtID,funcBodyRBraceLoc,whoInserted);
-    }
-  }
-}
 
 
 
@@ -823,8 +804,14 @@ bool CTkVst::_Traverse_Func(
     }
     //endregion
 
-    //void函数、构造函数 最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-    insert_X__funcReturn_whenVoidFuncOrConstructorNoEndReturn(funcDescGetter, whoInsertedFuncReturn);
+    //region void函数、构造函数 结尾语句若不是return，则在函数尾 插入 函数释放语句
+    Util::emptyStrIfNullStr(whoInsertedFuncReturn);
+    FuncDesc funcDesc=funcDescGetter();
+    if(!Util::hasEndReturnInVoidFuncOrConstructor(funcDesc)){
+      int64_t endStmtID = funcDesc.endStmtOfFuncBody->getID(*Ctx);
+      insertBefore_X__funcReturn(endStmtID,funcDesc.funcBodyRBraceLoc,whoInsertedFuncReturn);
+    }
+    //endregion
   }
   //endregion
 
