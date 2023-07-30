@@ -726,6 +726,9 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
+  return CTkVst::I__TraverseCXXMethodDecl(cxxMethDecl,"TraverseCXXMethodDecl");
+}
+bool CTkVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
@@ -773,16 +776,17 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
   //获取返回类型
   const QualType funcReturnType = cxxMethDecl->getReturnType();
 
+  std::string whoReturn=fmt::format("{}:cpp函数尾非return", who);
   return this->_Traverse_Func(
-      funcReturnType,
-      false,
-      endStmtOfFuncBody,
-      funcBodyLBraceLoc,
-      funcBodyRBraceLoc,
-      funcBodyLBraceLocId,funcBodyRBraceLocId,
-      compoundStmt,
-      "TraverseCXXMethodDecl",
-      "TraverseCXXMethodDecl:cpp函数尾非return"
+          funcReturnType,
+          false,
+          endStmtOfFuncBody,
+          funcBodyLBraceLoc,
+          funcBodyRBraceLoc,
+          funcBodyLBraceLocId, funcBodyRBraceLocId,
+          compoundStmt,
+          who,
+          whoReturn.c_str()
       );
 }
 
@@ -853,6 +857,9 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
 }
 
 
+bool CTkVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
+  return CTkVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
+}
 bool CTkVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
   return false;
 }

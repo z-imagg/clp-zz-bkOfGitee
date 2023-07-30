@@ -253,10 +253,31 @@ public:
     /////////constexpr
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
     virtual bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);
+    bool I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who);
     virtual bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     virtual bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     //TODO: c++析构函数遍历
     virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
+    //遍历c++类型转换操作符号
+    /**
+class Person{
+
+};
+class User{
+public:
+    operator Person() const;
+};
+
+User::operator Person() const {
+    return Person();
+}
+
+void f1(){
+    User u=User();
+    Person p=(Person)u;//类型转换操作符
+}
+     */
+    virtual bool TraverseCXXConversionDecl(CXXConversionDecl * cxxConversionDecl);
 
 
     /** 遍历  FunctionDecl 或 CXXMethodDecl
