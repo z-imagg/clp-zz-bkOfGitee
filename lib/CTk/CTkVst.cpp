@@ -719,59 +719,37 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
 
 
 bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
-  Util::printExpr(*Ctx,CI,"lambda","",lambdaExpr, true);
-  /**
-lambda,,nodeID:1483650,文件路径、坐标:</pubx/clang-ctk/t_clock_tick/test_main.cpp:45:18, line:52:3>,getStmtClassName:LambdaExpr,getStmtClass:181,mainFileId:1,fileId:1,getValueKind:0,getObjectKind:0,源码:[&arg2](const int k) -> bool {
-    int age;
-    float sum;
-    for(int i=0; i <=k ; i++){
-      sum+=age;
-    }
-    return sum;
-    }
-   */
-  Util::printStmt(*Ctx,CI,"lambda_getBody","",lambdaExpr->getBody(), true);
-  /**
-lambda_getBody,,parent0NodeKind:CXXMethodDecl,nodeID:1483617,文件路径、坐标:</pubx/clang-ctk/t_clock_tick/test_main.cpp:45:47, line:52:3>,getStmtClassName:CompoundStmt,getStmtClass:8,mainFileId:1,fileId:1,源码:{
-    int age;
-    float sum;
-    for(int i=0; i <=k ; i++){
-      sum+=age;
-    }
-    return sum;
-    }
-   */
-  return true;
-//  //TraverseLambdaExpr: 跳过非MainFile
-//  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getLocation());
-//  if(!_LocFileIDEqMainFileID){
-//    return false;
-//  }
-//  lambdaExpr->getBody();
-//  int64_t funcDeclID = lambdaExpr->getID(*Ctx);
-//  const SourceRange &sourceRange = lambdaExpr->getSourceRange();
-//
-//
+  //TraverseLambdaExpr: 跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+  int64_t funcDeclID = lambdaExpr->getID(*Ctx);
+  const SourceRange &sourceRange = lambdaExpr->getSourceRange();
+
+  //lambda不存在default体之说
 //  //判断该方法是否有default修饰, 若有, 则不处理.
 //  //default修饰举例: 'void func( ) = default;' (普通函数的default修饰，貌似没找到例子)
 //  if(Util::funcIsDefault(lambdaExpr)){
 //    return true;
 //  }
-//  Stmt* body = functionDecl->getBody();
-//
-//  bool _isConstexpr = functionDecl->isConstexpr();
-//
-//  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
-//
-//  return this->_Traverse_Func(
-//          sourceRange,
-//          functionDecl,
-//          _isConstexpr,
-//          functionDecl->hasBody(),
-//          funcDeclID,
-//          body,
-//          "TraverseFunctionDecl",
-//          "TraverseFunctionDecl:void函数尾非return");
+
+  Stmt* body = lambdaExpr->getBody();
+
+  //lambda不存在Constexpr之说
+  bool _isConstexpr = false;
+
+  //void函数最后一条语句若不是return，则需在最后一条语句之后插入  函数释放语句
+
+  return this->_Traverse_Func(
+          sourceRange,
+          lambdaExpr.,//这里写不下去了
+          _isConstexpr,
+          true,
+          funcDeclID,
+          body,
+          "TraverseFunctionDecl",
+          "TraverseFunctionDecl:void函数尾非return");
 }
 bool CTkVst::_Traverse_Func(
   const SourceRange &funcSourceRange,
