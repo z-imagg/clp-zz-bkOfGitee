@@ -42,10 +42,19 @@ void thread1_func(int arg1, char & arg2){
 }
 
 void thread2_func(int k, vector<int> arg2){
+  auto sumFunc = [&arg2](const int k) -> bool {
+    int age;
+    float sum;
+    for(int i=0; i <=k ; i++){
+      sum+=age;
+    }
+    return sum;
+  };
   std::string thread2IdStr;
   GetCurrentThreadIdAsString(thread2IdStr);
   printf("thread2 线程id:%s\n",  thread2IdStr.c_str());
 
+  sumFunc(100);
   int size=arg2.size();
   arg2[k]=size;
   int sum=0;
