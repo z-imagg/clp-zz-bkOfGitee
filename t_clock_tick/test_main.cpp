@@ -9,14 +9,21 @@ using namespace std;
 void empty_func(int z, float y){
 
 }
+class Person{
 
+};
 class User{
 public:
     ~User(){
       int zero=9;
       float x=3;
     }
+    operator Person() const;
 };
+
+User::operator Person() const {
+  return Person();
+}
 
 void GetCurrentThreadIdAsString(std::string& curThreadIdStr){
   // 获取当前线程的ID
