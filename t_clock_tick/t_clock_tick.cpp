@@ -322,15 +322,17 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
   //更新 当前栈变量分配数目
   sVarAllocCnt+=dSVarAllocCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
-  topFuncSVarCnt+=dSVarAllocCnt;
 
   //更新 当前栈变量释放数目
   sVarFreeCnt+=dSVarFreeCnt;
   //更新 本线程 栈顶函数 当前 栈变量净数目
-  topFuncSVarCnt-=dSVarFreeCnt;
 
-  //更新 当前栈变量数目 == 当前栈变量分配数目 - 当前栈变量释放数目
-  sVarCnt= sVarAllocCnt - sVarFreeCnt;
+  int dVarC=dSVarAllocCnt - dSVarFreeCnt;
+
+  //更新 当前栈变量数目
+  sVarCnt+= dVarC;  //和原来的  sVarCnt= sVarAllocCnt - sVarFreeCnt;  意思一样，但更直接
+
+  topFuncSVarCnt+=dVarC;
 
   //更新 当前堆对象分配数目
   hVarAllocCnt+=dHVarAllocCnt;
@@ -338,8 +340,9 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
   //更新 当前堆对象释放数目
   hVarFreeCnt+=dHVarFreeCnt;
 
-  //更新 当前堆对象数目 == 当前堆对象分配数目 - 当前堆对象释放数目
-  hVarCnt= hVarAllocCnt - hVarFreeCnt;
+  int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
+  //更新 当前堆对象数目  
+  hVarCnt+= dHVarC;//和原来的  hVarCnt= hVarAllocCnt - hVarFreeCnt;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
   Tick tick(t,
