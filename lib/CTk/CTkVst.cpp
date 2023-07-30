@@ -687,13 +687,14 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxConstructorDecl){
 }
 
 bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
+  const SourceLocation cxxMethodDeclLoc = cxxMethodDecl->getLocation();
   //TraverseCXXMethodDecl: 跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDecl->getLocation());
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethodDeclLoc);
   if(!_LocFileIDEqMainFileID){
     return false;
   }
 
-  int64_t funcDeclID = cxxMethodDecl->getID();
+  unsigned int funcDeclFileOffset = SM.getFileOffset(cxxMethodDeclLoc);
   const SourceRange &sourceRange = cxxMethodDecl->getSourceRange();
 
   //判断该方法是否有default修饰, 若有, 则不处理.
@@ -718,7 +719,7 @@ bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethodDecl){
           funcDescGetter,
           _isConstexpr,
           cxxMethodDecl->hasBody(),
-          funcDeclID,
+          funcDeclFileOffset,
           body,
           "TraverseCXXMethodDecl",
           "TraverseCXXMethodDecl:cpp函数尾非return");
@@ -804,6 +805,7 @@ bool CTkVst::_Traverse_Func(
     SourceLocation funcBodyLBraceLoc;
     if(Util::funcBodyIsCompoundThenGetLBracLoc(funcBodyStmt, funcBodyLBraceLoc)){
       if(this->funcEnterInsertedNodeIDLs.count(funcDeclID) <= 0){
+        Util::printStmt(*Ctx,CI,"差问题",std::to_string(funcDeclID),funcBodyStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
         insertAfter_X__funcEnter(funcDeclID,funcBodyLBraceLoc,whoInsertedFuncEnter);
       }
