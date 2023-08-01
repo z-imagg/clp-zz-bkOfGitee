@@ -202,8 +202,9 @@ public:
 
     void toString(std::string & line){
       char buf[128];
-      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+      sprintf(buf, "%d,%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
               t,
+              srcFile, funcLine, funcCol, funcName, funcEnterId,rTSVarC,
               dSVarAC, dSVarFC, dHVarAC, dHVarFC,
               sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC
               );
