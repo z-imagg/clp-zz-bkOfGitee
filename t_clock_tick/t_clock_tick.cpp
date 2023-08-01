@@ -456,7 +456,8 @@ void X__funcEnter( XFuncFrame*  pFuncFrame){
 }
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
 
-  //region 返回前, 滴答一下, 并写一次tick(此 函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn）
+  //region 返回前, 滴答一下, 并写一次tick。 此 函数返回tick 不作为 正常栈变量数分析使用
+  // 此 函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn。
   tg_t++;
   Tick tick(FuncReturn,
             tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
