@@ -187,7 +187,7 @@ public:
     int dHVarFC;//单滴答内堆变量分配数目
 public:
     Tick(TickKind tickKind,int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
-         int funcEnterId,int rTSVarC,
+         int funcEnterId,int _rTSVarC,
          int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
          int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
@@ -199,7 +199,7 @@ public:
             funcCol(funcCol),
             funcName(funcName),
             funcEnterId(funcEnterId),
-            rTSVarC(rTSVarC),
+            rTSVarC(_rTSVarC),
             dSVarAC(dSVarAC),
             dSVarFC(dSVarFC),
             dHVarAC(dHVarAC),
