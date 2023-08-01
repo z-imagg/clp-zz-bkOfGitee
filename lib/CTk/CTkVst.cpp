@@ -112,11 +112,12 @@ bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, Source
   return insertResult;
 }
 
-bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId,const char* funcName, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
-          "XFuncFrame xFuncFrame=0; X__FuncFrame_initFLoc(&xFuncFrame,{'srcFile'},{'funcName'},{funcLine},{funcCol}); X__funcEnter(&xFuncFrame/*函入*/);//{}\n",
+          "XFuncFrame xFuncFrame=0; X__FuncFrame_initFLoc(&xFuncFrame,\"{}\",\"{}\",{},{}); X__funcEnter(&xFuncFrame/*函入*/);//{}\n",
+          funcLocId.filePath,funcName,funcLocId.line,funcLocId.column,
           //如果有提供，插入者信息，则放在注释中.
           whoInserted
   );
@@ -642,6 +643,11 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
   std::string filePath;
   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
+  //获取函数名称
+  const std::string &funcQualifiedName = funcDecl->getQualifiedNameAsString();
+//  funcDecl->getNameAsString();
+//  funcDecl->getName();
+
   //按照左右花括号，构建位置id，防止重复插入
   LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
   LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
@@ -658,6 +664,7 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
       funcBodyRBraceLoc,
       funcBodyLBraceLocId,funcBodyRBraceLocId,
       compoundStmt,
+      funcQualifiedName.c_str(),
       "TraverseFunctionDecl",
       "TraverseFunctionDecl:void函数尾非return"
       );
@@ -704,6 +711,9 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   std::string filePath;
   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
+  //获取函数名称
+  const std::string &funcQualifiedName = cxxCnstrDecl->getQualifiedNameAsString();
+
   //按照左右花括号，构建位置id，防止重复插入
   LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
   LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
@@ -720,6 +730,7 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
         funcBodyRBraceLoc,
         funcBodyLBraceLocId,funcBodyRBraceLocId,
         compoundStmt,
+        funcQualifiedName.c_str(),
         "TraverseCXXConstructorDecl",
         "TraverseCXXConstructorDecl:构造函数尾非return"
         );
@@ -769,6 +780,9 @@ bool CTkVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who
   std::string filePath;
   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
+  //获取函数名称
+  const std::string &funcQualifiedName = cxxMethDecl->getQualifiedNameAsString();
+
   //按照左右花括号，构建位置id，防止重复插入
   LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
   LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
@@ -785,6 +799,7 @@ bool CTkVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who
           funcBodyRBraceLoc,
           funcBodyLBraceLocId, funcBodyRBraceLocId,
           compoundStmt,
+          funcQualifiedName.c_str(),
           who,
           whoReturn.c_str()
       );
@@ -822,6 +837,9 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   std::string filePath;
   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
+  //lambda无函数名称
+  const char * funName="";
+
   //按照左右花括号，构建位置id，防止重复插入
   LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
   LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
@@ -851,6 +869,7 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
         funcBodyRBraceLoc,
         funcBodyLBraceLocId,funcBodyRBraceLocId,
         compoundStmt,
+        funName,
         "TraverseFunctionDecl",
         "TraverseFunctionDecl:void函数尾非return"
         );
@@ -878,6 +897,7 @@ bool CTkVst::_Traverse_Func(
 //  bool hasBody,
 //  int64_t funcDeclID,
 //  Stmt *funcBodyStmt,
+  const char* funcName,
   const char *whoInsertedFuncEnter,
   const char *whoInsertedFuncReturn)
 {
@@ -891,7 +911,7 @@ bool CTkVst::_Traverse_Func(
       if(Util::LocIdSetNotContains(funcEnterLocIdSet, funcBodyLBraceLocId)){//若没有
 //        Util::printStmt(*Ctx, CI, fmt::format("差问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterLocIdSet)), funcBodyLBraceLocId.to_string(), compoundStmt, true);
         //若 本函数还 没有 插入 函数进入语句，才插入。
-        insertAfter_X__funcEnter(funcBodyLBraceLocId, funcBodyLBraceLoc, whoInsertedFuncEnter);
+        insertAfter_X__funcEnter(funcBodyLBraceLocId,funcName, funcBodyLBraceLoc, whoInsertedFuncEnter);
       }
 //    }
     //endregion
