@@ -48,7 +48,7 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
 /**
  * 函数X__funcEnter插入在函数第一句话之前
  */
-void X__funcEnter( );
+void X__funcEnter(XFuncFrame*  pFuncFrame );
 /**
  * 函数X__funcReturn插入在函数的每条return语句之前，以及void函数的末尾之前
  */
