@@ -6,13 +6,14 @@
  *  函数一次调用 所持有的局部变量们、本次函数调用唯一编号；该函数定位信息
  */
 struct _XFuncFrame{
+
     /**
      *  该函数定位信息, 等同于该函数id
      */
-    char * srcFile;
-    char * funcName;
-    int funcLine;
-    int funcCol;
+    char * L_srcFile;
+    int L_funcLine;
+    int L_funcCol;
+    char * L_funcName;
 
     /**
      * 本次函数调用唯一编号

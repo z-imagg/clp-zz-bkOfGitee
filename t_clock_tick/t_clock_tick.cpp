@@ -134,6 +134,24 @@ long I__getNowMilliseconds() {
 //region 单滴答
 class Tick{
 public:
+    /**
+     *  该函数定位信息, 等同于该函数id
+     */
+    char * srcFile;
+    int funcLine;
+    int funcCol;
+    char * funcName;
+    /**
+     * 本次函数调用唯一编号
+     * int足够吗？(差不多吧). 用得着long?
+     */
+    int funcEnterId;
+
+    /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
+     * rT:realTime
+     */
+    int rTSVarC;
+
 //AC:Allocate Count:分配的变量数目
 //FC:Free Count:释放的变量数目
 //C:Count:净变量数目， 即 分配-释放
@@ -151,12 +169,19 @@ public:
     int dHVarAC;//单滴答内堆变量分配数目
     int dHVarFC;//单滴答内堆变量分配数目
 public:
-    Tick(int _t,
+    Tick(int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
+         int funcEnterId,int rTSVarC,
          int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
          int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
     :
             t(_t),
+            srcFile(srcFile),
+            funcLine(funcLine),
+            funcCol(funcCol),
+            funcName(funcName),
+            funcEnterId(funcEnterId),
+            rTSVarC(rTSVarC),
             dSVarAC(dSVarAC),
             dSVarFC(dSVarFC),
             dHVarAC(dHVarAC),
@@ -361,7 +386,8 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(tg_t,
+  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
@@ -383,10 +409,11 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
  * @param funcCol
  */
 void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcName,int funcLine,int funcCol){
-  pFuncFrame->srcFile=srcFile;
-  pFuncFrame->funcName=funcName;
-  pFuncFrame->funcLine=funcLine;
-  pFuncFrame->funcCol=funcCol;
+  pFuncFrame->L_srcFile=srcFile;
+  pFuncFrame->L_funcLine=funcLine;
+  pFuncFrame->L_funcCol=funcCol;
+
+  pFuncFrame->L_funcName=funcName;
 
   pFuncFrame->funcEnterId=0;
 
@@ -403,7 +430,9 @@ void X__funcEnter( XFuncFrame*  pFuncFrame){
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
   tg_sVarFC+=(pFuncFrame->rTSVarC);
   tg_sVarC-= (pFuncFrame->rTSVarC);
-  Tick tick(tg_t,
+
+  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             0, (pFuncFrame->rTSVarC), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
