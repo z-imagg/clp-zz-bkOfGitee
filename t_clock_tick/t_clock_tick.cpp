@@ -132,16 +132,16 @@ long I__getNowMilliseconds() {
 //endregion
 
 /**滴答种类
- *需要被正常分析的tick是 正常tick 和 函数进入tick，
- * 正常分析不需要 函数返回tick
- * 看哪里少插入了X__funcReturn: 比对 函数返回tick   和 函数进入tick  是否配对
+ *需要被正常分析的tick是 正常tick 和 函数返回tick，
+ * 正常分析不需要 函数进入tick
+ * 看哪里少插入了X__funcReturn: 比对 函数进入tick    和  函数返回tick 是否配对
  */
 enum TickKind{
     //正常tick
     NormalTick=0,
-    //函数进入tick
+    //函数进入tick 只作为 和 函数返回tick 做比对，看哪里少插入了X__funcReturn
     FuncEnter=1,
-    //函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn
+    //函数返回tick
     FuncReturn=2
 
 };
@@ -444,25 +444,25 @@ void X__funcEnter( XFuncFrame*  pFuncFrame){
   tg_FEntCnter++;
   //endregion
 
-  //region 滴答一下, 并写一次tick
-  tg_t++;
+  //region 写tick。 此 函数进入滴答 不作为 正常栈变量数分析使用
+  //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
   Tick tick(FuncEnter,
           tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
             pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
-            0, (pFuncFrame->rTSVarC), 0, 0,
-            tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
+            0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0);
   tickCache.saveWrap(tick);
   //endregion
 }
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
 
-  //region 返回前, 滴答一下, 并写一次tick。 此 函数返回tick 不作为 正常栈变量数分析使用
-  // 此 函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn。
+  //region 紧挨着返回前, 滴答一下 携带了 残余栈变量数 , 并写滴答。
+  //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
   tg_t++;
   Tick tick(FuncReturn,
             tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
             pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
-            0, (pFuncFrame->rTSVarC), 0, 0,
+            0, (pFuncFrame->rTSVarC)/*残余栈变量数*/, 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
   //endregion
