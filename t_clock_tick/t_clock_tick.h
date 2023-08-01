@@ -19,7 +19,10 @@ struct _XFuncFrame{
      */
     long funcEnterId;
 
-    int topFuncSVarCnt;
+    /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
+     * rT:realTime
+     */
+    int rTSVarC;
 };
 typedef struct _XFuncFrame XFuncFrame;
 
@@ -47,5 +50,5 @@ void X__funcEnter( );
 /**
  * 函数X__funcReturn插入在函数的每条return语句之前，以及void函数的末尾之前
  */
-void X__funcReturn(XFuncFrame* topFuncFrame_ptr );
+void X__funcReturn(XFuncFrame* pFuncFrame );
 #endif //_T_CLOCK_TICK_H
