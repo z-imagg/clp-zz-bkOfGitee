@@ -47,7 +47,7 @@ public:
     static const std::string IncludeStmt_TCTk ; // = "#include \"t_clock_tick.h\"\n";
 
 
-    bool insertAfter_X__funcEnter(LocId funcLocId, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
+    bool insertAfter_X__funcEnter(LocId funcLocId,const char* funcName, SourceLocation funcBodyLBraceLoc , const char* whoInserted);
     bool insertBefore_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funcBodyRBraceLoc , const char* whoInserted);
     bool insertAfter_X__funcReturn( LocId funcBodyRBraceLocId, SourceLocation funEndStmtEndLoc , const char* whoInserted);
     bool insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, SourceLocation insertLoc , const char* whoInserted);
@@ -296,6 +296,7 @@ void f1(){
     LocId funcBodyLBraceLocId,
     LocId funcBodyRBraceLocId,
     CompoundStmt* compoundStmt,
+    const char* funcName,
     const char *whoInsertedFuncEnter,
     const char *whoInsertedFuncReturn);
 

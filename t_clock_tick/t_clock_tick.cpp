@@ -6,6 +6,7 @@
 #include <atomic>
 #include <fstream>
 #include <filesystem>
+#include "t_clock_tick.h"
 
 /**名称约定
  * I__:即internal__:表示本源文件内部使用的函数
@@ -56,6 +57,11 @@ thread_local int tg_sVarC=0;//当前栈变量数目（冗余） tg_sVarC: curren
 thread_local int tg_hVarAC=0;//当前堆对象分配数目 tg_hVarAC: currentHeapObjAllocCnt, var即obj
 thread_local int tg_hVarFC=0;//当前堆对象释放数目 tg_hVarFC: currentHeapObjcFreeCnt, var即obj
 thread_local int tg_hVarC=0;//当前堆对象数目（冗余）tg_hVarC: currentHeapObjCnt, var即obj
+//endregion
+
+//region 函数进入计数器
+//FEnt: func enter;  Cnter: counter
+thread_local int tg_FEntCnter=0;
 //endregion
 
 //region 工具
@@ -125,9 +131,44 @@ long I__getNowMilliseconds() {
 }
 //endregion
 
+/**滴答种类
+ *需要被正常分析的tick是 正常tick 和 函数返回tick，
+ * 正常分析不需要 函数进入tick
+ * 看哪里少插入了X__funcReturn: 比对 函数进入tick    和  函数返回tick 是否配对
+ */
+enum TickKind{
+    //正常tick
+    NormalTick=0,
+    //函数进入tick 只作为 和 函数返回tick 做比对，看哪里少插入了X__funcReturn
+    FuncEnter=1,
+    //函数返回tick
+    FuncReturn=2
+
+};
+
 //region 单滴答
 class Tick{
 public:
+    TickKind tickKind;
+
+    /**
+     *  该函数定位信息, 等同于该函数id
+     */
+    char * srcFile;
+    int funcLine;
+    int funcCol;
+    char * funcName;
+    /**
+     * 本次函数调用唯一编号
+     * int足够吗？(差不多吧). 用得着long?
+     */
+    int funcEnterId;
+
+    /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
+     * rT:realTime
+     */
+    int rTSVarC;
+
 //AC:Allocate Count:分配的变量数目
 //FC:Free Count:释放的变量数目
 //C:Count:净变量数目， 即 分配-释放
@@ -145,23 +186,31 @@ public:
     int dHVarAC;//单滴答内堆变量分配数目
     int dHVarFC;//单滴答内堆变量分配数目
 public:
-    Tick(int _t,
- int dSVarAllocCnt, int dSVarFreeCnt,            int dHVarAllocCnt, int dHVarFreeCnt,
- int sVarAllocCnt, int sVarFreeCnt, int sVarCnt, int hVarAllocCnt, int hVarFreeCnt, int hVarCnt
+    Tick(TickKind tickKind,int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
+         int funcEnterId,int _rTSVarC,
+         int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
+         int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
     :
+            tickKind(tickKind),
             t(_t),
-            dSVarAC(dSVarAllocCnt),
-            dSVarFC(dSVarFreeCnt),
-            dHVarAC(dHVarAllocCnt),
-            dHVarFC(dHVarFreeCnt),
+            srcFile(srcFile),
+            funcLine(funcLine),
+            funcCol(funcCol),
+            funcName(funcName),
+            funcEnterId(funcEnterId),
+            rTSVarC(_rTSVarC),
+            dSVarAC(dSVarAC),
+            dSVarFC(dSVarFC),
+            dHVarAC(dHVarAC),
+            dHVarFC(dHVarFC),
 
-            sVarAC(sVarAllocCnt),
-            sVarFC(sVarFreeCnt),
+            sVarAC(sVarAC),
+            sVarFC(sVarFC),
             sVarC(sVarCnt),
-            hVarAC(hVarAllocCnt),
-            hVarFC(hVarFreeCnt),
-            hVarC(hVarCnt)
+            hVarAC(hVarAC),
+            hVarFC(hVarFC),
+            hVarC(hVarC)
     {
     }
 
@@ -170,11 +219,13 @@ public:
     }
 
     void toString(std::string & line){
-      char buf[128];
-      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+      char buf[512];
+      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%d,%d,%s\n",
               t,
+              tickKind,funcEnterId,rTSVarC,
               dSVarAC, dSVarFC, dHVarAC, dHVarFC,
-              sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC
+              sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC,
+              srcFile, funcLine, funcCol, funcName
               );
       line.append(buf);
       return;
@@ -248,7 +299,7 @@ public:
         fWriter.open(filePath);
 
         //刚打开文件时，写入标题行
-        std::string title("滴答,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净\n");
+        std::string title("滴答,tickKind,funcEnterId,rTSVarC,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净,srcFile,funcLine,funcCol,funcName\n");
         fWriter << title ;
       }
       return;
@@ -317,46 +368,46 @@ const std::string TickCache::tick_data_home("/tick_data_home");
 
 /**
  *
- * @param dSVarAllocCnt  此次滴答期间， 栈变量分配数目
- * @param dSVarFreeCnt   此次滴答期间， 栈变量释放数目
- * @param dHVarAllocCnt   此次滴答期间， 堆对象分配数目
- * @param dHVarFreeCnt   此次滴答期间， 堆对象释放数目
+ * @param dSVarAC  此次滴答期间， 栈变量分配数目
+ * @param dSVarFC   此次滴答期间， 栈变量释放数目
+ * @param dHVarAC   此次滴答期间， 堆对象分配数目
+ * @param dHVarFC   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr){
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* pFuncFrame){
 
   //时钟滴答一下
-  if(plus1Tick){
-    tg_t++;
-  }
+  tg_t++;
 
   //更新 当前栈变量分配数目
-  tg_sVarAC+=dSVarAllocCnt;
+  tg_sVarAC+=dSVarAC;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
   //更新 当前栈变量释放数目
-  tg_sVarFC+=dSVarFreeCnt;
+  tg_sVarFC+=dSVarFC;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
-  int dVarC=dSVarAllocCnt - dSVarFreeCnt;
+  int dVarC= dSVarAC - dSVarFC;
 
   //更新 当前栈变量数目
   tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
 
-  (*topFuncSVarCnt_ptr)+=dVarC;
+  (pFuncFrame->rTSVarC)+=dVarC;
 
   //更新 当前堆对象分配数目
-  tg_hVarAC+=dHVarAllocCnt;
+  tg_hVarAC+=dHVarAC;
 
   //更新 当前堆对象释放数目
-  tg_hVarFC+=dHVarFreeCnt;
+  tg_hVarFC+=dHVarFC;
 
-  int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
+  int dHVarC= dHVarAC - dHVarFC;
   //更新 当前堆对象数目
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(tg_t,
-            dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,
+  Tick tick(NormalTick,
+          tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
+            dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
   tickCache.saveWrap(tick);
@@ -364,19 +415,63 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
 
   return;
 }
-void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr){
-  I__t_clock_tick(true,dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,topFuncSVarCnt_ptr);
-}
 
-void X__funcEnter( ){
+/**初始化函数定位信息
+ * FLoc:func location
+ * @param pFuncFrame
+ * @param srcFile
+ * @param funcName
+ * @param funcLine
+ * @param funcCol
+ */
+void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,int funcLine,int funcCol,char * funcName){
+  pFuncFrame->L_srcFile=srcFile;
+  pFuncFrame->L_funcLine=funcLine;
+  pFuncFrame->L_funcCol=funcCol;
+
+  pFuncFrame->L_funcName=funcName;
+
+  pFuncFrame->funcEnterId=0;
+
+  pFuncFrame->rTSVarC=0;
 }
-void X__funcReturn(int* topFuncSVarCnt_ptr ){
-  tg_sVarFC+=(*topFuncSVarCnt_ptr);
-  tg_sVarC-= (*topFuncSVarCnt_ptr);
-  Tick tick(tg_t,
-            0, (*topFuncSVarCnt_ptr), 0, 0,
+void X__funcEnter( XFuncFrame*  pFuncFrame){
+
+  //region 函数进入id
+  //制作函数进入id
+  pFuncFrame->funcEnterId=tg_FEntCnter;
+  //函数进入计数器更新
+  tg_FEntCnter++;
+  //endregion
+
+  //region 写tick。 此 函数进入滴答 不作为 正常栈变量数分析使用
+  //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
+  Tick tick(FuncEnter,
+          tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
+            0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0);
+  tickCache.saveWrap(tick);
+  //endregion
+}
+void X__funcReturn(XFuncFrame*  pFuncFrame ){
+
+  //region 紧挨着返回前, 滴答一下 携带了 残余栈变量数 , 并写滴答。
+  //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
+  tg_t++;
+  Tick tick(FuncReturn,
+            tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
+            0, (pFuncFrame->rTSVarC)/*残余栈变量数*/, 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
+  //endregion
 
-  (*topFuncSVarCnt_ptr)=0;
+  //region 函数返回 释放变量
+  tg_sVarFC+=(pFuncFrame->rTSVarC);
+  tg_sVarC-= (pFuncFrame->rTSVarC);
+
+  //这句话没什么实质作用，因此FuncFrame是该函数局部变量，和此次函数调用同生共死。
+  (pFuncFrame->rTSVarC)=0;
+  //endregion
 }
