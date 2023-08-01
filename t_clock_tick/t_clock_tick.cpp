@@ -134,6 +134,24 @@ long I__getNowMilliseconds() {
 //region 单滴答
 class Tick{
 public:
+    /**
+     *  该函数定位信息, 等同于该函数id
+     */
+    char * srcFile;
+    int funcLine;
+    int funcCol;
+    char * funcName;
+    /**
+     * 本次函数调用唯一编号
+     * int足够吗？(差不多吧). 用得着long?
+     */
+    int funcEnterId;
+
+    /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
+     * rT:realTime
+     */
+    int rTSVarC;
+
 //AC:Allocate Count:分配的变量数目
 //FC:Free Count:释放的变量数目
 //C:Count:净变量数目， 即 分配-释放
@@ -151,12 +169,19 @@ public:
     int dHVarAC;//单滴答内堆变量分配数目
     int dHVarFC;//单滴答内堆变量分配数目
 public:
-    Tick(int _t,
+    Tick(int _t, FatLocId fatLocId,
+         Trade trade,
          int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
          int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
     :
             t(_t),
+            srcFile(fatLocId.locId.srcFile),
+            funcLine(fatLocId.locId.funcLine),
+            funcCol(fatLocId.locId.funcCol),
+            funcName(fatLocId.funcName),
+            funcEnterId(trade.funcEnterId),
+            rTSVarC(trade.rTSVarC),
             dSVarAC(dSVarAC),
             dSVarFC(dSVarFC),
             dHVarAC(dHVarAC),
@@ -348,7 +373,7 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   //更新 当前栈变量数目
   tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
 
-  (pFuncFrame->rTSVarC)+=dVarC;
+  (pFuncFrame->trade.rTSVarC)+=dVarC;
 
   //更新 当前堆对象分配数目
   tg_hVarAC+=dHVarAC;
@@ -361,7 +386,8 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(tg_t,
+  Tick tick(tg_t,pFuncFrame->fatLocId,
+            pFuncFrame->trade,
             dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
@@ -383,30 +409,33 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
  * @param funcCol
  */
 void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcName,int funcLine,int funcCol){
-  pFuncFrame->srcFile=srcFile;
-  pFuncFrame->funcName=funcName;
-  pFuncFrame->funcLine=funcLine;
-  pFuncFrame->funcCol=funcCol;
+  pFuncFrame->fatLocId.locId.srcFile=srcFile;
+  pFuncFrame->fatLocId.locId.funcLine=funcLine;
+  pFuncFrame->fatLocId.locId.funcCol=funcCol;
 
-  pFuncFrame->funcEnterId=0;
+  pFuncFrame->fatLocId.funcName=funcName;
 
-  pFuncFrame->rTSVarC=0;
+  pFuncFrame->trade.funcEnterId=0;
+
+  pFuncFrame->trade.rTSVarC=0;
 }
 void X__funcEnter( XFuncFrame*  pFuncFrame){
 
   //制作函数进入id
-  pFuncFrame->funcEnterId=tg_FEntCnter;
+  pFuncFrame->trade.funcEnterId=tg_FEntCnter;
 
   //函数进入计数器更新
   tg_FEntCnter++;
 }
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
-  tg_sVarFC+=(pFuncFrame->rTSVarC);
-  tg_sVarC-= (pFuncFrame->rTSVarC);
-  Tick tick(tg_t,
-            0, (pFuncFrame->rTSVarC), 0, 0,
+  tg_sVarFC+=(pFuncFrame->trade.rTSVarC);
+  tg_sVarC-= (pFuncFrame->trade.rTSVarC);
+
+  Tick tick(tg_t,pFuncFrame->fatLocId,
+            pFuncFrame->trade,
+            0, (pFuncFrame->trade.rTSVarC), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
 
-  (pFuncFrame->rTSVarC)=0;
+  (pFuncFrame->trade.rTSVarC)=0;
 }

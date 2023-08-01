@@ -5,14 +5,25 @@
 /**
  *  函数一次调用 所持有的局部变量们、本次函数调用唯一编号；该函数定位信息
  */
-struct _XFuncFrame{
+
+struct _XLocId {
     /**
      *  该函数定位信息, 等同于该函数id
      */
     char * srcFile;
-    char * funcName;
     int funcLine;
     int funcCol;
+};
+typedef struct _XLocId LocId;
+struct _XFatLocId {
+    /**
+     *  该函数定位信息, 等同于该函数id
+     */
+    LocId locId;
+    char * funcName;
+};
+typedef struct _XFatLocId FatLocId;
+struct _XTrade {
 
     /**
      * 本次函数调用唯一编号
@@ -24,6 +35,19 @@ struct _XFuncFrame{
      * rT:realTime
      */
     int rTSVarC;
+};
+typedef struct _XTrade Trade;
+struct _XFuncFrame{
+    /**
+     *  该函数定位信息, 等同于该函数id
+     */
+    FatLocId fatLocId;
+
+    /**
+     * 本次函数调用唯一编号
+     * int足够吗？(差不多吧). 用得着long?
+     */
+    Trade trade;
 };
 typedef struct _XFuncFrame XFuncFrame;
 
