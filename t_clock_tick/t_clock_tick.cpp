@@ -169,19 +169,19 @@ public:
     int dHVarAC;//单滴答内堆变量分配数目
     int dHVarFC;//单滴答内堆变量分配数目
 public:
-    Tick(int _t, FatLocId fatLocId,
-         Trade trade,
+    Tick(int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
+         int funcEnterId,int rTSVarC,
          int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
          int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
     :
             t(_t),
-            srcFile(fatLocId.locId.srcFile),
-            funcLine(fatLocId.locId.funcLine),
-            funcCol(fatLocId.locId.funcCol),
-            funcName(fatLocId.funcName),
-            funcEnterId(trade.funcEnterId),
-            rTSVarC(trade.rTSVarC),
+            srcFile(srcFile),
+            funcLine(funcLine),
+            funcCol(funcCol),
+            funcName(funcName),
+            funcEnterId(funcEnterId),
+            rTSVarC(rTSVarC),
             dSVarAC(dSVarAC),
             dSVarFC(dSVarFC),
             dHVarAC(dHVarAC),
@@ -386,8 +386,8 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(tg_t,pFuncFrame->fatLocId,
-            pFuncFrame->trade,
+  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
@@ -409,11 +409,11 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
  * @param funcCol
  */
 void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcName,int funcLine,int funcCol){
-  pFuncFrame->srcFile=srcFile;
-  pFuncFrame->funcLine=funcLine;
-  pFuncFrame->funcCol=funcCol;
+  pFuncFrame->L_srcFile=srcFile;
+  pFuncFrame->L_funcLine=funcLine;
+  pFuncFrame->L_funcCol=funcCol;
 
-  pFuncFrame->funcName=funcName;
+  pFuncFrame->L_funcName=funcName;
 
   pFuncFrame->funcEnterId=0;
 
@@ -431,8 +431,8 @@ void X__funcReturn(XFuncFrame*  pFuncFrame ){
   tg_sVarFC+=(pFuncFrame->rTSVarC);
   tg_sVarC-= (pFuncFrame->rTSVarC);
 
-  Tick tick(tg_t,pFuncFrame->fatLocId,
-            pFuncFrame->trade,
+  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             0, (pFuncFrame->rTSVarC), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);

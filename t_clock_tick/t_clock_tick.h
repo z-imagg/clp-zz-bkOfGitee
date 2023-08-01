@@ -10,10 +10,10 @@ struct _XFuncFrame{
     /**
      *  该函数定位信息, 等同于该函数id
      */
-    char * srcFile;
-    int funcLine;
-    int funcCol;
-    char * funcName;
+    char * L_srcFile;
+    int L_funcLine;
+    int L_funcCol;
+    char * L_funcName;
 
     /**
      * 本次函数调用唯一编号
