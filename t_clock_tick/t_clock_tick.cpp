@@ -59,6 +59,11 @@ thread_local int tg_hVarFC=0;//当前堆对象释放数目 tg_hVarFC: currentHea
 thread_local int tg_hVarC=0;//当前堆对象数目（冗余）tg_hVarC: currentHeapObjCnt, var即obj
 //endregion
 
+//region 函数进入计数器
+//FEnt: func enter;  Cnter: counter
+thread_local int tg_FEntCnter=0;
+//endregion
+
 //region 工具
 bool I__fileExists(const std::string& filePath) {
   std::ifstream file(filePath);
@@ -369,7 +374,13 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
   I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, pFuncFrame);
 }
 
-void X__funcEnter( ){
+void X__funcEnter( XFuncFrame*  pFuncFrame){
+
+  //制作函数进入id
+  pFuncFrame->funcEnterId=tg_FEntCnter;
+
+  //函数进入计数器更新
+  tg_FEntCnter++;
 }
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
   tg_sVarFC+=(pFuncFrame->rTSVarC);
