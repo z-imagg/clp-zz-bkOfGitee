@@ -27,7 +27,7 @@
 #define X__funcReturn _Z13X__funcReturnPi
 #endif
 
-void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr);
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, int* topFuncSVarCnt_ptr);
 
 /////函数X__funcEnter、X__funcReturn用于:  return语句 应该释放 本函数当前已经申请的所有栈变量。
 /**

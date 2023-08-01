@@ -317,12 +317,12 @@ const std::string TickCache::tick_data_home("/tick_data_home");
 
 /**
  *
- * @param dSVarAllocCnt  此次滴答期间， 栈变量分配数目
- * @param dSVarFreeCnt   此次滴答期间， 栈变量释放数目
- * @param dHVarAllocCnt   此次滴答期间， 堆对象分配数目
- * @param dHVarFreeCnt   此次滴答期间， 堆对象释放数目
+ * @param dSVarAC  此次滴答期间， 栈变量分配数目
+ * @param dSVarFC   此次滴答期间， 栈变量释放数目
+ * @param dHVarAC   此次滴答期间， 堆对象分配数目
+ * @param dHVarFC   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr){
+void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, int* topFuncSVarCnt_ptr){
 
   //时钟滴答一下
   if(plus1Tick){
@@ -330,14 +330,14 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
   }
 
   //更新 当前栈变量分配数目
-  tg_sVarAC+=dSVarAllocCnt;
+  tg_sVarAC+=dSVarAC;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
   //更新 当前栈变量释放数目
-  tg_sVarFC+=dSVarFreeCnt;
+  tg_sVarFC+=dSVarFC;
   //更新 本线程 栈顶函数 当前 栈变量净数目
 
-  int dVarC=dSVarAllocCnt - dSVarFreeCnt;
+  int dVarC= dSVarAC - dSVarFC;
 
   //更新 当前栈变量数目
   tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
@@ -345,18 +345,18 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
   (*topFuncSVarCnt_ptr)+=dVarC;
 
   //更新 当前堆对象分配数目
-  tg_hVarAC+=dHVarAllocCnt;
+  tg_hVarAC+=dHVarAC;
 
   //更新 当前堆对象释放数目
-  tg_hVarFC+=dHVarFreeCnt;
+  tg_hVarFC+=dHVarFC;
 
-  int dHVarC=dHVarAllocCnt - dHVarFreeCnt;
+  int dHVarC= dHVarAC - dHVarFC;
   //更新 当前堆对象数目
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
   Tick tick(tg_t,
-            dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,
+            dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
   );
   tickCache.saveWrap(tick);
@@ -364,8 +364,8 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAllocCnt, int dSVarFreeCnt, int dH
 
   return;
 }
-void X__t_clock_tick(int dSVarAllocCnt, int dSVarFreeCnt, int dHVarAllocCnt, int dHVarFreeCnt,int* topFuncSVarCnt_ptr){
-  I__t_clock_tick(true,dSVarAllocCnt, dSVarFreeCnt, dHVarAllocCnt, dHVarFreeCnt,topFuncSVarCnt_ptr);
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, int* topFuncSVarCnt_ptr){
+  I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, topFuncSVarCnt_ptr);
 }
 
 void X__funcEnter( ){
