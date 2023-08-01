@@ -323,7 +323,7 @@ const std::string TickCache::tick_data_home("/tick_data_home");
  * @param dHVarAC   此次滴答期间， 堆对象分配数目
  * @param dHVarFC   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* topFuncFrame_ptr){
+void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* pFuncFrame){
 
   //时钟滴答一下
   if(plus1Tick){
@@ -343,7 +343,7 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   //更新 当前栈变量数目
   tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
 
-  (topFuncFrame_ptr->topFuncSVarCnt)+=dVarC;
+  (pFuncFrame->topFuncSVarCnt)+=dVarC;
 
   //更新 当前堆对象分配数目
   tg_hVarAC+=dHVarAC;
@@ -365,19 +365,19 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
 
   return;
 }
-void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame*  topFuncFrame_ptr){
-  I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, topFuncFrame_ptr);
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame*  pFuncFrame){
+  I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, pFuncFrame);
 }
 
 void X__funcEnter( ){
 }
-void X__funcReturn(int* topFuncSVarCnt_ptr ){
-  tg_sVarFC+=(*topFuncSVarCnt_ptr);
-  tg_sVarC-= (*topFuncSVarCnt_ptr);
+void X__funcReturn(XFuncFrame*  pFuncFrame ){
+  tg_sVarFC+=(pFuncFrame->topFuncSVarCnt);
+  tg_sVarC-= (pFuncFrame->topFuncSVarCnt);
   Tick tick(tg_t,
-            0, (*topFuncSVarCnt_ptr), 0, 0,
+            0, (pFuncFrame->topFuncSVarCnt), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
 
-  (*topFuncSVarCnt_ptr)=0;
+  (pFuncFrame->topFuncSVarCnt)=0;
 }

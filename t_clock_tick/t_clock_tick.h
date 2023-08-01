@@ -37,7 +37,7 @@ typedef struct _XFuncFrame XFuncFrame;
  * @param heapObjAllocCnt   此次滴答期间， 堆对象分配数目
  * @param heapObjcFreeCnt   此次滴答期间， 堆对象释放数目
  */
-void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* topFuncFrame_ptr);
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* pFuncFrame);
 
 /////函数X__funcEnter、X__funcReturn用于:  return语句 应该释放 本函数当前已经申请的所有栈变量。
 /**
