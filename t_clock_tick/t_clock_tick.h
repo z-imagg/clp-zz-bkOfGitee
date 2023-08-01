@@ -21,7 +21,10 @@ struct _XFuncFrame{
      */
     int funcEnterId;
 
-    /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
+    /**实时栈变量净数目。
+     * 即  直到当前tick，栈变量净数目。
+     * 作用：块 中间位置出现return, 释放 栈变量残余。
+     *       即   X__t_clock_tick释放栈变量之前 出现return ，导致 栈变量残余, 在return前一句释放残余rTSVarC个栈变量。
      * rT:realTime
      */
     int rTSVarC;
