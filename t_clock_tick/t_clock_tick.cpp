@@ -131,9 +131,26 @@ long I__getNowMilliseconds() {
 }
 //endregion
 
+/**滴答种类
+ *需要被正常分析的tick是 正常tick 和 函数进入tick，
+ * 正常分析不需要 函数返回tick
+ * 看哪里少插入了X__funcReturn: 比对 函数返回tick   和 函数进入tick  是否配对
+ */
+enum TickKind{
+    //正常tick
+    NormalTick=0,
+    //函数进入tick
+    FuncEnter=1,
+    //函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn
+    FuncReturn=2
+
+};
+
 //region 单滴答
 class Tick{
 public:
+    TickKind tickKind;
+
     /**
      *  该函数定位信息, 等同于该函数id
      */
@@ -169,12 +186,13 @@ public:
     int dHVarAC;//单滴答内堆变量分配数目
     int dHVarFC;//单滴答内堆变量分配数目
 public:
-    Tick(int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
+    Tick(TickKind tickKind,int _t, char * srcFile,int funcLine,int funcCol,char * funcName,
          int funcEnterId,int rTSVarC,
          int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC,
          int sVarAC, int sVarFC, int sVarCnt, int hVarAC, int hVarFC, int hVarC
  )
     :
+            tickKind(tickKind),
             t(_t),
             srcFile(srcFile),
             funcLine(funcLine),
@@ -202,11 +220,12 @@ public:
 
     void toString(std::string & line){
       char buf[128];
-      sprintf(buf, "%d,%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%d,%d,%s\n",
               t,
-              srcFile, funcLine, funcCol, funcName, funcEnterId,rTSVarC,
+              tickKind,funcEnterId,rTSVarC,
               dSVarAC, dSVarFC, dHVarAC, dHVarFC,
-              sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC
+              sVarAC, sVarFC, sVarC, hVarAC, hVarFC, hVarC,
+              srcFile, funcLine, funcCol, funcName
               );
       line.append(buf);
       return;
@@ -280,7 +299,7 @@ public:
         fWriter.open(filePath);
 
         //刚打开文件时，写入标题行
-        std::string title("滴答,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净\n");
+        std::string title("滴答,tickKind,funcEnterId,rTSVarC,d栈生,d栈死,d堆生,d堆死,栈生,栈死,栈净,堆生,堆死,堆净,srcFile,funcLine,funcCol,funcName\n");
         fWriter << title ;
       }
       return;
@@ -387,7 +406,8 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   tg_hVarC+= dHVarC;//和原来的  tg_hVarC= tg_hVarAC - tg_hVarFC;  意思一样，但更直接
 
   //如果有设置环境变量tick_save,则保存当前滴答
-  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+  Tick tick(NormalTick,
+          tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
             pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             dSVarAC, dSVarFC, dHVarAC, dHVarFC,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC
@@ -422,21 +442,40 @@ void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcNa
 }
 void X__funcEnter( XFuncFrame*  pFuncFrame){
 
+  //region 函数进入id
   //制作函数进入id
   pFuncFrame->funcEnterId=tg_FEntCnter;
-
   //函数进入计数器更新
   tg_FEntCnter++;
-}
-void X__funcReturn(XFuncFrame*  pFuncFrame ){
-  tg_sVarFC+=(pFuncFrame->rTSVarC);
-  tg_sVarC-= (pFuncFrame->rTSVarC);
+  //endregion
 
-  Tick tick(tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+  //region 滴答一下, 并写一次tick
+  tg_t++;
+  Tick tick(FuncEnter,
+          tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
             pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             0, (pFuncFrame->rTSVarC), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
+  //endregion
+}
+void X__funcReturn(XFuncFrame*  pFuncFrame ){
 
+  //region 返回前, 滴答一下, 并写一次tick(此 函数返回tick 只作为 和 函数进入tick 做比对，看哪里少插入了X__funcReturn）
+  tg_t++;
+  Tick tick(FuncReturn,
+            tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
+            pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
+            0, (pFuncFrame->rTSVarC), 0, 0,
+            tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
+  tickCache.saveWrap(tick);
+  //endregion
+
+  //region 函数返回 释放变量
+  tg_sVarFC+=(pFuncFrame->rTSVarC);
+  tg_sVarC-= (pFuncFrame->rTSVarC);
+
+  //这句话没什么实质作用，因此FuncFrame是该函数局部变量，和此次函数调用同生共死。
   (pFuncFrame->rTSVarC)=0;
+  //endregion
 }
