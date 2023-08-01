@@ -374,6 +374,20 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
   I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, pFuncFrame);
 }
 
+/**初始化函数定位信息
+ * FLoc:func location
+ * @param pFuncFrame
+ * @param srcFile
+ * @param funcName
+ * @param funcLine
+ * @param funcCol
+ */
+void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcName,int funcLine,int funcCol){
+  pFuncFrame->srcFile=srcFile;
+  pFuncFrame->funcName=funcName;
+  pFuncFrame->funcLine=funcLine;
+  pFuncFrame->funcCol=funcCol;
+}
 void X__funcEnter( XFuncFrame*  pFuncFrame){
 
   //制作函数进入id
