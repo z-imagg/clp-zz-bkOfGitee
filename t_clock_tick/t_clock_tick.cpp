@@ -373,12 +373,10 @@ const std::string TickCache::tick_data_home("/tick_data_home");
  * @param dHVarAC   此次滴答期间， 堆对象分配数目
  * @param dHVarFC   此次滴答期间， 堆对象释放数目
  */
-void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* pFuncFrame){
+void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame* pFuncFrame){
 
   //时钟滴答一下
-  if(plus1Tick){
-    tg_t++;
-  }
+  tg_t++;
 
   //更新 当前栈变量分配数目
   tg_sVarAC+=dSVarAC;
@@ -416,9 +414,6 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
 
 
   return;
-}
-void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFrame*  pFuncFrame){
-  I__t_clock_tick(true, dSVarAC, dSVarFC, dHVarAC, dHVarFC, pFuncFrame);
 }
 
 /**初始化函数定位信息
