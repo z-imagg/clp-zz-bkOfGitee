@@ -387,6 +387,10 @@ void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcNa
   pFuncFrame->funcName=funcName;
   pFuncFrame->funcLine=funcLine;
   pFuncFrame->funcCol=funcCol;
+
+  pFuncFrame->funcEnterId=0;
+
+  pFuncFrame->rTSVarC=0;
 }
 void X__funcEnter( XFuncFrame*  pFuncFrame){
 

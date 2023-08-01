@@ -116,7 +116,7 @@ bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId,const char* funcName, Sour
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
-          "XFuncFrame xFuncFrame=0; X__FuncFrame_initFLoc(&xFuncFrame,\"{}\",\"{}\",{},{}); X__funcEnter(&xFuncFrame/*函入*/);//{}\n",
+          "XFuncFrame xFuncFrame; X__FuncFrame_initFLoc(&xFuncFrame,\"{}\",\"{}\",{},{}); X__funcEnter(&xFuncFrame/*函入*/);//{}\n",
           funcLocId.filePath,funcName,funcLocId.line,funcLocId.column,
           //如果有提供，插入者信息，则放在注释中.
           whoInserted

@@ -16,8 +16,9 @@ struct _XFuncFrame{
 
     /**
      * 本次函数调用唯一编号
+     * int足够吗？(差不多吧). 用得着long?
      */
-    long funcEnterId;
+    int funcEnterId;
 
     /**实时栈变量净数目。 即  直到当前tick，栈变量净数目。
      * rT:realTime
