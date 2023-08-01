@@ -31,6 +31,7 @@ typedef struct _XFuncFrame XFuncFrame;
 #ifndef __cplusplus
 //如果当前是.c文件包含了此.h,  则强制使用#函数名到c++名字
 #define X__t_clock_tick  _Z15X__t_clock_tickiiiiP11_XFuncFrame
+#define X__FuncFrame_initFLoc  _Z21X__FuncFrame_initFLocP11_XFuncFramePciiS1_
 #define X__funcEnter  _Z12X__funcEnterP11_XFuncFrame
 #define X__funcReturn _Z13X__funcReturnP11_XFuncFrame
 #endif
