@@ -220,7 +220,7 @@ public:
 
     void toString(std::string & line){
       char buf[512];
-      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%d,%d,%s\n",
+      sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,'%s',%d,%d,'%s'\n",
               t,
               tickKind,funcEnterId,rTSVarC,
               dSVarAC, dSVarFC, dHVarAC, dHVarFC,
