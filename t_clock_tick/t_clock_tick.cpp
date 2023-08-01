@@ -373,7 +373,7 @@ void I__t_clock_tick(bool plus1Tick, int dSVarAC, int dSVarFC, int dHVarAC, int 
   //更新 当前栈变量数目
   tg_sVarC+= dVarC;  //和原来的  tg_sVarC= tg_sVarAC - tg_sVarFC;  意思一样，但更直接
 
-  (pFuncFrame->trade.rTSVarC)+=dVarC;
+  (pFuncFrame->rTSVarC)+=dVarC;
 
   //更新 当前堆对象分配数目
   tg_hVarAC+=dHVarAC;
@@ -409,33 +409,33 @@ void X__t_clock_tick(int dSVarAC, int dSVarFC, int dHVarAC, int dHVarFC, XFuncFr
  * @param funcCol
  */
 void X__FuncFrame_initFLoc( XFuncFrame*  pFuncFrame,char * srcFile,char * funcName,int funcLine,int funcCol){
-  pFuncFrame->fatLocId.locId.srcFile=srcFile;
-  pFuncFrame->fatLocId.locId.funcLine=funcLine;
-  pFuncFrame->fatLocId.locId.funcCol=funcCol;
+  pFuncFrame->srcFile=srcFile;
+  pFuncFrame->funcLine=funcLine;
+  pFuncFrame->funcCol=funcCol;
 
-  pFuncFrame->fatLocId.funcName=funcName;
+  pFuncFrame->funcName=funcName;
 
-  pFuncFrame->trade.funcEnterId=0;
+  pFuncFrame->funcEnterId=0;
 
-  pFuncFrame->trade.rTSVarC=0;
+  pFuncFrame->rTSVarC=0;
 }
 void X__funcEnter( XFuncFrame*  pFuncFrame){
 
   //制作函数进入id
-  pFuncFrame->trade.funcEnterId=tg_FEntCnter;
+  pFuncFrame->funcEnterId=tg_FEntCnter;
 
   //函数进入计数器更新
   tg_FEntCnter++;
 }
 void X__funcReturn(XFuncFrame*  pFuncFrame ){
-  tg_sVarFC+=(pFuncFrame->trade.rTSVarC);
-  tg_sVarC-= (pFuncFrame->trade.rTSVarC);
+  tg_sVarFC+=(pFuncFrame->rTSVarC);
+  tg_sVarC-= (pFuncFrame->rTSVarC);
 
   Tick tick(tg_t,pFuncFrame->fatLocId,
             pFuncFrame->trade,
-            0, (pFuncFrame->trade.rTSVarC), 0, 0,
+            0, (pFuncFrame->rTSVarC), 0, 0,
             tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
 
-  (pFuncFrame->trade.rTSVarC)=0;
+  (pFuncFrame->rTSVarC)=0;
 }
