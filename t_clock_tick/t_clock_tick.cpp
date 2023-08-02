@@ -139,7 +139,7 @@ long I__getNowMilliseconds() {
 enum TickKind{
     //正常tick
     NormalTick=0,
-    //函数进入tick 只作为 和 函数返回tick 做比对，看哪里少插入了X__funcReturn
+    //函数进入tick 可作为 和 函数返回tick 做比对，看哪里少插入了X__funcReturn
     FuncEnter=1,
     //函数返回tick
     FuncReturn=2
@@ -444,13 +444,15 @@ void X__funcEnter( XFuncFrame*  pFuncFrame){
   tg_FEntCnter++;
   //endregion
 
-  //region 写tick。 此 函数进入滴答 不作为 正常栈变量数分析使用
+  //region 写tick。   使得 函数进入 成为一个正常滴答 ，从而能出现在作图上 : 不分配、不释放，分配总数不变、释放总数不变。
+  //                       即 函数进入 相当于一个无贡献的普通语句。
   //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
+  tg_t++;
   Tick tick(FuncEnter,
           tg_t,pFuncFrame->L_srcFile,pFuncFrame->L_funcLine,pFuncFrame->L_funcCol,pFuncFrame->L_funcName,
             pFuncFrame->funcEnterId,pFuncFrame->rTSVarC,
             0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0);
+            tg_sVarAC, tg_sVarFC, tg_sVarC, tg_hVarAC, tg_hVarFC, tg_hVarC);
   tickCache.saveWrap(tick);
   //endregion
 }
