@@ -39,22 +39,23 @@ public:
 
     void visitTextComment(const comments::TextComment *C) {
       // 处理文本注释
-      llvm::outs() << "Text Comment: " << C->getText() << "\n";
+      llvm::outs() << "visitTextComment:" << C->getText() << "\n";
     }
 
     void visitBlockCommandComment(const comments::BlockCommandComment *C) {
       // 处理块命令注释
-      llvm::outs() << "Block Command Comment: " << C  << "\n";
+      llvm::outs() <<  "visitBlockCommandComment:"  << C  << "\n";
     }
 
-    void VisitComment(const comments::Comment *C) {
-      std::cout << C << std::endl;
+    void visitComment(const comments::Comment *C) {
+      std::cout<< "visitComment:"  << C << std::endl;
       // 处理注释
       // ...
     }
-
-    void VisitFullComment(const comments::FullComment *C) {
-      std::cout << C << std::endl;
+    //刚才访问不到的原因是 方法名写错了 不是 VisitFullComment ，是 visitFullComment，第一个字母是小写v
+    void visitFullComment(const comments::FullComment *C) {
+      //这里被调用了
+      std::cout << "visitFullComment:" << C << std::endl;
       // 处理注释
       // ...
     }
@@ -93,12 +94,12 @@ public:
           if (CommentAST) {
 
             //能走到这里，获取到 comments::FullComment， 并打印出注释
-            Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
+//            Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
 
 
 //            MyCommentVisitor CommentVisitor;
-//            cmtVisitor.visit(CommentAST );//访问不到自定义visitFullComment
-            cmtVisitor.visitFullComment(CommentAST);//访问不到自定义visitFullComment
+            cmtVisitor.visit(CommentAST );//能访问到自定义visitFullComment
+//            cmtVisitor.visitFullComment(CommentAST);//访问不到自定义visitFullComment
           }
 //        }
       }
