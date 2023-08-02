@@ -14,7 +14,7 @@
 
 #include "Brc/BrcVst.h"
 #include "Util.h"
-#include "Brc/FndCTkClROVst.h"
+#include "Brc/FndBrcFlagCmtHdl.h"
 
 using namespace llvm;
 using namespace clang;
@@ -34,7 +34,7 @@ public:
             :
             CI(_CI),
             insertVst(_rewriter_ptr, _astContext, _CI, _SM),
-            findTCCallROVisitor(_CI, _SM, _langOptions, _astContext),
+            findTCCallROVisitor(_CI, _SM, _langOptions),
             SM(_SM)  {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
@@ -77,11 +77,13 @@ public:
         if (!SM.isInMainFile(Decl->getLocation())){
           continue;
         }
+        findTCCallROVisitor.HandleComment(CI.getPreprocessor(),Ctx.getCommentCommandTraits());
+
         findTCCallROVisitor.TraverseDecl(Decl);
       }
       //}
 
-      if(findTCCallROVisitor.curMainFileHas_TCTkCall){
+      if(findTCCallROVisitor.curMainFileHas_BrcInsrtFlag){
         //若已经有时钟函数调用，则标记为已处理，且直接返回，不做任何处理。
         return;
       }
@@ -147,7 +149,7 @@ public:
 public:
     CompilerInstance &CI;
     BrcVst insertVst;
-    FndCTkClROVst findTCCallROVisitor;
+    FndBrcFlagCmtHdl findTCCallROVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;

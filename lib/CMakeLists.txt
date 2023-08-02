@@ -6,8 +6,9 @@ set(CTk_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/LocId.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/FndCTkClROVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/FndBrcFlagCmtHdl.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/MyCmtAct.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
 )
 

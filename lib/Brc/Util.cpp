@@ -600,3 +600,32 @@ void  Util::printSourceRange(int64_t nodeID,
   std::cout  << std::endl;
 
 }
+
+void  Util::printSourceRangeSimple(
+                             CompilerInstance& CI,
+                             std::string tag, std::string title,
+                              const SourceRange &sourceRange,
+                             bool printSourceText){
+
+  SourceManager & SM=CI.getSourceManager();
+  FileID fileId = SM.getFileID(sourceRange.getBegin() );
+  FileID mainFileId = SM.getMainFileID();
+
+  const std::tuple<std::string, std::string> & frst = get_FileAndRange_SourceText(sourceRange,CI);
+  std::string fileAndRange=std::get<0>(frst);
+  std::string sourceText=std::get<1>(frst);
+
+
+  std::cout
+          << tag << ","
+          << title
+          << ",文件路径、坐标:" << fileAndRange
+          <<  ",mainFileId:" << mainFileId.getHashValue()
+          << ",fileId:" << fileId.getHashValue()
+          ;
+  if(printSourceText){
+    std::cout <<   ",源码:" << sourceText ;
+  }
+  std::cout  << std::endl;
+
+}

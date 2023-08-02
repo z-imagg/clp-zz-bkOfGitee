@@ -6,24 +6,22 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 #CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-ctk/tools
 
-set(CTkAlone_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../tools/CTkMain.cpp"
+set(BrcAlone_SOURCES
+"${CMAKE_CURRENT_SOURCE_DIR}/../BrcAlone/BrcMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/LocId.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstAct.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/FndBrcFlagCmtHdl.cpp"
 )
 
     # Create a library corresponding to 'plugin'
     add_executable(
-        CTkAlone
-      ${CTkAlone_SOURCES}
+        BrcAlone
+      ${BrcAlone_SOURCES}
       )
 
     # Configure include directories for 'tool'
     target_include_directories(
-    CTkAlone
+    BrcAlone
       PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     "${LIBFMT_INCLUDE}"
@@ -31,7 +29,7 @@ set(CTkAlone_SOURCES
 
     # Link in the required libraries
     target_link_libraries(
-    CTkAlone
+    BrcAlone
       "clangTooling"
    "${LIBFMT_STATIC}"  #/pubx/fmt/build/libfmt.a
     )
