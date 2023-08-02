@@ -88,13 +88,14 @@ public:
 
 //        if (RC) {
           // 创建评论AST节点
-          comments::FullComment *CommentAST = D->getASTContext().getCommentForDecl(D, &(CI.getPreprocessor()));
-
+          comments::FullComment *CommentAST = Ctx.getCommentForDecl(D, &(CI.getPreprocessor()));
+        
+//        Ctx.addComment()
           // 遍历评论AST节点
           if (CommentAST) {
 
             //能走到这里，获取到 comments::FullComment， 并打印出注释
-//            Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
+            Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
 
 
 //            MyCommentVisitor CommentVisitor;
