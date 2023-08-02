@@ -66,12 +66,12 @@ public:
       const SourceRange &sourceRange = C->getSourceRange();
       LangOptions &langOpts = CI.getLangOpts();
       std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
-      SM.isWrittenInBuiltinFile(C->getLocation());
-      SM.isWrittenInMainFile(C->getLocation());
-      SM.isWrittenInSameFile(Loc1,Loc2);
-      SM.isInSystemMacro(Loc);
-      SM.isMacroArgExpansion(Loc);
-      SM.isMacroBodyExpansion(Loc);
+//      SM.isWrittenInBuiltinFile(C->getLocation());
+//      SM.isWrittenInMainFile(C->getLocation());
+//      SM.isWrittenInSameFile(Loc1,Loc2);
+//      SM.isInSystemMacro(Loc);
+//      SM.isMacroArgExpansion(Loc);
+//      SM.isMacroBodyExpansion(Loc);
       flag= (sourceText==brcInsertedOK);
 
     }

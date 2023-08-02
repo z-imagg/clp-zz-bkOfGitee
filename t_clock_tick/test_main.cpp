@@ -1,8 +1,8 @@
 #include <iostream>
-
 /**
  * 这是一个示例类
  */
+/**BrcInsertedOk*/
 class MyClass {
 public:
     /**
