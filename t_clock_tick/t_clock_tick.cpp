@@ -445,7 +445,7 @@ void X__funcEnter( XFuncFrame*  pFuncFrame){
   //endregion
 
   //region 写tick。   使得 函数进入 成为一个正常滴答 ，从而能出现在作图上 : 不分配、不释放，分配总数不变、释放总数不变。
-  //                       即 函数进入 相当于一个无贡献的普通语句。
+  //                       即 函数进入 相当于一个无贡献的普通语句函数进入。
   //函数进入滴答 可作为 和 函数返回滴答 做比对，看哪里少插入了X__funcReturn。
   tg_t++;
   Tick tick(FuncEnter,

@@ -1,10 +1,10 @@
 
-#include "CTk/LocId.h"
+#include "Brc/LocId.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include <fmt/core.h>
-#include "CTk/Util.h"
+#include "Brc/Util.h"
 
 using namespace clang;
 

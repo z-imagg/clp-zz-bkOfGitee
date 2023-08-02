@@ -12,9 +12,9 @@
 
 #include <fmt/core.h>
 
-#include "CTk/CTkVst.h"
-#include "FndCTkClROVst.h"
+#include "Brc/BrcVst.h"
 #include "Util.h"
+#include "Brc/FndCTkClROVst.h"
 
 using namespace llvm;
 using namespace clang;
@@ -25,11 +25,11 @@ using namespace clang;
 
 
 
-class CTkAstCnsm : public ASTConsumer {
+class AddBraceAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit CTkAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
-                        SourceManager &_SM, LangOptions &_langOptions)
+    explicit AddBraceAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
+                             SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),
@@ -113,6 +113,7 @@ public:
         insertVst.TraverseDecl(declJ);
       }
       //}
+
 //////////////////3.插入包含语句
 
       bool insertResult;
@@ -139,13 +140,13 @@ public:
       insertVst.mRewriter_ptr->overwriteChangedFiles();
 
 
-      //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 CTkAstCnsm。
+      //可以发现, 本方法 两次被调用 ， 对象地址this 即对象CTkAstCnsm的地址，两次是不同的。 原因在Act中 是 每次都是 新创建 AddBraceAstCnsm。
       mainFileProcessed=true;
     }
 
 public:
     CompilerInstance &CI;
-    CTkVst insertVst;
+    BrcVst insertVst;
     FndCTkClROVst findTCCallROVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static

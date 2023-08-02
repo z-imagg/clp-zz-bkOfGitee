@@ -8,13 +8,11 @@ MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(CTkAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../tools/CTkMain.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/Util.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/LocId.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FuncDesc.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/FndCTkClROVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstAct.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/CTk/CTkAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/Util.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/LocId.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
 )
 
     # Create a library corresponding to 'plugin'

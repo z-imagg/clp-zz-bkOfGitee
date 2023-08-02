@@ -1,10 +1,10 @@
-#include "CTk/CTkVst.h"
+#include "Brc/BrcVst.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
-#include "CTk/Util.h"
+#include "Brc/Util.h"
 
 using namespace clang;
 
@@ -17,21 +17,21 @@ using namespace llvm;
 using namespace clang;
 
 //-----------------------------------------------------------------------------
-// CTkVst implementation
+// BrcVst implementation
 //-----------------------------------------------------------------------------
 /*
 
 
 利用  运行clang++的编译 带上本插件.so  实现 对源文件插入时钟滴答语句:
-/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-ctk/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  CTk  -c /pubx/clang-ctk/t_clock_tick/test_main.cpp
+/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++  -Xclang   -load -Xclang /pubx/clang-ctk/cmake-build-debug/lib/libCTk.so  -Xclang   -add-plugin -Xclang  Brc  -c /pubx/clang-ctk/t_clock_tick/test_main.cpp
 
 
  */
 
 
-//std::set<FileID> CTkVst::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
-const std::string CTkVst::funcName_TCTk = "X__t_clock_tick";
-const std::string CTkVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
+//std::set<FileID> BrcVst::fileInsertedIncludeStmt;//={};//删除fileInsertedIncludeStmt，不再对间接文件做插入，目前只插入直接文件。
+const std::string BrcVst::funcName_TCTk = "X__t_clock_tick";
+const std::string BrcVst::IncludeStmt_TCTk = "#include \"t_clock_tick.h\"\n";
 
 
 static auto _VarDeclAstNodeKind=ASTNodeKind::getFromNodeKind<VarDecl>();
@@ -55,14 +55,14 @@ static auto _CompoundStmtAstNodeKind=ASTNodeKind::getFromNodeKind<CompoundStmt>(
 
 
 
-bool CTkVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
+bool BrcVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocation stmtBeginLoc, int stackVarAllocCnt, int stackVarFreeCnt, int heapObjAllocCnt, int heapObjcFreeCnt, const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_X__tick;
   cStr_X__tick=fmt::format(
-      "{}(/*栈生*/{}, /*栈死*/{}, /*堆生*/{}, /*堆死*/{},&xFuncFrame);//{}\n",
-      CTkVst::funcName_TCTk,
-      stackVarAllocCnt,stackVarFreeCnt,heapObjAllocCnt,heapObjcFreeCnt,
+          "{}(/*栈生*/{}, /*栈死*/{}, /*堆生*/{}, /*堆死*/{},&xFuncFrame);//{}\n",
+          BrcVst::funcName_TCTk,
+          stackVarAllocCnt, stackVarFreeCnt, heapObjAllocCnt, heapObjcFreeCnt,
       //如果有提供，插入者信息，则放在注释中.
       whoInserted
       );
@@ -83,13 +83,13 @@ bool CTkVst::insertBefore_X__tick(LifeStep lifeStep, int64_t stmtId, SourceLocat
 }
 
 
-bool CTkVst::insertBefore_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funcBodyRBraceLoc , const char* whoInserted){
-  return CTkVst::insert_X__funcReturn(true, funcBodyRBraceLocId, funcBodyRBraceLoc, whoInserted);
+bool BrcVst::insertBefore_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funcBodyRBraceLoc , const char* whoInserted){
+  return BrcVst::insert_X__funcReturn(true, funcBodyRBraceLocId, funcBodyRBraceLoc, whoInserted);
 }
-bool CTkVst::insertAfter_X__funcReturn( LocId funcBodyRBraceLocId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
-  return CTkVst::insert_X__funcReturn(false,funcBodyRBraceLocId,funEndStmtEndLoc,whoInserted);
+bool BrcVst::insertAfter_X__funcReturn(LocId funcBodyRBraceLocId, SourceLocation funEndStmtEndLoc , const char* whoInserted){
+  return BrcVst::insert_X__funcReturn(false, funcBodyRBraceLocId, funEndStmtEndLoc, whoInserted);
 }
-bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, SourceLocation insertLoc , const char* whoInserted){
+bool BrcVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, SourceLocation insertLoc , const char* whoInserted){
   //region 构造插入语句
   Util::emptyStrIfNullStr(whoInserted);
   std::string cStr_inserted=fmt::format(
@@ -112,7 +112,7 @@ bool CTkVst::insert_X__funcReturn(bool before, LocId funcBodyRBraceLocId, Source
   return insertResult;
 }
 
-bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId,const char* funcName, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
+bool BrcVst::insertAfter_X__funcEnter(LocId funcLocId, const char* funcName, SourceLocation funcBodyLBraceLoc , const char* whoInserted){
   Util::emptyStrIfNullStr(whoInserted);
   //region 构造插入语句
   std::string cStr_inserted=fmt::format(
@@ -142,7 +142,7 @@ bool CTkVst::insertAfter_X__funcEnter(LocId funcLocId,const char* funcName, Sour
 //TODO 喂给processStmt 就是其前肯定能插入的  ， processStmt 不需要再判断是否能插入的问题了？
 //TODO 插入前 需要看该语句ID是否已经被插入（ 还是 看 该位置 是否已经被插入？ ）  这两者没区别。 关键是  理论上 rewrite.overwriteChangedFiles 是在 HandleTranslationUnit 结尾 才发生，    所以 这种判断才没有被破坏  才能用。
 //    比如 对if语句前 TraverseCompoundStmt 和 TraverseIfStmt 都会插入 ， 这就重复了
-bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
+bool BrcVst::processStmt(Stmt *stmt, const char* whoInserted){
   this->mRewriter_ptr->setSourceMgr(this->SM,CI.getLangOpts());
 
   int64_t stmtId = stmt->getID(*Ctx);
@@ -167,7 +167,7 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 
   //region 之前开发，排错用代码
 //  int beginLine,beginCol;
-//  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break CTkVst.cpp:126 if beginLine==891
+//  Util::extractLineAndColumn(SM,beginLoc,beginLine,beginCol);//break BrcVst.cpp:126 if beginLine==891
 //  SourceRange sourceRange=stmt->getSourceRange();
 //  FileID fileId = SM.getFileID(beginLoc);//C
 //  FileID mainFileId = SM.getMainFileID();
@@ -268,11 +268,11 @@ bool CTkVst::processStmt(Stmt *stmt,const char* whoInserted){
 }
 
 
-/*bool CTkVst::VisitCallExpr(CallExpr *callExpr){
+/*bool BrcVst::VisitCallExpr(CallExpr *callExpr){
 
 }*/
 
-bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
+bool BrcVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 
 /////////////////////对当前节点compoundStmt做 自定义处理
   //region 0.准备、开发用语句
@@ -392,7 +392,7 @@ bool CTkVst::TraverseCompoundStmt(CompoundStmt *compoundStmt  ){
 }
 
 
-bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
+bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   /////////////////////////对当前节点compoundStmt做 自定义处理
 /*  std::all_of(ifStmt->children().begin(), ifStmt->children().end(),
 [this](Stmt* childK){
@@ -439,7 +439,7 @@ bool CTkVst::TraverseIfStmt(IfStmt *ifStmt){
 
   return true;
 }
-bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
+bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
 /////////////////////////对当前节点whileStmt做 自定义处理
   if(Util::parentIsCompound(Ctx,whileStmt)){
     processStmt(whileStmt,"TraverseWhileStmt");
@@ -471,7 +471,7 @@ bool CTkVst::TraverseWhileStmt(WhileStmt *whileStmt){
   return true;
 }
 
-bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
+bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 /////////////////////////对当前节点forStmt做 自定义处理
   if(Util::parentIsCompound(Ctx,forStmt)){
     processStmt(forStmt,"TraverseForStmt");
@@ -490,7 +490,7 @@ bool CTkVst::TraverseForStmt(ForStmt *forStmt) {
   return true;
 }
 
-bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
+bool BrcVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 
 /////////////////////////对当前节点forStmt做 自定义处理
   if(Util::parentIsCompound(Ctx,cxxTryStmt)){
@@ -512,7 +512,7 @@ bool CTkVst::TraverseCXXTryStmt(CXXTryStmt *cxxTryStmt) {
 }
 
 
-bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
+bool BrcVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
 
 /////////////////////////对当前节点cxxCatchStmt做 自定义处理
 //  processStmt(cxxCatchStmt,"TraverseCXXCatchStmt");//catch整体 前 肯定不能插入
@@ -529,7 +529,7 @@ bool CTkVst::TraverseCXXCatchStmt(CXXCatchStmt *cxxCatchStmt) {
   return true;
 }
 
-bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
+bool BrcVst::TraverseDoStmt(DoStmt *doStmt) {
 
 /////////////////////////对当前节点doStmt做 自定义处理
   if(Util::parentIsCompound(Ctx,doStmt)){
@@ -549,7 +549,7 @@ bool CTkVst::TraverseDoStmt(DoStmt *doStmt) {
   return true;
 }
 
-bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
+bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 //switchStmt: switch整体:  'switch(v){ case k1:{...}  case k2:{...}  default:{} }'
 /////////////////////////对当前节点switchStmt做 自定义处理
   if(Util::parentIsCompound(Ctx,switchStmt)){
@@ -581,7 +581,7 @@ bool CTkVst::TraverseSwitchStmt(SwitchStmt *switchStmt) {
 }
 
 
-bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
+bool BrcVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 
 /////////////////////////对当前节点caseStmt 不做 自定义处理
 ///////////////////// 自定义处理 完毕
@@ -602,7 +602,7 @@ bool CTkVst::TraverseCaseStmt(CaseStmt *caseStmt) {
 
 ////////////////constexpr
 
-bool CTkVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
+bool BrcVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
@@ -670,7 +670,7 @@ bool CTkVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
       );
 }
 
-bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
+bool BrcVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, cxxCnstrDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
@@ -736,10 +736,10 @@ bool CTkVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
         );
 }
 
-bool CTkVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
-  return CTkVst::I__TraverseCXXMethodDecl(cxxMethDecl,"TraverseCXXMethodDecl");
+bool BrcVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
+  return BrcVst::I__TraverseCXXMethodDecl(cxxMethDecl, "TraverseCXXMethodDecl");
 }
-bool CTkVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
+bool BrcVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl, const char* who){
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
@@ -806,7 +806,7 @@ bool CTkVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who
 }
 
 
-bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
+bool BrcVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
@@ -876,15 +876,14 @@ bool CTkVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
 }
 
 
-bool CTkVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
-  return CTkVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
+bool BrcVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
+  return BrcVst::I__TraverseCXXMethodDecl(cxxCnvDecl, "TraverseCXXConversionDecl");
 }
-bool CTkVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
-  return CTkVst::I__TraverseCXXMethodDecl(cxxDestructorDecl,"CXXDestructorDecl");
+bool BrcVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
+  return BrcVst::I__TraverseCXXMethodDecl(cxxDestructorDecl, "CXXDestructorDecl");
 }
 
-bool CTkVst::_Traverse_Func(
-//  std::function<FuncDesc( )> funcDescGetter,
+bool BrcVst::_Traverse_Func(
   QualType funcReturnType,
   bool isaCXXConstructorDecl,
   Stmt *endStmtOfFuncBody,
@@ -937,7 +936,7 @@ bool CTkVst::_Traverse_Func(
 
 
 
-bool CTkVst::TraverseReturnStmt(ReturnStmt *returnStmt){
+bool BrcVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   //跳过非MainFile
   bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
   if(!_LocFileIDEqMainFileID){

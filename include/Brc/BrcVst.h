@@ -10,7 +10,6 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
-#include "FuncDesc.h"
 #include "LocId.h"
 
 using namespace llvm;
@@ -20,8 +19,8 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // RecursiveASTVisitor
 //-----------------------------------------------------------------------------
-class CTkVst
-        : public RecursiveASTVisitor<CTkVst> {
+class BrcVst
+        : public RecursiveASTVisitor<BrcVst> {
 public:
 public:
     /**
@@ -33,7 +32,7 @@ public:
     };
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit CTkVst(const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, CompilerInstance &CI, SourceManager& SM)
+    explicit BrcVst(const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, CompilerInstance &CI, SourceManager& SM)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     : mRewriter_ptr(rewriter_ptr),
     Ctx(Ctx),
