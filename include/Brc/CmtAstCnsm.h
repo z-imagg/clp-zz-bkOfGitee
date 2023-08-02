@@ -10,6 +10,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/AST/Comment.h"
+#include "clang/AST/CommentVisitor.h"
 
 
 #include <fmt/core.h>
@@ -26,6 +27,39 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 
 
+class CmtVisitor : public comments::CommentVisitor<CmtVisitor> {
+public:
+    CmtVisitor(ASTContext &Context)
+//    :
+//    comments::CommentVisitor<CmtVisitor>(*this)
+    {
+
+    }
+
+
+    void visitTextComment(const comments::TextComment *C) {
+      // 处理文本注释
+      llvm::outs() << "Text Comment: " << C->getText() << "\n";
+    }
+
+    void visitBlockCommandComment(const comments::BlockCommandComment *C) {
+      // 处理块命令注释
+      llvm::outs() << "Block Command Comment: " << C  << "\n";
+    }
+
+    void VisitComment(const comments::Comment *C) {
+      std::cout << C << std::endl;
+      // 处理注释
+      // ...
+    }
+
+    void VisitFullComment(const comments::FullComment *C) {
+      std::cout << C << std::endl;
+      // 处理注释
+      // ...
+    }
+
+};
 
 class CmtAstCnsm : public ASTConsumer {
 public:
@@ -36,28 +70,70 @@ public:
             :
             CI(_CI),
             Ctx(*_astContext),
-            SM(_SM)  {
+            SM(_SM)  ,
+            cmtVisitor(*_astContext)
+            {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
     }
 
-    bool HandleTopLevelDecl(DeclGroupRef DG) override{
+    virtual bool HandleTopLevelDecl(DeclGroupRef DG) {
+      for (DeclGroupRef::iterator I = DG.begin(), E = DG.end(); I != E; ++I) {
+        Decl *D = *I;
+
+        // 获取注释
+//        const RawComment *RC = D->getASTContext().getRawCommentForDeclNoCache(D);
+//        const RawComment *RC = D->getASTContext().getCommentForDecl(D);
+
+//        if (RC) {
+          // 创建评论AST节点
+          comments::FullComment *CommentAST = D->getASTContext().getCommentForDecl(D, &(CI.getPreprocessor()));
+
+          // 遍历评论AST节点
+          if (CommentAST) {
+
+            //能走到这里，获取到 comments::FullComment， 并打印出注释
+            Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
+
+
+//            MyCommentVisitor CommentVisitor;
+//            cmtVisitor.visit(CommentAST );//访问不到自定义visitFullComment
+            cmtVisitor.visitFullComment(CommentAST);//访问不到自定义visitFullComment
+          }
+//        }
+      }
+
+      return true;
+    }
+    
+/*    bool HandleTopLevelDecl(DeclGroupRef DG) override{
 //      return ASTConsumer::HandleTopLevelDecl(D);
+      std::vector dg(DG.begin(),DG.end());
+      unsigned long dgSize = dg.size();
       for (Decl *D : DG) {
+        cmtVisitor.visit(D);
         __HandleDecl(D);
       }
 
-    }
+    }*/
 
+/*
     void __HandleDecl(Decl *D) {
-/*      if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-        __HandleFunctionDecl(FD);
-      }*/
+//      if (FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+//        __HandleFunctionDecl(FD);
+//      }
 
-      if (comments::FullComment *C = D->getASTContext().getCommentForDecl(D, nullptr)) {
+      ASTContext &astContext = D->getASTContext();
+      Preprocessor &PP = CI.getPreprocessor();
+      RawComment *C0 = astContext.getRawCommentForDeclNoCache(D);
+//      comments::CommandTraits &commandTraits = astContext.getCommentCommandTraits();
+      comments::FullComment *C = astContext.getCommentForDecl(D, &PP);
+      Util::printDecl(Ctx,CI,"查看源码","",D,true);
+      if (C) {
         __HandleComment(C);
       }
     }
+*/
 
 /*    void __HandleFunctionDecl(FunctionDecl *FD) {
 //      SourceManager &SM = Ctx.getSourceManager();
@@ -191,6 +267,7 @@ public:
     ASTContext & Ctx;
 //    BrcVst insertVst;
 //    FndBrcFlagCmtHdl findTCCallROVisitor;
+    CmtVisitor cmtVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;
