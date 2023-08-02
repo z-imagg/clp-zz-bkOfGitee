@@ -18,6 +18,7 @@
 #include "Brc/BrcVst.h"
 #include "Util.h"
 #include "Brc/FndBrcFlagCmtHdl.h"
+#include "CmtVst.h"
 
 using namespace llvm;
 using namespace clang;
@@ -26,41 +27,6 @@ using namespace clang;
 // ASTConsumer
 //-----------------------------------------------------------------------------
 
-
-class CmtVisitor : public comments::CommentVisitor<CmtVisitor> {
-public:
-    CmtVisitor(ASTContext &Context)
-//    :
-//    comments::CommentVisitor<CmtVisitor>(*this)
-    {
-
-    }
-
-
-    void visitTextComment(const comments::TextComment *C) {
-      // 处理文本注释
-      llvm::outs() << "visitTextComment:" << C->getText() << "\n";
-    }
-
-    void visitBlockCommandComment(const comments::BlockCommandComment *C) {
-      // 处理块命令注释
-      llvm::outs() <<  "visitBlockCommandComment:"  << C  << "\n";
-    }
-
-    void visitComment(const comments::Comment *C) {
-      std::cout<< "visitComment:"  << C << std::endl;
-      // 处理注释
-      // ...
-    }
-    //刚才访问不到的原因是 方法名写错了 不是 VisitFullComment ，是 visitFullComment，第一个字母是小写v
-    void visitFullComment(const comments::FullComment *C) {
-      //这里被调用了
-      std::cout << "visitFullComment:" << C << std::endl;
-      // 处理注释
-      // ...
-    }
-
-};
 
 class CmtAstCnsm : public ASTConsumer {
 public:
@@ -72,7 +38,7 @@ public:
             CI(_CI),
             Ctx(*_astContext),
             SM(_SM)  ,
-            cmtVisitor(*_astContext)
+            cmtVisitor(_CI,_astContext,_SM)
             {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
@@ -89,7 +55,7 @@ public:
 //        if (RC) {
           // 创建评论AST节点
           comments::FullComment *CommentAST = Ctx.getCommentForDecl(D, &(CI.getPreprocessor()));
-        
+
 //        Ctx.addComment()
           // 遍历评论AST节点
           if (CommentAST) {
@@ -269,7 +235,7 @@ public:
     ASTContext & Ctx;
 //    BrcVst insertVst;
 //    FndBrcFlagCmtHdl findTCCallROVisitor;
-    CmtVisitor cmtVisitor;
+    CmtVst cmtVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;
