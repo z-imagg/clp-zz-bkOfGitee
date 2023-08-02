@@ -7,32 +7,28 @@
 #include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
+#include "Brc/CmtAstCnsm.h"
 
 using namespace llvm;
 using namespace clang;
 
 static llvm::cl::OptionCategory CTkAloneCategory("BrcAlone选项");
 
-
-class MyCommentAct : public SyntaxOnlyAction {
+class _CmtAstAct : public ASTFrontendAction {
 public:
-protected:
-    void ExecuteAction() override {
-      CompilerInstance &CI = getCompilerInstance();
-//      const LangOptions &langOptions=CI.getLangOpts();
-//      SourceManager &SM=CI.getSourceManager();
-      CI.getPreprocessor().addCommentHandler(new FndBrcFlagCmtHdl(CI));
-//      ASTFrontendAction::ExecuteAction();
-      SyntaxOnlyAction::ExecuteAction();
-//      SyntaxOnlyAction::Execute();
+    std::unique_ptr<ASTConsumer>
+    CreateASTConsumer(CompilerInstance &CI,
+                      llvm::StringRef inFile) override {
+      SourceManager &SM = CI.getSourceManager();
+      LangOptions &langOptions = CI.getLangOpts();
+      ASTContext &astContext = CI.getASTContext();
+      //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
+      CI.getDiagnostics().setSourceManager(&SM);
+//      mRewriter_ptr->setSourceMgr(SM, langOptions);//A
 
+      //Act中 是 每次都是 新创建 AddBraceAstCnsm
+      return std::make_unique<CmtAstCnsm>(CI,  &astContext, SM, langOptions);
     }
-
-
-
-
-//    void EndSourceFileAction() override { }  //   貌似有时候并没有调用EndSourceFileAction，因此去掉
-
 };
 
 
@@ -95,7 +91,7 @@ int main(int Argc, const char **Argv) {
 
 
   // 运行 ClangTool
-  int Result =   Tool.run(clang::tooling::newFrontendActionFactory<MyCommentAct>().get());
+  int Result =   Tool.run(clang::tooling::newFrontendActionFactory<_CmtAstAct>().get());
 
   return Result;
 }
