@@ -64,6 +64,10 @@ public:
       }
 
       const SourceRange &sourceRange = C->getSourceRange();
+      int lineB,colB;
+      Util::extractLineAndColumn(SM,sourceRange.getBegin(),lineB,colB);
+      int lineE,colE;
+      Util::extractLineAndColumn(SM,sourceRange.getEnd(),lineE,colE);
       LangOptions &langOpts = CI.getLangOpts();
       std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
 //      SM.isWrittenInBuiltinFile(C->getLocation());

@@ -52,14 +52,13 @@ public:
 //        const RawComment *RC = D->getASTContext().getRawCommentForDeclNoCache(D);
 //        const RawComment *RC = D->getASTContext().getCommentForDecl(D);
 
-//        if (RC) {
+//        if (RC) {getRawCommentForDeclNoCache
           // 创建评论AST节点
           comments::FullComment *CommentAST = Ctx.getCommentForDecl(D, &(CI.getPreprocessor()));
-
 //        Ctx.addComment()
           // 遍历评论AST节点
           if (CommentAST) {
-
+            //Ctx.getCommentForDecl(D, PP) 获得的注释 前少/* 后少*/
             //能走到这里，获取到 comments::FullComment， 并打印出注释
             Util::printSourceRangeSimple(CI,"查看注释","",CommentAST->getSourceRange(), true);
 
@@ -67,6 +66,13 @@ public:
 //            MyCommentVisitor CommentVisitor;
             cmtVisitor.visit(CommentAST );//能访问到自定义visitFullComment
 //            cmtVisitor.visitFullComment(CommentAST);//访问不到自定义visitFullComment
+          }
+
+
+        RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
+          if(rc){
+            //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
+            Util::printSourceRangeSimple(CI,"查看RawComment","",rc->getSourceRange(), true);
           }
 //        }
       }
