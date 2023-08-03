@@ -16,31 +16,26 @@ reinterpret_cast<uintptr_t> (&SM ),
 reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
 //  ASTConsumer::HandleTranslationUnit(Ctx);
 
-   //translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
-   //  因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
    TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl();
 
-   bool inMainFile=SM.isWrittenInMainFile(translationUnitDecl->getBeginLoc());
 
-   //跳过非MainFile
+   //region 做不到 跳过非MainFile，因为：
+   //  translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
+   //    因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
 //  if(!Util::isDeclInMainFile(SM,translationUnitDecl)){
 //    return;
 //  }
+  //endregion
 
+   //region 声明组转为声明vector
    const DeclContext::decl_range &Decls = translationUnitDecl->decls();
    std::vector<Decl*> declVec(Decls.begin(), Decls.end());
-//  inMainFile=SM.isWrittenInMainFile( translationUnitDecl->getBody()->getBeginLoc() );
-   inMainFile=SM.isWrittenInMainFile( declVec[declVec.size()-1]->getBeginLoc() );
-   inMainFile=SM.isWrittenInMainFile(declVec[0]->getBeginLoc());
+   //endregion
 
    //region 获取主文件ID，文件路径
    FileID mainFileId;
    std::string filePath;
    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
-   //endregion
-
-   //region 声明组转为声明vector
-//  std::vector<Decl*> declVec(DG.begin(),DG.end());
    //endregion
 
    //region 1.若本文件已处理，则直接返回。
@@ -53,6 +48,11 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    unsigned long declCnt = declVec.size();
    for(int i=0; i<declCnt; i++) {
      Decl *D = declVec[i];
+     //跳过非MainFile中的声明
+     if(!Util::isDeclInMainFile(SM,D)){
+       continue;
+     }
+     //只处理MainFile中的声明
      this->brcVst.TraverseDecl(D);
    }
    //endregion
@@ -72,13 +72,8 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //region 4. 应用修改到源文件
    brcVst.mRewriter_ptr->overwriteChangedFiles();
 //   DiagnosticsEngine &de = SM.getDiagnostics();//de是空的，没有DiagnosticsEngine?
-   DiagnosticsEngine &de = CI.getDiagnostics();//
    DiagnosticsEngine &Diags = CI.getDiagnostics();
-   int error=Diags.getNumErrors();
-   bool hasErrorOccurred = Diags.hasErrorOccurred();
-   bool hasFatalErrorOccurred = Diags.hasFatalErrorOccurred();
-   bool hasUncompilableErrorOccurred = Diags.hasUncompilableErrorOccurred();
-   bool hasUnrecoverableErrorOccurred = Diags.hasUnrecoverableErrorOccurred();
+   std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion
  }
 
