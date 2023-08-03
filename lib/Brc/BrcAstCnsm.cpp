@@ -27,13 +27,13 @@ void BrcAstCnsm::__visitRawComment(const RawComment *C, bool & _brcOk) {
   if(!C){
     return;
   }
-  Util::printSourceRangeSimple(CI,"查看RawComment","",C->getSourceRange(), true);
+  const SourceRange &sourceRange = C->getSourceRange();
+  Util::printSourceRangeSimple(CI,"查看RawComment","",sourceRange, true);
 
   if(_brcOk){
     return;
   }
 
-  const SourceRange &sourceRange = C->getSourceRange();
   LangOptions &langOpts = CI.getLangOpts();
   std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
 //      brcOk= (sourceText==BrcOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
