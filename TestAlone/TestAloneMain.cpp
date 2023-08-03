@@ -10,6 +10,7 @@
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <iostream>
 
 using namespace clang;
 
@@ -27,9 +28,16 @@ public:
       Token Tok;
       Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
 
-      while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)) {
+      while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)
+      && NextTokenEndLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
+      ) {
         NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
         Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
+
+        //region 开发打印日志
+        std::string str=NextTokenEndLoc.printToString(SM);
+        std::cout<< str <<std::endl;
+        //endregion
       }
 
       // 获取分号的结束位置
@@ -47,10 +55,19 @@ public:
 
     }
     bool VisitStmt(clang::Stmt *stmt) {
+
       SourceManager &SM = CI.getSourceManager();
+      LangOptions &LO = CI.getLangOpts();
+
+      const SourceRange &sourceRange = stmt->getSourceRange();
+      CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
+      std::string strSourceText=Lexer::getSourceText(charSourceRange, SM, LO).str();
+
+      
       const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM);
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ",semicolonLocStr: " << semicolonLocStr << "\n";
+      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,semicolonLocStr: " << semicolonLocStr << "\n";
+
       return true;
     }
 /*输出:
