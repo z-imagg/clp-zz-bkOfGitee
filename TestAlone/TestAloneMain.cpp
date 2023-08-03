@@ -9,6 +9,7 @@
 #include "clang/Basic/TargetInfo.h"
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/AST/RecursiveASTVisitor.h>
+#include <clang/Rewrite/Core/Rewriter.h>
 
 using namespace clang;
 
@@ -40,8 +41,16 @@ public:
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
+    CompilerInstance& CI;
+
+    explicit MyASTVisitor(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr ) : CI(_CI)  {
+
+    }
     bool VisitStmt(clang::Stmt *stmt) {
-      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName() << "\n";
+      SourceManager &SM = CI.getSourceManager();
+      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM);
+      const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
+      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ",semicolonLocStr: " << semicolonLocStr << "\n";
       return true;
     }
 /*输出:
@@ -59,10 +68,15 @@ TraverseStmt: DeclRefExpr
 
 class MyASTConsumer : public clang::ASTConsumer {
 public:
+    CompilerInstance &CI;
+    MyASTVisitor visitor;
+    explicit MyASTConsumer(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr)  : CI(_CI) ,visitor(_CI,_rewriter_ptr)  {
+
+    }
+
     void HandleTranslationUnit(clang::ASTContext &Context) override {
-      MyASTVisitor Visitor;
       for (Decl *D : Context.getTranslationUnitDecl()->decls()) {
-        Visitor.TraverseDecl(D);
+        visitor.TraverseDecl(D);
       }
 
 
@@ -72,8 +86,21 @@ public:
 
 class MyASTFrontendAction : public clang::ASTFrontendAction {
 public:
+    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
+
+
     std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &CI, llvm::StringRef InFile) override {
-      return std::make_unique<MyASTConsumer>();
+
+      SourceManager &SM = CI.getSourceManager();
+      LangOptions &langOptions = CI.getLangOpts();
+      ASTContext &astContext = CI.getASTContext();
+
+      CI.getDiagnostics().setSourceManager(&SM);
+
+      mRewriter_ptr->setSourceMgr(SM, langOptions);
+
+
+      return std::make_unique<MyASTConsumer>(CI,mRewriter_ptr);
     }
 };
 
