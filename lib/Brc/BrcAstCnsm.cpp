@@ -43,7 +43,27 @@ std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
 
    //region 4. 应用修改到源文件
    brcVst.mRewriter_ptr->overwriteChangedFiles();
-   DiagnosticsEngine &de = SM.getDiagnostics();
+//   DiagnosticsEngine &de = SM.getDiagnostics();//de是空的，没有DiagnosticsEngine?
+   DiagnosticsEngine &de = CI.getDiagnostics();//
+   DiagnosticsEngine &Diags = CI.getDiagnostics();
+   int error=Diags.getNumErrors();
+   bool hasErrorOccurred = Diags.hasErrorOccurred();
+   bool hasFatalErrorOccurred = Diags.hasFatalErrorOccurred();
+   bool hasUncompilableErrorOccurred = Diags.hasUncompilableErrorOccurred();
+   bool hasUnrecoverableErrorOccurred = Diags.hasUnrecoverableErrorOccurred();
+   // 检查是否有错误发生
+//   if (Diags.hasErrorOccurred()) {
+//     // 遍历诊断信息，输出错误信息
+//     DiagnosticIDs *xx = Diags.getDiagnosticIDs().get();
+//     for (unsigned int i = 0; i < Diags.getDiagnosticIDs()->getNumBuiltinDiagnostics(); ++i) {
+//       const auto& DiagInfo = Diags.getDiagnosticIDs()->getBuiltinDiagnostic(i);
+//       if (DiagInfo.getLevel() == DiagnosticIDs::Error) {
+//         // 输出错误信息
+//         Diags.getDiagnostic(DiagInfo.getID()).getLocation().print(llvm::outs(), CI.getSourceManager());
+//         llvm::outs() << ": " << Diags.getDiagnostic(DiagInfo.getID()).getMessage() << "\n";
+//       }
+//     }
+//   }
    //endregion
   return true;
 }
