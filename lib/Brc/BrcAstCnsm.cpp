@@ -5,16 +5,46 @@
 bool BrcAstCnsm::mainFileProcessed=false;
 
 
-std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";//TODO_ 改为 static
+std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
 
  bool BrcAstCnsm::HandleTopLevelDecl(DeclGroupRef DG) {
-  std::vector<Decl*> declVec(DG.begin(),DG.end());
 
-  //如果本文件已处理，则直接返回。
+
+   //region 获取主文件ID，文件路径
+   FileID mainFileId;
+   std::string filePath;
+   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+   //endregion
+
+   //region 声明组转为声明vector
+  std::vector<Decl*> declVec(DG.begin(),DG.end());
+  //endregion
+
+  //region 1.若本文件已处理，则直接返回。
   if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
     return false;
   }
+  //endregion
 
+  //region 2. 插入花括号
+   unsigned long declCnt = declVec.size();
+   for(int i=0; i<declCnt; i++) {
+     Decl *D = declVec[i];
+     this->brcVst.TraverseDecl(D);
+   }
+  //endregion
+
+  //region 3. 插入已处理标记
+   bool insertResult;
+   //插入的注释语句不要带换行,这样不破坏原行号
+   const std::string brcOkFlagComment = fmt::format("/*{}*/", BrcOkFlagText);
+   Util::insertIncludeToFileStart(brcOkFlagComment, mainFileId, SM, brcVst.mRewriter_ptr, insertResult);
+  //endregion
+
+   //region 4. 应用修改到源文件
+   brcVst.mRewriter_ptr->overwriteChangedFiles();
+   DiagnosticsEngine &de = SM.getDiagnostics();
+   //endregion
   return true;
 }
 
