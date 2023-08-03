@@ -17,22 +17,40 @@ using namespace clang;
 
 class Util {
 public:
+    static std::tuple<int,int> extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation ) {
+      clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
+      int line = presumedLoc.getLine();
+      int column = presumedLoc.getColumn();
+      return std::tuple<int,int>(line,column);
+
+    }
     static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM) {
+
+      const LangOptions &LO = LangOptions();
+      Token Tok;
+
       // 获取Stmt的结束位置
       const SourceLocation EndLoc = S->getEndLoc();
+      Lexer::getRawToken(EndLoc, Tok, SM, LO);
+      const std::tuple<int, int> &EndLocLC = extractLineAndColumn(SM, EndLoc);//开发看行号
 
-      // 获取下一个token的结束位置
-      SourceLocation NextTokenEndLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LangOptions());
+//      SourceLocation NextTokenEndLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LO); 循环变量初值 不能是此行
+      SourceLocation NextTokenEndLoc = EndLoc; //有可能EndLoc就是语句末尾分号, 即 循环变量初值 应该是 EndLoc
+
+
+      const std::tuple<int, int> &initNextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
+
+      std::tuple<int, int> NextTokenEndLocLC;//开发看行号
 
       // 查找下一个分号
-      Token Tok;
-      Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
+      Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LO);
 
       while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)
       && NextTokenEndLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
       ) {
-        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
-        Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
+        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
+        NextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
+        Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LO);
 
         //region 开发打印日志
         std::string str=NextTokenEndLoc.printToString(SM);
@@ -42,6 +60,7 @@ public:
 
       // 获取分号的结束位置
       SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
+      const std::tuple<int, int> &SemicolonEndLocLC = extractLineAndColumn(SM, SemicolonEndLoc);//开发看行号
 
       return SemicolonEndLoc;
     }
@@ -63,8 +82,8 @@ public:
       CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
       std::string strSourceText=Lexer::getSourceText(charSourceRange, SM, LO).str();
 
-      
-      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM);
+      bool eq=(strSourceText=="float fff = a + b / 10  + MyClass::ZERO     ");//此文本是从程序输出拿到的
+      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
       llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,semicolonLocStr: " << semicolonLocStr << "\n";
 
