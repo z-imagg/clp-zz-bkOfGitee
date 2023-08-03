@@ -50,20 +50,25 @@ int main(int Argc, const char **Argv  ) {
 
 
 
-  // 获取源码字符串的起始位置
   SourceLocation StartLoc = SM.getLocForStartOfFile(MainFileID);
+  const std::string &StartLocStr = StartLoc.printToString(SM);
 
-  // 获取源码字符串的结束位置
+  SourceLocation StartLoc_getLocForEndOfToken = Lexer::getLocForEndOfToken(StartLoc, 0, SM, LangOptions());
+  const std::string &StartLoc_getLocForEndOfToken_Str = StartLoc_getLocForEndOfToken.printToString(SM);
+
   SourceLocation EndLoc = SM.getLocForEndOfFile(MainFileID);
+  const std::string &EndLocStr = EndLoc.printToString(SM);
 
-  // 获取源码字符串的token的结束位置
-  SourceLocation TokenEndLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LangOptions());
+  SourceLocation EndLoc_getLocForEndOfToken = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LangOptions());
+  const std::string &EndLoc_getLocForEndOfToken_Str = EndLoc_getLocForEndOfToken.printToString(SM);
 
   // 输出结果
-  std::cout << "Code: " << Code << std::endl;
-  std::cout << "Token end location: ";
-//  TokenEndLoc.print(std::cout, SM);
-  std::cout << std::endl;
+  std::cout << "代码:"  << std::endl;
+  std::cout <<  Code << std::endl;
+  std::cout << "StartLocStr:" << StartLocStr << std::endl;
+  std::cout << "getLocForEndOfToken(StartLoc,0):" << StartLoc_getLocForEndOfToken_Str << std::endl;
+  std::cout << "EndLocStr:" << EndLocStr << std::endl;
+  std::cout << "getLocForEndOfToken(EndLoc,0):" << EndLoc_getLocForEndOfToken_Str << std::endl;
 
   return 0;
 }
