@@ -29,6 +29,7 @@ int myGlobalFunction(int x, int y) {
 int main() {
   MyClass obj;
   int result = obj.myFunction(10, 20);
+  if(true)
   std::cout << "Result: " << result << std::endl;
 
   int product = myGlobalFunction(5, 6);
