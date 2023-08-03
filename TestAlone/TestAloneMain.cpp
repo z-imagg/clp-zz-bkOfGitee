@@ -44,7 +44,7 @@ int main(int Argc, const char **Argv  ) {
 
   CI.getLangOpts().CPlusPlus = true;
 
-  LangOptions LangOpts;
+//  LangOptions LangOpts;
 
   llvm::Triple triple("x86_64-pc-linux-gnu");
   std::shared_ptr<clang::TargetOptions> targetOpts=std::make_shared<clang::TargetOptions>();
