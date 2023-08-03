@@ -36,17 +36,19 @@ int main(int Argc, const char **Argv  ) {
 /* 确保在创建编译器实例（`clang::CompilerInstance`）后，立即创建源管理器（`clang::SourceManager`）并将其设置到编译器实例中
 否则 ，运行时 断言失败 报错 ：   CompilerInstance.h:423: clang::SourceManager& clang::CompilerInstance::getSourceManager() const: Assertion `SourceMgr && "Compiler instance has no source manager!"' failed.
  */
-//  CI.createPreprocessor(clang::TU_Complete);
+
+  CI.getLangOpts().CPlusPlus = true;
 
 
 /////
   LangOptions LangOpts;
 
+  llvm::Triple triple("x86_64-pc-linux-gnu");  // 根据您的目标平台和架构进行设置
 //  clang::TargetOptions targetOpts;
   std::shared_ptr<clang::TargetOptions> targetOpts=std::make_shared<clang::TargetOptions>();
-  targetOpts.get()->Triple="x86_64-pc-linux-gnu";
+//  clang::TargetOptions targetOpts;
+  targetOpts->Triple=triple.str();
 
-  llvm::Triple triple("x86_64-pc-linux-gnu");  // 根据您的目标平台和架构进行设置
 //  TargetInfo *Target = TargetInfo::CreateTargetInfo(CI.getDiagnostics(), Triple);
 //  std::shared_ptr<TargetInfo> targetInfo(
 //          TargetInfo::CreateTargetInfo(CI.getDiagnostics(), targetOpts));
@@ -54,6 +56,9 @@ int main(int Argc, const char **Argv  ) {
 
   CI.setTarget(targetInfo);
 
+
+
+  CI.createPreprocessor(clang::TU_Complete);
   CI.createASTContext();
   /////
 
@@ -61,18 +66,25 @@ int main(int Argc, const char **Argv  ) {
   std::string Code = "void func(int i, int time){return;}";
 
   // 创建一个MemoryBuffer对象
-  std::unique_ptr<llvm::MemoryBuffer> Buf =
-          llvm::MemoryBuffer::getMemBuffer(Code);
+//  std::unique_ptr<llvm::MemoryBuffer> Buf =
+//          llvm::MemoryBuffer::getMemBuffer(Code);
 
   // 获取输入文件
-  const FileEntry *File = CI.getFileManager().getVirtualFile("input.cpp", Buf->getBufferSize(), 0);
+//  const FileEntry *File = CI.getFileManager().getVirtualFile("input.cpp", Buf->getBufferSize(), 0);
+//  assert(File);
 
   SourceManager& SM=CI.getSourceManager();
 
+//  FileID MainFileID = SM.createFileID(File, SourceLocation(), SrcMgr::C_User);
+//  SM.setMainFileID(MainFileID);
+
   // 创建一个输入文件缓冲区
-//  CI.getSourceManager().createMainFileID(File);
+//  SM.createFileID(File);
 //  clang::FileID MainFileID =
-  SM.getOrCreateFileID( File, clang::SrcMgr::C_User);
+//  SM.getOrCreateFileID( File, clang::SrcMgr::C_User);
+  clang::FileID MainFileID = SM.createFileID(
+          llvm::MemoryBuffer::getMemBuffer(Code), clang::SrcMgr::C_User);
+    SM.setMainFileID(MainFileID);
 
 
   // 设置输入文件
@@ -80,6 +92,7 @@ int main(int Argc, const char **Argv  ) {
 
   // 解析代码
   CI.getDiagnosticClient().BeginSourceFile(CI.getLangOpts(), &CI.getPreprocessor());
+//  CI.getDiagnosticClient().EndSourceFile();
 
   // 获取ASTContext
   ASTContext &Context = CI.getASTContext();
@@ -87,12 +100,12 @@ int main(int Argc, const char **Argv  ) {
   // 输出结果
   TranslationUnitDecl *TUDecl = Context.getTranslationUnitDecl();
   for (Decl *D : TUDecl->decls()) {
+    std::cout << D << std::endl;
     // 在这里处理每个声明
     // ...
   }
   /////
 
-  CI.getLangOpts().CPlusPlus = true;
 
 
 //  clang::FileID MainFileID = CI.getSourceManager().createFileID(
