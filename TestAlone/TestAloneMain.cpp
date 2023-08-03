@@ -90,11 +90,11 @@ int main(int Argc, const char **Argv  ) {
   CI.setASTConsumer(std::make_unique<MyASTConsumer>());
 
 //  Sema seam(CI.getPreprocessor(), CI.getASTContext(),myAstConsumer );
-  Sema seam(CI.getPreprocessor(), CI.getASTContext(), CI.getASTConsumer() );
-  CI.setSema(&seam);
+  Sema *seam=new Sema(CI.getPreprocessor(), CI.getASTContext(), CI.getASTConsumer() );
+  CI.setSema(seam);
 
   // 创建一个Parser对象
-  Parser parser(CI.getPreprocessor(), seam, false);
+  Parser parser(CI.getPreprocessor(), *seam, false);
 //  PP.getCurrentLexer()
 
   parser.Initialize();
