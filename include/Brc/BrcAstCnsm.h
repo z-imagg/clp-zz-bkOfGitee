@@ -38,7 +38,7 @@ public:
             CI(_CI),
             Ctx(*_astContext),
             SM(_SM)  ,
-            cmtVisitor(_CI,_astContext,_SM)
+//            cmtVisitor(_CI,_astContext,_SM)
             {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
@@ -46,7 +46,7 @@ public:
 
     virtual bool HandleTopLevelDecl(DeclGroupRef DG) ;
 
-    void __visitFullComment(const RawComment *C,bool & flag) ;
+    void __visitRawComment(const RawComment *C, bool & _brcOk) ;
 
 
 public:
@@ -54,7 +54,7 @@ public:
     ASTContext & Ctx;
 //    BrcVst insertVst;
 //    FndBrcFlagCmtHdl findTCCallROVisitor;
-    CmtVst cmtVisitor;
+//    CmtVst cmtVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;

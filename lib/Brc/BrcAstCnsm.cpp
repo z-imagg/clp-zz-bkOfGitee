@@ -13,7 +13,7 @@ std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";//TODO_ 改为 static
 
     RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
     //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
-    __visitFullComment(rc, brcOk);
+    __visitRawComment(rc, brcOk);
     if(brcOk){
       std::cout<<"已插入花括号,不再处理"<<std::endl;
       return false;
@@ -23,20 +23,20 @@ std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";//TODO_ 改为 static
   return true;
 }
 
-void BrcAstCnsm::__visitFullComment(const RawComment *C, bool & flag) {
+void BrcAstCnsm::__visitRawComment(const RawComment *C, bool & _brcOk) {
   if(!C){
     return;
   }
   Util::printSourceRangeSimple(CI,"查看RawComment","",C->getSourceRange(), true);
 
-  if(flag){
+  if(_brcOk){
     return;
   }
 
   const SourceRange &sourceRange = C->getSourceRange();
   LangOptions &langOpts = CI.getLangOpts();
   std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
-//      brcOk= (sourceText==BrcOkFlagText);
-  flag= (sourceText.find_first_of(BrcOkFlagText) != std::string::npos);
+//      brcOk= (sourceText==BrcOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
+  _brcOk= (sourceText.find_first_of(BrcOkFlagText) != std::string::npos);
 
 }
