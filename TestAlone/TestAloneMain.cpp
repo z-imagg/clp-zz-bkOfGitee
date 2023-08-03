@@ -43,23 +43,23 @@ public:
       std::tuple<int, int> NextTokenEndLocLC;//开发看行号
 
       // 查找下一个分号
-      Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LO);
+      do{
 
-      while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)
-      && NextTokenEndLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
-      ) {
-        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
-        NextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
         Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LO);
+        NextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
+        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
 
         //region 开发打印日志
         std::string str=NextTokenEndLoc.printToString(SM);
         std::cout<< str <<std::endl;
         //endregion
-      }
+      }while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)
+              && NextTokenEndLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
+              );
+
 
       // 获取分号的结束位置
-      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
+      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
       const std::tuple<int, int> &SemicolonEndLocLC = extractLineAndColumn(SM, SemicolonEndLoc);//开发看行号
 
       return SemicolonEndLoc;
