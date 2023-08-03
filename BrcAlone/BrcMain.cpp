@@ -1,5 +1,4 @@
 #include <clang/Frontend/FrontendActions.h>
-#include "Brc/FndBrcFlagCmtHdl.h"
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -24,11 +23,13 @@ public:
       ASTContext &astContext = CI.getASTContext();
       //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
       CI.getDiagnostics().setSourceManager(&SM);
-//      mRewriter_ptr->setSourceMgr(SM, langOptions);//A
+      mRewriter_ptr->setSourceMgr(SM, langOptions);//A
 
       //Act中 是 每次都是 新创建 AddBraceAstCnsm
-      return std::make_unique<BrcAstCnsm>(CI, &astContext, SM, langOptions);
+      return std::make_unique<BrcAstCnsm>(CI,mRewriter_ptr, &astContext, SM, langOptions);
     }
+private:
+    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
 

@@ -7,10 +7,12 @@ MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 #CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-ctk/tools
 
 set(BrcAlone_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../BrcAlone/BrcMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/LocId.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/FndBrcFlagCmtHdl.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../BrcAlone/BrcMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
+#"${CMAKE_CURRENT_SOURCE_DIR}/../include/Brc/BrcAstCnsm.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
 )
 
     # Create a library corresponding to 'plugin'
