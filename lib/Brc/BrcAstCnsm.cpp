@@ -7,8 +7,31 @@ bool BrcAstCnsm::mainFileProcessed=false;
 
 std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
 
- bool BrcAstCnsm::HandleTopLevelDecl(DeclGroupRef DG) {
+ /*bool BrcAstCnsm::HandleTopLevelDecl(DeclGroupRef DG) {
 
+
+  return true;
+}*/
+
+ void BrcAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
+//  ASTConsumer::HandleTranslationUnit(Ctx);
+
+   //translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
+   //  因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
+   TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl();
+
+   bool inMainFile=SM.isWrittenInMainFile(translationUnitDecl->getBeginLoc());
+
+   //跳过非MainFile
+//  if(!Util::isDeclInMainFile(SM,translationUnitDecl)){
+//    return;
+//  }
+
+   const DeclContext::decl_range &Decls = translationUnitDecl->decls();
+   std::vector<Decl*> declVec(Decls.begin(), Decls.end());
+//  inMainFile=SM.isWrittenInMainFile( translationUnitDecl->getBody()->getBeginLoc() );
+   inMainFile=SM.isWrittenInMainFile( declVec[declVec.size()-1]->getBeginLoc() );
+   inMainFile=SM.isWrittenInMainFile(declVec[0]->getBeginLoc());
 
    //region 获取主文件ID，文件路径
    FileID mainFileId;
@@ -17,29 +40,34 @@ std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
    //endregion
 
    //region 声明组转为声明vector
-  std::vector<Decl*> declVec(DG.begin(),DG.end());
-  //endregion
+//  std::vector<Decl*> declVec(DG.begin(),DG.end());
+   //endregion
 
-  //region 1.若本文件已处理，则直接返回。
-  if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
-    return false;
-  }
-  //endregion
+   //region 1.若本文件已处理，则直接返回。
+   if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
+     return ;
+   }
+   //endregion
 
-  //region 2. 插入花括号
+   //region 2. 插入花括号
    unsigned long declCnt = declVec.size();
    for(int i=0; i<declCnt; i++) {
      Decl *D = declVec[i];
      this->brcVst.TraverseDecl(D);
    }
-  //endregion
+   //endregion
 
-  //region 3. 插入已处理标记
+   //region 3. 插入已处理标记
    bool insertResult;
    //插入的注释语句不要带换行,这样不破坏原行号
-   const std::string brcOkFlagComment = fmt::format("/*{}*/", BrcOkFlagText);
-   Util::insertIncludeToFileStart(brcOkFlagComment, mainFileId, SM, brcVst.mRewriter_ptr, insertResult);
-  //endregion
+   //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
+   const std::string brcOkFlagComment = fmt::format("/**{}*/", BrcOkFlagText);
+   Decl* firstDeclInMainFile=Util::firstDeclInMainFile(SM,declVec);
+   if(firstDeclInMainFile){
+     Util::insertCommentBeforeLoc(brcOkFlagComment, firstDeclInMainFile->getBeginLoc(),  brcVst.mRewriter_ptr, insertResult);
+   }
+
+   //endregion
 
    //region 4. 应用修改到源文件
    brcVst.mRewriter_ptr->overwriteChangedFiles();
@@ -51,23 +79,8 @@ std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
    bool hasFatalErrorOccurred = Diags.hasFatalErrorOccurred();
    bool hasUncompilableErrorOccurred = Diags.hasUncompilableErrorOccurred();
    bool hasUnrecoverableErrorOccurred = Diags.hasUnrecoverableErrorOccurred();
-   // 检查是否有错误发生
-//   if (Diags.hasErrorOccurred()) {
-//     // 遍历诊断信息，输出错误信息
-//     DiagnosticIDs *xx = Diags.getDiagnosticIDs().get();
-//     for (unsigned int i = 0; i < Diags.getDiagnosticIDs()->getNumBuiltinDiagnostics(); ++i) {
-//       const auto& DiagInfo = Diags.getDiagnosticIDs()->getBuiltinDiagnostic(i);
-//       if (DiagInfo.getLevel() == DiagnosticIDs::Error) {
-//         // 输出错误信息
-//         Diags.getDiagnostic(DiagInfo.getID()).getLocation().print(llvm::outs(), CI.getSourceManager());
-//         llvm::outs() << ": " << Diags.getDiagnostic(DiagInfo.getID()).getMessage() << "\n";
-//       }
-//     }
-//   }
    //endregion
-  return true;
-}
-
+ }
 
 //region 判断是否已经处理过了
 bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _brcOk, std::vector<Decl*> declVec){
@@ -109,4 +122,5 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
   _brcOk= (index != std::string::npos);
 
 }
+
 //endregion

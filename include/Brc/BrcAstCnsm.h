@@ -43,7 +43,9 @@ public:
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
     }
 
-    virtual bool HandleTopLevelDecl(DeclGroupRef DG) ;
+//    virtual bool HandleTopLevelDecl(DeclGroupRef DG) ;
+
+    void HandleTranslationUnit(ASTContext &Ctx) override;
 
     //region 判断是否已经处理过了
     static bool isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,    bool& _brcOk, std::vector<Decl*> declVec);
