@@ -36,6 +36,7 @@ public:
             CI(_CI),
             Ctx(*_astContext),
             SM(_SM),
+            brcOk(false),
             brcVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
             {
       //构造函数

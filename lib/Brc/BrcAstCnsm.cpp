@@ -24,6 +24,7 @@ bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
   unsigned long declCnt = declVec.size();
    for(int i=0; i<declCnt; i++){
      Decl* D=declVec[i];
+     Util::printDecl(Ctx,CI,"查看声明","",D,true);
      RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
      //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
      BrcAstCnsm::__visitRawComment(CI,SM,  rc, _brcOk);
