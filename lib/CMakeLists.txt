@@ -3,8 +3,8 @@
 
 
 set(CTk_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/Util.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/LocId.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
 #"${CMAKE_CURRENT_SOURCE_DIR}/../include/Brc/BrcAstCnsm.h"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
