@@ -6,6 +6,7 @@
 
 
 #include <clang/Frontend/FrontendActions.h>
+#include <clang/Frontend/TextDiagnosticPrinter.h>
 
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -42,6 +43,12 @@ int main(int Argc, const char **Argv  ) {
   CI.createFileManager();
   CI.createSourceManager(CI.getFileManager());
 
+
+
+
+
+
+
   CI.getLangOpts().CPlusPlus = true;
 
 //  LangOptions LangOpts;
@@ -61,6 +68,16 @@ int main(int Argc, const char **Argv  ) {
   SourceManager& SM=CI.getSourceManager();
   LangOptions &LO = CI.getLangOpts();
   Preprocessor &PP = CI.getPreprocessor();
+
+  //添加诊断
+  //   添加诊断后, 多出一行红色文本输出:  free(): invalid pointer   ,看起来像报错, 说明正确的添加了诊断
+  llvm::raw_ostream &OS = llvm::outs();
+  DiagnosticOptions *diagnosticOptions = new clang::DiagnosticOptions();
+  clang::TextDiagnosticPrinter *TextDiag = new TextDiagnosticPrinter(OS, diagnosticOptions);
+  TextDiag->BeginSourceFile(LO,&PP);
+//  TextDiag->EndSourceFile();
+  CI.getDiagnostics().setClient(TextDiag);
+
 
   StringRef Code ("void func(int i, int time) { return; }");
   MemoryBufferRef BufRef(Code,"exampleCPP");
@@ -100,6 +117,8 @@ int main(int Argc, const char **Argv  ) {
   parser.Initialize();
 //  parser.ConsumeToken();
   parser.ParseTopLevelDecl();
+
+
 
   ASTContext &Context = CI.getASTContext();
 
