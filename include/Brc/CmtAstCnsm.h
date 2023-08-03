@@ -49,17 +49,36 @@ public:
         Decl *D = *I;
 
         RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
-          if(rc){
-            //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
-            Util::printSourceRangeSimple(CI,"查看RawComment","",rc->getSourceRange(), true);
-          }
-//        }
+        //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
+        __visitFullComment(rc,flag);
+        if(flag){
+          std::cout<<"已插入花括号,不再处理"<<std::endl;
+          return false;
+        }
       }
 
       return true;
     }
-    
 
+
+    //刚才访问不到的原因是 方法名写错了 不是 VisitFullComment ，是 visitFullComment，第一个字母是小写v
+    void __visitFullComment(const RawComment *C,bool & flag) {
+      if(!C){
+        return;
+      }
+      Util::printSourceRangeSimple(CI,"查看RawComment","",C->getSourceRange(), true);
+
+      if(flag){
+        return;
+      }
+
+      const SourceRange &sourceRange = C->getSourceRange();
+      LangOptions &langOpts = CI.getLangOpts();
+      std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
+//      flag= (sourceText==brcInsertedOK);
+      flag= (sourceText.find_first_of(brcInsertedOK)!=std::string::npos);
+
+    }
 
 
 public:
@@ -71,6 +90,10 @@ public:
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;
+
+    //特殊注释 标记 是否已插入{}
+    bool flag;
+    std::string brcInsertedOK;//TODO_ 改为 static
 };
 
 
