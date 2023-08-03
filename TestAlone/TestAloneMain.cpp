@@ -24,45 +24,48 @@ public:
       return std::tuple<int,int>(line,column);
 
     }
-    static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM) {
+    static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM,bool& endIsSemicolon) {
 
       const LangOptions &LO = LangOptions();
-      Token Tok;
+      Token JTok;
 
       // 获取Stmt的结束位置
-      const SourceLocation EndLoc = S->getEndLoc();
-      Lexer::getRawToken(EndLoc, Tok, SM, LO);
-      const std::tuple<int, int> &EndLocLC = extractLineAndColumn(SM, EndLoc);//开发看行号
+      SourceLocation JLoc = S->getEndLoc();
+//      Lexer::getRawToken(EndLoc, JTok, SM, LO);
+      const std::tuple<int, int> &JLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
 
-//      SourceLocation NextTokenEndLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LO); 循环变量初值 不能是此行
-      SourceLocation NextTokenEndLoc = EndLoc; //有可能EndLoc就是语句末尾分号, 即 循环变量初值 应该是 EndLoc
+//      SourceLocation JLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LO); 循环变量初值 不能是此行
+//      SourceLocation JLoc = EndLoc; //有可能EndLoc就是语句末尾分号, 即 循环变量初值 应该是 EndLoc
 
 
-      const std::tuple<int, int> &initNextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
+      const std::tuple<int, int> &initNextTokenEndLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
 
       std::tuple<int, int> NextTokenEndLocLC;//开发看行号
 
       // 查找下一个分号
       do{
 
-        Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LO);
-        NextTokenEndLocLC = extractLineAndColumn(SM, NextTokenEndLoc);//开发看行号
-        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
+        Lexer::getRawToken(JLoc, JTok, SM, LO);
+        NextTokenEndLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
+        JLoc = Lexer::getLocForEndOfToken(JTok.getLocation(), 0, SM, LO);
 
         //region 开发打印日志
-        std::string str=NextTokenEndLoc.printToString(SM);
-        std::cout<< str <<std::endl;
+//        std::string str=JLoc.printToString(SM);
+//        std::cout<< str <<std::endl;
         //endregion
-      }while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)
-              && NextTokenEndLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
+      }while (JTok.isNot(tok::semi)
+//      && JTok.isNot(tok::eof)//这里不太确定
+              && JLoc.isInvalid() //若没有此条件则当invalid时陷入死循环
               );
 
 
       // 获取分号的结束位置
-      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LO);
+      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(JTok.getLocation(), 0, SM, LO);//还有问题：当出来时候，JTok的下一个居然是分号，却没注意到 比如 return a+b
       const std::tuple<int, int> &SemicolonEndLocLC = extractLineAndColumn(SM, SemicolonEndLoc);//开发看行号
 
+      endIsSemicolon=JTok.is(tok::semi);
       return SemicolonEndLoc;
+//      return JTok.getLocation();
     }
 };
 
@@ -74,7 +77,7 @@ public:
 
     }
     bool VisitStmt(clang::Stmt *stmt) {
-
+      bool endIsSemicolon=false;
       SourceManager &SM = CI.getSourceManager();
       LangOptions &LO = CI.getLangOpts();
 
@@ -83,9 +86,9 @@ public:
       std::string strSourceText=Lexer::getSourceText(charSourceRange, SM, LO).str();
 
       bool eq=(strSourceText=="float fff = a + b / 10  + MyClass::ZERO     ");//此文本是从程序输出拿到的
-      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM);//条件断点 eq为真
+      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,semicolonLocStr: " << semicolonLocStr << "\n";
+      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<endIsSemicolon<<",semicolonLocStr: " << semicolonLocStr << "\n";
 
       return true;
     }
