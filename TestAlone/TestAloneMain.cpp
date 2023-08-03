@@ -24,12 +24,9 @@ using namespace clang;
 
 int main(int Argc, const char **Argv  ) {
 
-  // 获取编译配置
   clang::tooling::CompilationDatabase &Compilations =  * new clang::tooling::FixedCompilationDatabase(Twine("."), std::vector<std::string>());
 
-  // 创建 CompilerInstance 对象
   clang::CompilerInstance CI;
-  // 创建源管理器
   CI.createDiagnostics();
   CI.createFileManager();
   CI.createSourceManager(CI.getFileManager());
@@ -39,51 +36,39 @@ int main(int Argc, const char **Argv  ) {
 
   CI.getLangOpts().CPlusPlus = true;
 
-
-/////
   LangOptions LangOpts;
 
-  llvm::Triple triple("x86_64-pc-linux-gnu");  // 根据您的目标平台和架构进行设置
-//  clang::TargetOptions targetOpts;
+  llvm::Triple triple("x86_64-pc-linux-gnu");
   std::shared_ptr<clang::TargetOptions> targetOpts=std::make_shared<clang::TargetOptions>();
-//  clang::TargetOptions targetOpts;
   targetOpts->Triple=triple.str();
 
-//  TargetInfo *Target = TargetInfo::CreateTargetInfo(CI.getDiagnostics(), Triple);
-//  std::shared_ptr<TargetInfo> targetInfo(
-//          TargetInfo::CreateTargetInfo(CI.getDiagnostics(), targetOpts));
   TargetInfo* targetInfo=  TargetInfo::CreateTargetInfo(CI.getDiagnostics(), targetOpts) ;
-
   CI.setTarget(targetInfo);
-
-
 
   CI.createPreprocessor(clang::TU_Complete);
   CI.createASTContext();
-  /////
 
-  // 获取源码字符串
   std::string Code = "void func(int i, int time){return;}";
 
   // 创建一个MemoryBuffer对象
 //  std::unique_ptr<llvm::MemoryBuffer> Buf =
-//          llvm::MemoryBuffer::getMemBuffer(Code);
-
-  // 获取输入文件
-//  const FileEntry *File = CI.getFileManager().getVirtualFile("input.cpp", Buf->getBufferSize(), 0);
-//  assert(File);
+//          llvm::MemoryBuffer::getMemBuffer(Code,"input.cpp");
 
   SourceManager& SM=CI.getSourceManager();
-
+  FileManager &FM = CI.getFileManager();
+  // 获取输入文件
+//  const FileEntry *File = CI.getFileManager().getVirtualFile("input.cpp", Buf->getBufferSize(), 0);
 //  FileID MainFileID = SM.createFileID(File, SourceLocation(), SrcMgr::C_User);
 //  SM.setMainFileID(MainFileID);
 
+//  FileID MainFileID = SM.createMainFileIDForMemBuffer(std::move(Buf));
+//  SM.setMainFileID(MainFileID);
+
   // 创建一个输入文件缓冲区
-//  SM.createFileID(File);
 //  clang::FileID MainFileID =
 //  SM.getOrCreateFileID( File, clang::SrcMgr::C_User);
   clang::FileID MainFileID = SM.createFileID(
-          llvm::MemoryBuffer::getMemBuffer(Code), clang::SrcMgr::C_User);
+          llvm::MemoryBuffer::getMemBuffer(Code,"input.cpp"), clang::SrcMgr::C_User);
     SM.setMainFileID(MainFileID);
 
 
@@ -99,6 +84,7 @@ int main(int Argc, const char **Argv  ) {
 
   // 输出结果
   TranslationUnitDecl *TUDecl = Context.getTranslationUnitDecl();
+  bool hasBody = TUDecl->hasBody();
   for (Decl *D : TUDecl->decls()) {
     std::cout << D << std::endl;
     // 在这里处理每个声明
