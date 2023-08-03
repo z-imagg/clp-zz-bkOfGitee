@@ -108,22 +108,22 @@ int main(int Argc, const char **Argv  ) {
 
   for (Decl *D : TUDecl->decls()) {
 
+    const std::string &DStr = D->getSourceRange().printToString(SM);
+
     llvm::raw_ostream& OS = llvm::outs();
     clang::PrintingPolicy Policy(D->getASTContext().getLangOpts());
-    OS<< "D:"  << D << ":";
+    OS<< "D:"  << D << ",Location: " << DStr << ":";
     D->print(OS, Policy);
     OS << "\n";
 
-//    const std::string &DStr = D->getSourceRange().printToString(SM);
-//    std::cout << "main:" << D << "," << DStr << std::endl;
   }
 /**此循环输出以下信息:
-D:0x555557ae00d0:typedef __int128 __int128_t
-D:0x555557ae0140:typedef unsigned __int128 __uint128_t
-D:0x555557ae04b8:typedef __NSConstantString_tag __NSConstantString
-D:0x555557ae0550:typedef char *__builtin_ms_va_list
-D:0x555557aebd68:typedef __va_list_tag __builtin_va_list[1]
-D:0x555557aebf28:void func(int i, int time) {
+D:0x555557ae00d0,Location: <<invalid sloc>>:typedef __int128 __int128_t
+D:0x555557ae0140,Location: <<invalid sloc>>:typedef unsigned __int128 __uint128_t
+D:0x555557ae04b8,Location: <<invalid sloc>>:typedef __NSConstantString_tag __NSConstantString
+D:0x555557ae0550,Location: <<invalid sloc>>:typedef char *__builtin_ms_va_list
+D:0x555557aebd68,Location: <<invalid sloc>>:typedef __va_list_tag __builtin_va_list[1]
+D:0x555557aebf28,Location: <exampleCPP:1:1, col:38>:void func(int i, int time) {
     return;
 }
  */
