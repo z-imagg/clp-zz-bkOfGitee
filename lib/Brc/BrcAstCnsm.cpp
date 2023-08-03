@@ -57,7 +57,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    }
    //endregion
 
-   //region 3. 插入已处理标记
+   //region 3. 插入已处理标记 到主文件第一个声明前
    bool insertResult;
    //插入的注释语句不要带换行,这样不破坏原行号
    //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
