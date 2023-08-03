@@ -8,37 +8,65 @@
 #include "llvm/Support/raw_ostream.h"
 #include "clang/Basic/TargetInfo.h"
 #include <clang/Frontend/TextDiagnosticPrinter.h>
+#include <clang/AST/RecursiveASTVisitor.h>
 
 using namespace clang;
 
-class MyASTVisitor : public clang::DeclVisitor<MyASTVisitor> {
-public:
-    void VisitFunctionDecl(clang::FunctionDecl *FD) {
-      llvm::outs() << "FunctionDecl: " << FD->getNameAsString() << "\n";
-    }
-    void VisitCXXMethodDecl(clang::CXXMethodDecl *CMD) {
-      llvm::outs() << "CXXMethodDecl: " << CMD->getNameAsString() << "\n";
-    }
-    void VisitCXXRecordDecl(clang::CXXRecordDecl *RD) {
-      llvm::outs() << "CXXRecordDecl: " << RD->getNameAsString() << "\n";
-    }
-/**输出:
-CXXRecordDecl: MyClass
-CXXMethodDecl: myFunction
 
-/pubx/clang-brc/test_in/test_main.cpp:7:19: warning: implicit conversion from 'double' to 'int' changes value from 0.001 to 0
-int MyClass::ZERO=0.001;
-             ~~~~ ^~~~~
-*/
+class Util {
+public:
+    static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM) {
+      // 获取Stmt的结束位置
+      const SourceLocation EndLoc = S->getEndLoc();
+
+      // 获取下一个token的结束位置
+      SourceLocation NextTokenEndLoc = Lexer::getLocForEndOfToken(EndLoc, 0, SM, LangOptions());
+
+      // 查找下一个分号
+      Token Tok;
+      Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
+
+      while (Tok.isNot(tok::semi) && Tok.isNot(tok::eof)) {
+        NextTokenEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
+        Lexer::getRawToken(NextTokenEndLoc, Tok, SM, LangOptions());
+      }
+
+      // 获取分号的结束位置
+      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(Tok.getLocation(), 0, SM, LangOptions());
+
+      return SemicolonEndLoc;
+    }
+};
+
+class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
+public:
+    bool VisitStmt(clang::Stmt *stmt) {
+      llvm::outs() << "VisitStmt: " << stmt->getStmtClassName() << "\n";
+      return true;
+    }
+/*输出:
+TraverseStmt: ImplicitCastExpr
+TraverseStmt: FloatingLiteral
+TraverseStmt: CompoundStmt
+TraverseStmt: ReturnStmt
+TraverseStmt: BinaryOperator
+TraverseStmt: ImplicitCastExpr
+TraverseStmt: DeclRefExpr
+TraverseStmt: ImplicitCastExpr
+TraverseStmt: DeclRefExpr
+ */
 };
 
 class MyASTConsumer : public clang::ASTConsumer {
 public:
     void HandleTranslationUnit(clang::ASTContext &Context) override {
       MyASTVisitor Visitor;
-      for (auto *D : Context.getTranslationUnitDecl()->decls()) {
-        Visitor.Visit(D);
+      for (Decl *D : Context.getTranslationUnitDecl()->decls()) {
+        Visitor.TraverseDecl(D);
       }
+
+
+//      TranslationUnitDecl *translationUnitDecl = Context.getTranslationUnitDecl();
     }
 };
 
