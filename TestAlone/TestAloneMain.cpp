@@ -15,16 +15,29 @@
 #include "clang/Lex/PreprocessorOptions.h"
 #include "clang/Basic/TargetInfo.h"
 #include "Brc/BrcAstCnsm.h"
+#include "clang/Parse/Parser.h"
 
 using namespace llvm;
 using namespace clang;
 using namespace clang;
 
 
+class MyASTConsumer : public ASTConsumer {
+public:
+    virtual bool HandleTopLevelDecl(DeclGroupRef DG) override {
+      for (Decl *D : DG) {
+        std::cout << D << std::endl;
+        // 在这里处理每个声明
+        // ...
+      }
+      return true;
+    }
+};
+
 
 int main(int Argc, const char **Argv  ) {
 
-  clang::tooling::CompilationDatabase &Compilations =  * new clang::tooling::FixedCompilationDatabase(Twine("."), std::vector<std::string>());
+//  clang::tooling::CompilationDatabase &Compilations =  * new clang::tooling::FixedCompilationDatabase(Twine("."), std::vector<std::string>());
 
   clang::CompilerInstance CI;
   CI.createDiagnostics();
@@ -48,11 +61,17 @@ int main(int Argc, const char **Argv  ) {
   CI.createPreprocessor(clang::TU_Complete);
   CI.createASTContext();
 
-  std::string Code = "void func(int i, int time){return;}";
+  std::string Code = "void func(int i, int time)"
+                     "{"
+                     "return;"
+                     "}";
 
   // 创建一个MemoryBuffer对象
 //  std::unique_ptr<llvm::MemoryBuffer> Buf =
-//          llvm::MemoryBuffer::getMemBuffer(Code,"input.cpp");
+//          llvm::MemoryBuffer::getMemBuffer(Code/*,"input.cpp"*/);
+
+//  MemoryBufferRef BufRef(*Buf);
+  MemoryBufferRef BufRef(Code,"input.cpp");
 
   SourceManager& SM=CI.getSourceManager();
   FileManager &FM = CI.getFileManager();
@@ -68,16 +87,40 @@ int main(int Argc, const char **Argv  ) {
 //  clang::FileID MainFileID =
 //  SM.getOrCreateFileID( File, clang::SrcMgr::C_User);
   clang::FileID MainFileID = SM.createFileID(
-          llvm::MemoryBuffer::getMemBuffer(Code,"input.cpp"), clang::SrcMgr::C_User);
+          BufRef, clang::SrcMgr::C_User);
     SM.setMainFileID(MainFileID);
 
 
-  // 设置输入文件
-  CI.getPreprocessor().EnterMainSourceFile();
+//  CI.createPreprocessor(clang::TU_Complete);
+  // 创建一个Lexer对象
+  Lexer RawLexer(SM.getMainFileID(), BufRef, SM, LangOpts);
+
+//  MyASTConsumer myAstConsumer;
+//  std::unique_ptr<ASTConsumer> Consumer = std::make_unique<MyASTConsumer>();
+  CI.setASTConsumer(std::make_unique<MyASTConsumer>());
+
+//  Sema seam(CI.getPreprocessor(), CI.getASTContext(),myAstConsumer );
+  Sema seam(CI.getPreprocessor(), CI.getASTContext(), CI.getASTConsumer() );
+
+
+  // 创建一个Parser对象
+  Parser parser(CI.getPreprocessor(), seam, false);
+
+  Preprocessor &PP = CI.getPreprocessor();
+  auto _ObjC=CI.getLangOpts().ObjC;
+  IdentifierTable &identifierTable = PP.getIdentifierTable();
+  IdentifierInfo &_super = PP.getIdentifierTable().get("super");
+  LangOptions &LO = CI.getLangOpts();
+  unsigned int _AltiVec = LO.AltiVec;
+  unsigned int _ZVector = LO.ZVector;
+  unsigned int _Borland = LO.Borland;
+  unsigned int _CPlusPlusModules = LO.CPlusPlusModules;
 
   // 解析代码
-  CI.getDiagnosticClient().BeginSourceFile(CI.getLangOpts(), &CI.getPreprocessor());
-//  CI.getDiagnosticClient().EndSourceFile();
+
+  parser.Initialize();
+  parser.ConsumeToken();
+  parser.ParseTopLevelDecl();
 
   // 获取ASTContext
   ASTContext &Context = CI.getASTContext();
