@@ -99,7 +99,7 @@ int main(int Argc, const char **Argv  ) {
 
   parser.Initialize();
 //  parser.ConsumeToken();
-//  parser.ParseTopLevelDecl();
+  parser.ParseTopLevelDecl();
 
   ASTContext &Context = CI.getASTContext();
 
@@ -123,6 +123,9 @@ D:0x555557ae0140:typedef unsigned __int128 __uint128_t
 D:0x555557ae04b8:typedef __NSConstantString_tag __NSConstantString
 D:0x555557ae0550:typedef char *__builtin_ms_va_list
 D:0x555557aebd68:typedef __va_list_tag __builtin_va_list[1]
+D:0x555557aebf28:void func(int i, int time) {
+    return;
+}
  */
 
 
