@@ -1,0 +1,3 @@
+[submodule "base_home"]
+	path = base_home
+	url = ssh://git@10.0.4.107:10022/prgrmz07/clang-plugin-base.git
