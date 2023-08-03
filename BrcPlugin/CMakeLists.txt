@@ -6,27 +6,26 @@ set(CTk_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
-#"${CMAKE_CURRENT_SOURCE_DIR}/../include/Brc/BrcAstCnsm.h"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
 )
 
 
     # Create a library corresponding to 'plugin'
     add_library(
-            Brc
+            BrcPlugin
       SHARED
       ${CTk_SOURCES}
       )
 
-target_link_libraries(Brc
+target_link_libraries(BrcPlugin
         "${LIBFMT_STATIC}"   #/pubx/fmt/build/libfmt.a
         )
 
     # Configure include directories for 'plugin'
-    target_include_directories(
-            Brc
+    target_include_directories(BrcPlugin
       PRIVATE
-      "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/include"
       "${LIBFMT_INCLUDE}"
     )
 
