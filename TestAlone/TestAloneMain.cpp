@@ -105,15 +105,24 @@ int main(int Argc, const char **Argv  ) {
 
   TranslationUnitDecl *TUDecl = Context.getTranslationUnitDecl();
   bool hasBody = TUDecl->hasBody();
+
   for (Decl *D : TUDecl->decls()) {
-    std::cout << "main:" << D << std::endl;
+
+    llvm::raw_ostream& OS = llvm::outs();
+    clang::PrintingPolicy Policy(D->getASTContext().getLangOpts());
+    OS<< "D:"  << D << ":";
+    D->print(OS, Policy);
+    OS << "\n";
+
+//    const std::string &DStr = D->getSourceRange().printToString(SM);
+//    std::cout << "main:" << D << "," << DStr << std::endl;
   }
 /**此循环输出以下信息:
-main:0x555557ae00d0
-main:0x555557ae0140
-main:0x555557ae04b8
-main:0x555557ae0550
-main:0x555557aebd68
+D:0x555557ae00d0:typedef __int128 __int128_t
+D:0x555557ae0140:typedef unsigned __int128 __uint128_t
+D:0x555557ae04b8:typedef __NSConstantString_tag __NSConstantString
+D:0x555557ae0550:typedef char *__builtin_ms_va_list
+D:0x555557aebd68:typedef __va_list_tag __builtin_va_list[1]
  */
 
 
