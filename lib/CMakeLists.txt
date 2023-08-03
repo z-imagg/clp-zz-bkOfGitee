@@ -10,8 +10,8 @@ set(CTk_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstAct.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/MyCmtAct.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../include/Brc/CmtAstCnsm.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/CmtAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../include/Brc/BrcAstCnsm.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/CmtAstAct.cpp"
 )
 

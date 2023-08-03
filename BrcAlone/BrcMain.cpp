@@ -7,14 +7,14 @@
 #include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
-#include "Brc/CmtAstCnsm.h"
+#include "Brc/BrcAstCnsm.h"
 
 using namespace llvm;
 using namespace clang;
 
 static llvm::cl::OptionCategory CTkAloneCategory("BrcAlone选项");
 
-class _CmtAstAct : public ASTFrontendAction {
+class _BrcAstAct : public ASTFrontendAction {
 public:
     std::unique_ptr<ASTConsumer>
     CreateASTConsumer(CompilerInstance &CI,
@@ -27,7 +27,7 @@ public:
 //      mRewriter_ptr->setSourceMgr(SM, langOptions);//A
 
       //Act中 是 每次都是 新创建 AddBraceAstCnsm
-      return std::make_unique<CmtAstCnsm>(CI,  &astContext, SM, langOptions);
+      return std::make_unique<BrcAstCnsm>(CI, &astContext, SM, langOptions);
     }
 };
 
@@ -91,7 +91,7 @@ int main(int Argc, const char **Argv) {
 
 
   // 运行 ClangTool
-  int Result =   Tool.run(clang::tooling::newFrontendActionFactory<_CmtAstAct>().get());
+  int Result =   Tool.run(clang::tooling::newFrontendActionFactory<_BrcAstAct>().get());
 
   return Result;
 }
