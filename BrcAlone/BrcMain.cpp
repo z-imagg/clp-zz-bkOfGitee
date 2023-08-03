@@ -36,8 +36,8 @@ private:
 
 
 int main(int Argc, const char **Argv) {
-  tooling::FrontendActionFactory *frontendActionFactory = clang::tooling::newFrontendActionFactory<_BrcAstAct>().get();
-  int Result =   act_main(Argc,Argv,CTkAloneCategory,frontendActionFactory,"加花括号插件", false);
+  const std::unique_ptr<tooling::FrontendActionFactory> &frontendActionFactory = clang::tooling::newFrontendActionFactory<_BrcAstAct>();
+  int Result =   act_main(Argc,Argv,CTkAloneCategory,frontendActionFactory,"加花括号插件", true);
   return Result;
 }
 
