@@ -41,7 +41,29 @@ bool BrcVst::insertLRBrace(LocId LBraceLocId, SourceLocation LBraceLoc ,LocId RB
  */
 bool BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
   mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
-  mRewriter_ptr->InsertTextAfter(stmt->getEndLoc(),"}");
+  const SourceLocation &stmtEndLoc = stmt->getEndLoc();
+
+  //输入1. 假设 stmt为: 'x = y + z ;'
+  //输入2. 假设 stmt为: 'x = y + MyClass::ZERO;'
+
+  //写法A: 肯定是错
+//  mRewriter_ptr->InsertTextAfter(stmtEndLoc,"}");
+  //错,A 结果1:'{x = y + }z ;'
+  //错,A 结果2:'{x = y + MyClass::}ZERO;'
+
+  //写法B: 肯定是错，但比写法A好一点
+//  mRewriter_ptr->InsertTextAfterToken(stmtEndLoc,"}");
+  //错,B 结果1:'{x = y + z} ;'
+  //错,B 结果2:'{x = y + MyClass::ZERO};'
+
+  //写法C: 分号左边单词非空格时对、分号左边是空格时错，但比写法A、B都
+  SourceLocation NextTokenEndLoc = Lexer::getLocForEndOfToken(stmtEndLoc, 0, SM, CI.getLangOpts());
+  mRewriter_ptr->InsertTextAfterToken(NextTokenEndLoc,"}");
+  //错,C 结果1: '{x = y + z} ;'
+  //     分号左边单词非空格时对
+  //对,C 结果2:'{x = y + MyClass::ZERO;}'
+  //     分号紧挨着左边单词
+
 }
 
 
@@ -54,17 +76,19 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   }
 
   Stmt *thenStmt = ifStmt->getThen();
-  {bool thenIsCompoundStmt=isa<CompoundStmt>(*thenStmt);
-  if (thenStmt && (!thenIsCompoundStmt) ) {
-    letLRBraceWrapStmt(thenStmt,"");
-  }
+  if(thenStmt)  {
+    bool thenIsCompoundStmt=isa<CompoundStmt>(*thenStmt);
+    if ( !thenIsCompoundStmt ) {
+      letLRBraceWrapStmt(thenStmt,"");
+    }
   }
 
   Stmt *elseStmt = ifStmt->getElse();
-  {bool elseIsCompoundStmt=isa<CompoundStmt>(*elseStmt);
-  if (elseStmt && (!elseIsCompoundStmt) ) {
-    letLRBraceWrapStmt(elseStmt,"");
-  }
+  if(elseStmt) {
+    bool elseIsCompoundStmt=isa<CompoundStmt>(*elseStmt);
+    if (!elseIsCompoundStmt ) {
+      letLRBraceWrapStmt(elseStmt,"");
+    }
   }
 ///////////////////// 自定义处理 完毕
 
