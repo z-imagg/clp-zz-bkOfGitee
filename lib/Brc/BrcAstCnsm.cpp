@@ -7,13 +7,13 @@ bool BrcAstCnsm::mainFileProcessed=false;
 
 std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
 
- /*bool BrcAstCnsm::HandleTopLevelDecl(DeclGroupRef DG) {
-
-
-  return true;
-}*/
-
  void BrcAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
+   std::cout<< fmt::format("HandleTranslationUnit打印各重要对象地址: CI:{:x},this->Ctx:{:x},Ctx:{:x},SM:{:x},mRewriter_ptr:{:x}",
+reinterpret_cast<uintptr_t> (&CI ),
+reinterpret_cast<uintptr_t> (&(this->Ctx) ),
+reinterpret_cast<uintptr_t> (&Ctx ),
+reinterpret_cast<uintptr_t> (&SM ),
+reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
 //  ASTConsumer::HandleTranslationUnit(Ctx);
 
    //translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
