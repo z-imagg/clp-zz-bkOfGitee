@@ -15,26 +15,13 @@
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Sema/SemaConsumer.h"
 #include "Brc/BrcAstCnsm.h"
 #include "clang/Parse/Parser.h"
 
 using namespace llvm;
 using namespace clang;
 using namespace clang;
-
-
-class MyASTConsumer : public ASTConsumer {
-public:
-    virtual bool HandleTopLevelDecl(DeclGroupRef DG) override {
-      for (Decl *D : DG) {
-        std::cout << D << std::endl;
-        // 在这里处理每个声明
-        // ...
-      }
-      return true;
-    }
-};
-
 
 int main(int Argc, const char **Argv  ) {
 
@@ -44,14 +31,7 @@ int main(int Argc, const char **Argv  ) {
   CI.createSourceManager(CI.getFileManager());
 
 
-
-
-
-
-
   CI.getLangOpts().CPlusPlus = true;
-
-//  LangOptions LangOpts;
 
   llvm::Triple triple("x86_64-pc-linux-gnu");
   std::shared_ptr<clang::TargetOptions> targetOpts=std::make_shared<clang::TargetOptions>();
@@ -94,36 +74,25 @@ int main(int Argc, const char **Argv  ) {
 //  CI.getSourceManager().setMainFileID(MainFileID);
 //  const clang::FileEntry *fileEntry = SM.getFileEntryForID(MainFileID);
 //  llvm::StringRef fileBuffer = SM.getBufferData(MainFileID);
-
 //  clang::Lexer lexer(SourceLocation(), LO,fileBuffer.begin(),fileBuffer.data(), fileBuffer.end() );
 
   PP.EnterSourceFile(MainFileID,nullptr,{},false);
 
-  PreprocessorLexer *xx = PP.getCurrentLexer();
-//  Lexer RawLexer(SM.getMainFileID(), SM, CI.getLangOpts());
-
 //  MyASTConsumer myAstConsumer;
-//  std::unique_ptr<ASTConsumer> Consumer = std::make_unique<MyASTConsumer>();
-  CI.setASTConsumer(std::make_unique<MyASTConsumer>());
-
 //  Sema seam(CI.getPreprocessor(), CI.getASTContext(),myAstConsumer );
-  Sema *seam=new Sema(CI.getPreprocessor(), CI.getASTContext(), CI.getASTConsumer() );
+  Sema *seam=new Sema(CI.getPreprocessor(), CI.getASTContext(), *new clang::SemaConsumer() );
   CI.setSema(seam);
 
   // 创建一个Parser对象
   Parser parser(CI.getPreprocessor(), *seam, false);
-//  PP.getCurrentLexer()
 
   parser.Initialize();
-//  parser.ConsumeToken();
   parser.ParseTopLevelDecl();
-
 
 
   ASTContext &Context = CI.getASTContext();
 
   TranslationUnitDecl *TUDecl = Context.getTranslationUnitDecl();
-  bool hasBody = TUDecl->hasBody();
 
   for (Decl *D : TUDecl->decls()) {
 
@@ -146,6 +115,9 @@ D:0x555557aebf28,Location: <exampleCPP:1:1, col:38>:void func(int i, int time) {
     return;
 }
  */
+
+
+
 
 
 
