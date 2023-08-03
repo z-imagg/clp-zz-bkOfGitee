@@ -29,7 +29,7 @@ bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
      //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
      BrcAstCnsm::__visitRawComment(CI,SM,  rc, _brcOk);
      if(_brcOk){
-       std::cout<<"已插入花括号,不再处理"<<std::endl;
+       std::cout<<"已有标记(已插入花括号),不再处理"<<std::endl;
        return true;
      }
    }
@@ -40,7 +40,7 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
     return;
   }
   const SourceRange &sourceRange = C->getSourceRange();
-  Util::printSourceRangeSimple(CI,"查看RawComment","",sourceRange, true);
+//  Util::printSourceRangeSimple(CI,"查看RawComment","",sourceRange, true);
 
   if(_brcOk){
     return;
@@ -49,7 +49,8 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
   LangOptions &langOpts = CI.getLangOpts();
   std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
 //      brcOk= (sourceText==BrcOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
-  _brcOk= (sourceText.find_first_of(BrcOkFlagText) != std::string::npos);
+  std::string::size_type index = sourceText.find(BrcOkFlagText);
+  _brcOk= (index != std::string::npos);
 
 }
 //endregion
