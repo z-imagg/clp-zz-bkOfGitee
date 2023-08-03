@@ -37,7 +37,7 @@ public:
             :
             CI(_CI),
             Ctx(*_astContext),
-            SM(_SM)  ,
+            SM(_SM)
 //            cmtVisitor(_CI,_astContext,_SM)
             {
       //构造函数
@@ -46,8 +46,10 @@ public:
 
     virtual bool HandleTopLevelDecl(DeclGroupRef DG) ;
 
-    void __visitRawComment(const RawComment *C, bool & _brcOk) ;
-
+    //region 判断是否已经处理过了
+    static bool isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,    bool& _brcOk, std::vector<Decl*> declVec);
+    static void __visitRawComment(CompilerInstance& CI,SourceManager&SM,   const RawComment *C, bool & _brcOk) ;
+    //endregion
 
 public:
     CompilerInstance &CI;
