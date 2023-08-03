@@ -25,9 +25,8 @@ bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
    for(int i=0; i<declCnt; i++){
      Decl* D=declVec[i];
 
-     //判断当前文件是否主文件
-     bool inMainFile=SM.isWrittenInMainFile(D->getBeginLoc());
-     if(!inMainFile){
+     //忽略非主文件中的声明
+     if(!Util::isDeclInMainFile(SM,D)){
        continue;
      }
 
