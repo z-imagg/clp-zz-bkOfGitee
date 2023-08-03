@@ -58,20 +58,20 @@ int main(int Argc, const char **Argv  ) {
   TargetInfo* targetInfo=  TargetInfo::CreateTargetInfo(CI.getDiagnostics(), targetOpts) ;
   CI.setTarget(targetInfo);
 
+//  CI.head();
   CI.createPreprocessor(clang::TU_Complete);
+  CI.getPreprocessor().Initialize(*targetInfo);
+
   CI.createASTContext();
 
-  std::string Code = "void func(int i, int time)"
-                     "{"
-                     "return;"
-                     "}";
+  StringRef Code ("void func(int i, int time) { return; }");
 
   // 创建一个MemoryBuffer对象
 //  std::unique_ptr<llvm::MemoryBuffer> Buf =
 //          llvm::MemoryBuffer::getMemBuffer(Code/*,"input.cpp"*/);
 
 //  MemoryBufferRef BufRef(*Buf);
-  MemoryBufferRef BufRef(Code,"input.cpp");
+  MemoryBufferRef BufRef(Code,"exampleCPP");
 
   SourceManager& SM=CI.getSourceManager();
   FileManager &FM = CI.getFileManager();
@@ -91,9 +91,14 @@ int main(int Argc, const char **Argv  ) {
     SM.setMainFileID(MainFileID);
 
 
+  Preprocessor &PP = CI.getPreprocessor();
 //  CI.createPreprocessor(clang::TU_Complete);
   // 创建一个Lexer对象
-  Lexer RawLexer(SM.getMainFileID(), BufRef, SM, LangOpts);
+//  Lexer RawLexer(SM.getMainFileID(), BufRef, SM, LangOpts);
+  Lexer RawLexer(SM.getMainFileID(), BufRef, PP, true);
+//  clang::Lexer lexer(CI.getPreprocessor().getLangOpts(), CI.getPreprocessor().getPreprocessorAllocator(), CI.getPreprocessor().getSourceManager(), CI.getPreprocessor().getLangOpts());
+
+//  Lexer(FileID FID, const llvm::MemoryBufferRef &InputFile, Preprocessor &PP, bool IsFirstIncludeOfFile)
 
 //  MyASTConsumer myAstConsumer;
 //  std::unique_ptr<ASTConsumer> Consumer = std::make_unique<MyASTConsumer>();
@@ -101,20 +106,12 @@ int main(int Argc, const char **Argv  ) {
 
 //  Sema seam(CI.getPreprocessor(), CI.getASTContext(),myAstConsumer );
   Sema seam(CI.getPreprocessor(), CI.getASTContext(), CI.getASTConsumer() );
-
+  CI.setSema(&seam);
 
   // 创建一个Parser对象
   Parser parser(CI.getPreprocessor(), seam, false);
 
-  Preprocessor &PP = CI.getPreprocessor();
-  auto _ObjC=CI.getLangOpts().ObjC;
-  IdentifierTable &identifierTable = PP.getIdentifierTable();
-  IdentifierInfo &_super = PP.getIdentifierTable().get("super");
-  LangOptions &LO = CI.getLangOpts();
-  unsigned int _AltiVec = LO.AltiVec;
-  unsigned int _ZVector = LO.ZVector;
-  unsigned int _Borland = LO.Borland;
-  unsigned int _CPlusPlusModules = LO.CPlusPlusModules;
+
 
   // 解析代码
 
