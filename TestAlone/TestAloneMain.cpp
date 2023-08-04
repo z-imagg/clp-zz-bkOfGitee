@@ -184,5 +184,25 @@ int main() {
     return 1;
   }
 
+  Preprocessor &_PP = CI.getPreprocessor();
+  //注意不能用上面的PP,会报指针问题，重新getPreprocessor得到的_PP可以正常使用
+
+  // 获取标识符表
+  clang::IdentifierTable &IDTable = _PP.getIdentifierTable();
+
+  // 遍历所有宏名
+  for (clang::IdentifierTable::iterator I = IDTable.begin(), E = IDTable.end(); I != E; ++I) {
+    clang::IdentifierInfo *II = I->second;
+    if (II->hasMacroDefinition()) {
+      // 获取宏信息
+      const clang::MacroInfo *MI = _PP.getMacroInfo(II);
+      if (MI) {
+        // 获取宏名
+        llvm::StringRef macroName = II->getName();
+        std::cout << "宏名: " << macroName.str() << std::endl;
+      }
+    }
+  }
+
   return 0;
 }
