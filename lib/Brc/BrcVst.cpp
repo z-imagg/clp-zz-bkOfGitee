@@ -32,6 +32,15 @@ bool BrcVst::insertLRBrace(LocId LBraceLocId, SourceLocation LBraceLoc ,LocId RB
   return true;
 }
 
+bool BrcVst::letLRBraceWrapRange(SourceLocation B,SourceLocation E, const char* whoInserted ){
+  mRewriter_ptr->InsertTextBefore(B,"{");
+
+  std::string comment;
+  Util::wrapByComment(whoInserted,comment);
+  std::string RBraceStr("}"+comment);
+
+  mRewriter_ptr->InsertTextAfterToken(E,RBraceStr);
+}
 
 /**
  * 用左右花括号包裹给定语句
@@ -46,8 +55,10 @@ bool BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
   if(endIsSemicolon){
-    const std::string &comment = fmt::format("/*{}*/", whoInserted);
+    std::string comment;
+    Util::wrapByComment(whoInserted,comment);
     std::string RBraceStr("}"+comment);
+
     mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,RBraceStr);
   }
 
