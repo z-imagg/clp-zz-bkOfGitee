@@ -54,11 +54,13 @@ bool BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
 
 
 bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
-  /////////////////////////对当前节点compoundStmt做 自定义处理
-
+  //region 若NULL，直接返回
   if(!ifStmt){
     return false;
   }
+  //endregion
+
+  //region 自定义处理: if的then语句、else语句 若非块语句 则用花括号包裹
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt)  {
@@ -75,9 +77,9 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
       letLRBraceWrapStmt(elseStmt,"");
     }
   }
-///////////////////// 自定义处理 完毕
+//endregion 自定义处理 完毕
 
-////////////////////  将递归链条正确的接好:  对 当前节点ifStmt的下一层节点child:{then,else}  调用顶层方法TraverseStmt(child)
+  //region  将递归链条正确的接好:  对 当前节点ifStmt的下一层节点child:{then,else}  调用顶层方法TraverseStmt(child)
 
   if(thenStmt){
       TraverseStmt  (thenStmt);
@@ -86,18 +88,31 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   if(elseStmt){
     TraverseStmt(elseStmt);
   }
+  //endregion
 
   return true;
 }
 bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
-/////////////////////////对当前节点whileStmt做 自定义处理
-  if(Util::parentIsCompound(Ctx,whileStmt)){
-    letLRBraceWrapStmt(whileStmt, "TraverseWhileStmt");
+  //region 若NULL，直接返回
+  if(!whileStmt){
+    return false;
   }
-///////////////////// 自定义处理 完毕
+  //endregion
 
-////////////////////  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
+//  Stmt *thenStmt = ifStmt->getThen();
+  if(bodyStmt)  {
+    bool bodyIsCompoundStmt=isa<CompoundStmt>(*bodyStmt);
+    if ( !bodyIsCompoundStmt ) {
+      letLRBraceWrapStmt(bodyStmt,"TraverseWhileStmt");
+    }
+  }
+
+  //endregion 自定义处理 完毕
+
+  //region  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+//  Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt){
 
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
@@ -118,6 +133,8 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
      *   ...;// 这里是 while的循环体, 是一个单行语句，无需插入 时钟调用语句.
      */
   }
+  //endregion
+
   return true;
 }
 
