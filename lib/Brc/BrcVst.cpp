@@ -46,7 +46,9 @@ bool BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
   if(endIsSemicolon){
-    mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,"}");
+    const std::string &comment = fmt::format("/*{}*/", whoInserted);
+    std::string RBraceStr("}"+comment);
+    mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,RBraceStr);
   }
 
 }
