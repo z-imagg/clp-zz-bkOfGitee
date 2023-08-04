@@ -1,4 +1,4 @@
-#include "CTk/CTkAstCnsm.h"
+#include "Brc/BrcAstCnsm.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -12,7 +12,7 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 // FrontendAction
 //-----------------------------------------------------------------------------
-class CTkAstAct : public PluginASTAction {
+class BrcAstAct : public PluginASTAction {
 public:
     std::unique_ptr<ASTConsumer>
     CreateASTConsumer(CompilerInstance &CI,
@@ -32,9 +32,9 @@ public:
 
 //      const std::shared_ptr<Rewriter> &rewriter_ptr = std::make_shared<Rewriter>();
       //Rewriter:3:  Action将Rewriter传递给Consumer
-      //Act中 是 每次都是 新创建 CTkAstCnsm
-      return std::make_unique<CTkAstCnsm>(CI,mRewriter_ptr,
-                                                           &astContext, SM, langOptions);
+      //Act中 是 每次都是 新创建 AddBraceAstCnsm
+      return std::make_unique<AddBraceAstCnsm>(CI, mRewriter_ptr,
+                                               &astContext, SM, langOptions);
     }
 
     bool ParseArgs(const CompilerInstance &CI,
@@ -53,15 +53,12 @@ public:
 //    void EndSourceFileAction() override { }  //   貌似有时候并没有调用EndSourceFileAction，因此去掉
 
 private:
-    //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
-    //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
     const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
 //-----------------------------------------------------------------------------
 // Registration
 //-----------------------------------------------------------------------------
-static FrontendPluginRegistry::Add<CTkAstAct>
-        X(/*Name=*/"CTk",
-        /*Description=*/"Checks whether class, variable and function names "
-                        "adhere to LLVM's guidelines");
+static FrontendPluginRegistry::Add<BrcAstAct>
+        X(/*Name=*/"Brc",
+        /*Description=*/"加花括号插件");

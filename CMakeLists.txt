@@ -6,6 +6,8 @@ set(LIBFMT_INCLUDE "${LIBFMT_DIR}/include/")
 #set(LIBFMT_STATIC /pubx/fmt/build/libfmt.a)
 set(LIBFMT_STATIC "${LIBFMT_DIR}/build/libfmt.a")
 
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 if (NOT EXISTS "${LIBFMT_STATIC}")
   MESSAGE(FATAL_ERROR "libfmt静态库${LIBFMT_STATIC} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
 endif()
@@ -101,5 +103,5 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 # available for the sub-projects.
 #===============================================================================
 add_subdirectory(lib)
-add_subdirectory(tools)
-add_subdirectory(t_clock_tick)
+#add_subdirectory(tools)
+add_subdirectory(BrcAlone)

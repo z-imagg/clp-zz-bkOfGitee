@@ -18,8 +18,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
-#include "CTk/FuncDesc.h"
-#include "CTk/LocId.h"
+#include "Brc/LocId.h"
 
 
 #include <sstream>
@@ -161,6 +160,12 @@ public:
       const char *category1FieldName=NULL, int category1Enum=EMPTY_ENUM_VAL,
       const char *category2FieldName=NULL,int category2Enum=EMPTY_ENUM_VAL,
       bool printSourceText=false);
+
+    static void  printSourceRangeSimple(
+            CompilerInstance& CI,
+            std::string tag, std::string title,
+            const SourceRange &sourceRange,
+            bool printSourceText);
     static const int EMPTY_ENUM_VAL=-1;
 
 };

@@ -1,61 +1,35 @@
-#include "CTk/CTkAstCnsm.h"
+#include <clang/Frontend/FrontendActions.h>
 
 #include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendPluginRegistry.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
+#include "Brc/BrcAstCnsm.h"
 
 using namespace llvm;
 using namespace clang;
 
-//===----------------------------------------------------------------------===//
-// Command line options
-//===----------------------------------------------------------------------===//
-static llvm::cl::OptionCategory CTkAloneCategory("CTkAlone options");
+static llvm::cl::OptionCategory CTkAloneCategory("BrcAlone选项");
 
-//===----------------------------------------------------------------------===//
-// PluginASTAction
-//===----------------------------------------------------------------------===//
-class CTkAloneAct : public PluginASTAction {
+class _BrcAstAct : public ASTFrontendAction {
 public:
-  bool ParseArgs(const CompilerInstance &CI,
-                 const std::vector<std::string> &args) override {
-    return true;
-  }
+    std::unique_ptr<ASTConsumer>
+    CreateASTConsumer(CompilerInstance &CI,
+                      llvm::StringRef inFile) override {
+      SourceManager &SM = CI.getSourceManager();
+      LangOptions &langOptions = CI.getLangOpts();
+      ASTContext &astContext = CI.getASTContext();
+      //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
+      CI.getDiagnostics().setSourceManager(&SM);
+      mRewriter_ptr->setSourceMgr(SM, langOptions);//A
 
-  //本方法是override的 即 上层定的，只能返回 std::unique_ptr<ASTConsumer>，因此只能每次新创建CTkAstCnsm， 而不能每次给一个固定的CTkAstCnsm对象
-  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
-                                                 StringRef file) override {
-    SourceManager& SM=CI.getSourceManager();
-    LangOptions &langOpts=CI.getLangOpts();
-    ASTContext& astContext=CI.getASTContext();
-    //Rewriter:2:  Rewriter构造完，在Action.CreateASTConsumer方法中 调用mRewriter.setSourceMgr后即可正常使用
-    mRewriter_ptr->setSourceMgr(SM, langOpts);
-
-
-
-    //Rewriter:3:  Action将Rewriter传递给Consumer
-    //Act中 是 每次都是 新创建 CTkAstCnsm
-    return std::make_unique<CTkAstCnsm>(CI, mRewriter_ptr,
-                                        &astContext, SM, langOpts);
-  }
-
-
-    void EndSourceFileAction() override {
-//      mRewriter
-//         .getEditBuffer(mRewriter.getSourceMgr().getMainFileID())
-//         .write(llvm::outs());
-
-//      mRewriter.overwriteChangedFiles();//修改会影响原始文件
+      //Act中 是 每次都是 新创建 AddBraceAstCnsm
+      return std::make_unique<BrcAstCnsm>(CI,mRewriter_ptr, &astContext, SM, langOptions);
     }
 private:
-    //Rewriter:0:  Rewriter总是作为Action类中的一个成员字段.
-    //Rewriter:1:  Rewriter并不是上层传递下来的，而是自己在这构造的.
-    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是独立运行Act中的Rewriter，是源头，理应构造Rewriter.
-
+    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
 
@@ -64,7 +38,7 @@ int main(int Argc, const char **Argv) {
   Expected<tooling::CommonOptionsParser> eOptParser =
           tooling::CommonOptionsParser::create(Argc, Argv, CTkAloneCategory);
   if (auto E = eOptParser.takeError()) {
-    errs() << "Problem constructing CommonOptionsParser "
+    errs() << "构建CommonOptionsParser出错"
            << toString(std::move(E)) << '\n';
     return EXIT_FAILURE;
   }
@@ -88,11 +62,13 @@ int main(int Argc, const char **Argv) {
 
 
   // 设置文件名
-  const char* FileName = "/pubx/clang-ctk/t_clock_tick/test_main.cpp";
-  if(Argc>=2 && Argv[1]){
-    //如果命令行 有指定源文件路径 则用命令行的
-    FileName=Argv[1];
-  }
+  const char* FileName = NULL;
+  // 命令行 必须 指定源文件路径
+  assert(Argc>=2 && Argv[1]);
+
+  // 从 命令行 获取 源文件路径
+  FileName=Argv[1];
+
   clang::FileID MainFileID = CI.getSourceManager().getOrCreateFileID(
           CI.getFileManager().getVirtualFile(FileName, /*Size=*/0, /*ModificationTime=*/0),
           clang::SrcMgr::C_User);
@@ -114,8 +90,9 @@ int main(int Argc, const char **Argv) {
 /llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/stddef.h
    */
 
+
   // 运行 ClangTool
-  int Result = Tool.run(clang::tooling::newFrontendActionFactory<CTkAloneAct>().get());
+  int Result =   Tool.run(clang::tooling::newFrontendActionFactory<_BrcAstAct>().get());
 
   return Result;
 }
