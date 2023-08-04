@@ -103,7 +103,6 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
 
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
-//  Stmt *thenStmt = ifStmt->getThen();
   if(bodyStmt)  {
     bool bodyIsCompoundStmt=isa<CompoundStmt>(*bodyStmt);
     if ( !bodyIsCompoundStmt ) {
@@ -114,26 +113,11 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //endregion 自定义处理 完毕
 
   //region  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
-//  Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt){
-
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
     if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
-      //这一段可以替代shouldInsert
-      /**只有当while的循环体是 块语句 时, 该 循环体，才需要 经过 TraverseStmt(循环体) ---...--->TraverseCompoundStmt(循环体) 转交，在 TraverseCompoundStmt(循环体) 中 对 该循环体中的每条子语句前 插入 时钟调用语句.
-       * 形如:
-       * while(...)
-       * {
-       * ...;//这里是 while的循环体, 是一个块语句，需要 对 循环体中的每条子语句前 插入 时钟调用语句.
-       * }
-       */
       TraverseStmt(bodyStmt);
     }
-    /**否则 while的循环体 肯定是一个单行语句，无需插入 时钟调用语句.
-     * 形如 :
-     * while(...)
-     *   ...;// 这里是 while的循环体, 是一个单行语句，无需插入 时钟调用语句.
-     */
   }
   //endregion
 
