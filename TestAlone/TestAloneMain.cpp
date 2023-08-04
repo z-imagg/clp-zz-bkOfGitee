@@ -15,7 +15,7 @@
 using namespace clang;
 
 
-class Util {
+class _Util {
 public:
     static std::string _getSourceText(const clang::SourceManager& SM,const LangOptions &LO, SourceRange sourceRange){
       CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
@@ -34,7 +34,7 @@ public:
     }
     static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM,bool& endIsSemicolon) {
       const LangOptions &LO = LangOptions();
-      std::string stmtText=Util::_getSourceText(SM, LO, S->getSourceRange());
+      std::string stmtText=_Util::_getSourceText(SM, LO, S->getSourceRange());
       Token JTok;
 
       // 获取Stmt的结束位置
@@ -77,9 +77,9 @@ public:
       SourceManager &SM = CI.getSourceManager();
       LangOptions &LO = CI.getLangOpts();
 
-      std::string strSourceText=Util::_getSourceText(SM,LO,stmt->getSourceRange());
+      std::string strSourceText=_Util::_getSourceText(SM,LO,stmt->getSourceRange());
 
-      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
+      const SourceLocation &semicolonLoc = _Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
       llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
       std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
