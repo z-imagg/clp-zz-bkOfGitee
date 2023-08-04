@@ -68,7 +68,7 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   if(thenStmt)  {
     bool thenIsCompoundStmt=isa<CompoundStmt>(*thenStmt);
     if ( !thenIsCompoundStmt ) {
-      letLRBraceWrapStmt(thenStmt,"");
+      letLRBraceWrapStmt(thenStmt,"TraverseIfStmt:thenStmt");
     }
   }
 
@@ -76,7 +76,7 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   if(elseStmt) {
     bool elseIsCompoundStmt=isa<CompoundStmt>(*elseStmt);
     if (!elseIsCompoundStmt ) {
-      letLRBraceWrapStmt(elseStmt,"");
+      letLRBraceWrapStmt(elseStmt,"TraverseIfStmt:elseStmt");
     }
   }
 //endregion 自定义处理 完毕
