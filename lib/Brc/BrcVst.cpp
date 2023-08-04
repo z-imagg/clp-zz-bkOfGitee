@@ -65,19 +65,13 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   //region 自定义处理: if的then语句、else语句 若非块语句 则用花括号包裹
 
   Stmt *thenStmt = ifStmt->getThen();
-  if(thenStmt)  {
-    bool thenIsAloneContainer = Util::isAloneContainerStmt(thenStmt);
-    if ( !thenIsAloneContainer   ) {
+  if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
       letLRBraceWrapStmt(thenStmt,"TraverseIfStmt:thenStmt");
-    }
   }
 
   Stmt *elseStmt = ifStmt->getElse();
-  if(elseStmt) {
-    bool elseIsAloneContainer = Util::isAloneContainerStmt(elseStmt);
-    if ( !elseIsAloneContainer ){
+  if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
       letLRBraceWrapStmt(elseStmt,"TraverseIfStmt:elseStmt");
-    }
   }
 //endregion 自定义处理 完毕
 
@@ -103,11 +97,8 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
 
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
-  if(bodyStmt)  {
-    bool bodyIsCompoundStmt=isa<CompoundStmt>(*bodyStmt);
-    if ( !bodyIsCompoundStmt ) {
+  if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
       letLRBraceWrapStmt(bodyStmt,"TraverseWhileStmt");
-    }
   }
 
   //endregion 自定义处理 完毕
@@ -133,11 +124,8 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
-  if(bodyStmt)  {
-    bool bodyIsCompoundStmt=isa<CompoundStmt>(*bodyStmt);
-    if ( !bodyIsCompoundStmt ) {
+  if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
       letLRBraceWrapStmt(bodyStmt,"TraverseForStmt");
-    }
   }
   //endregion
 
