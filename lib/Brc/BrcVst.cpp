@@ -106,9 +106,11 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region  将递归链条正确的接好:  对 当前节点whileStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   if(bodyStmt){
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
-    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//是否向下层遍历 与 本节点whileStmt的直接子结点 是否为 块语句 无关，因为 whileStmt的深层子结点 可能是块语句
+//	即使whileStmt的直接子节点不是块语句 但不影响 whileStmt的深层子结点 可能是块语句
       TraverseStmt(bodyStmt);
-    }
+//    }
   }
   //endregion
 
@@ -133,6 +135,8 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   if(bodyStmt){
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
 //    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//是否向下层遍历 与 本节点forStmt的直接子结点 是否为 块语句 无关，因为 forStmt的深层子结点 可能是块语句
+//	即使forStmt的直接子节点不是块语句 但不影响 forStmt的深层子结点 可能是块语句
       TraverseStmt(bodyStmt);
 //    }
   }
