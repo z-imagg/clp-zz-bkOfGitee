@@ -25,6 +25,8 @@ public:
         L=(cnt+chr)%50;
         return &L+1;
       }
+
+
       case 1:
         int unit;
         unit=18;
@@ -44,6 +46,11 @@ public:
       return (char*)0;
       case 6:{
         int zB;
+        break;
+      }
+      ////////
+      case 7:{
+        int uuuuu;
         break;
       }
       default:
