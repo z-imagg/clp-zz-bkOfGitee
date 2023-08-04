@@ -20,6 +20,11 @@ public:
     double sum=1.*cnt*chr;
     start: char L;
     switch(chr){
+      case 0:
+      {
+        L=(cnt+chr)%50;
+        return &L+1;
+      }
       case 1:
         int unit;
         unit=18;
