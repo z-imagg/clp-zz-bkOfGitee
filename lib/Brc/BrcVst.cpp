@@ -157,8 +157,6 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 
 
 bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
-  const SourceLocation &switchEnd = switchStmt->getEndLoc();
-
   SwitchCase *caseList = switchStmt->getSwitchCaseList();
 
   std::vector<SwitchCase*> caseVec;
@@ -173,21 +171,25 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       return lhs->getBeginLoc() < rhs->getBeginLoc();
   });
 
+  SourceLocation beginLoc;
   SourceLocation endLoc;
   size_t caseCnt = caseVec.size();
   for(int k=0; k < caseCnt; k++){
-    SwitchCase* switchCase=caseVec[k];
+    SwitchCase* scK=caseVec[k];
 
     if(k<caseCnt-1){
       endLoc=caseVec[k+1]->getBeginLoc();
     }else{
       endLoc=switchStmt->getEndLoc();
     }
-    if ( isa<CaseStmt>(*switchCase)) {
-      CaseStmt *caseStmt = dyn_cast<CaseStmt>(switchCase);
+    if ( isa<CaseStmt>(*scK)) {
+      CaseStmt *caseK = dyn_cast<CaseStmt>(scK);
+      beginLoc = caseK->getColonLoc();
+//      beginLoc = Lexer::getLocForEndOfToken(caseK->getColonLoc(), /*Offset*/1, SM, LO);
+
 
       //输出case 后表达式
-      Expr *LHS = caseStmt->getLHS();
+      Expr *LHS = caseK->getLHS();
       LangOptions &LO = CI.getLangOpts();
       Token tk;
       Lexer::getRawToken(LHS->getExprLoc(),tk,SM,LO,true);
@@ -196,30 +198,28 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
       llvm::outs() << "case " << tkStr << ":";
 
-    }else if ( isa<DefaultStmt>(*switchCase)) {
-      DefaultStmt *defaultStmt = dyn_cast<DefaultStmt>(switchCase);
+    }else if ( isa<DefaultStmt>(*scK)) {
+      DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
+      beginLoc = defaultK->getColonLoc();
 
       llvm::outs() << "default "  << ":";
     }
-    // 获取 case 的开始位置和结束位置
-    clang::SourceLocation startLoc = switchCase->getBeginLoc();
-//    clang::SourceLocation endLoc = switchCase->getEndLoc();
 
-    // 输出开始位置和结束位置的行号和列号
-    llvm::outs() << "case开始: " << startLoc.printToString(SM)
+    llvm::outs() << "case开始: " << beginLoc.printToString(SM)
     << ", case结束: " << endLoc.printToString(SM) << "\n";
   }
 
   /**输出
-case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:27:7
-case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:31:7
-case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:33:7
-case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
-case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:44:7
-default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:5
+case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:27:7
+case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:31:7
+case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:33:7
+case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
+case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:44:7
+default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:5
 
 case语句列表 按 开始位置 升序 排序
 当前case结束位置 用下一个case开始位置表示， 最后一个case结束位置 用整个switch的结束位置表示
+当前case开始位置 用case或default后的冒号的位置
 SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结尾只能用case2的开始来表达了。
    */
 }
