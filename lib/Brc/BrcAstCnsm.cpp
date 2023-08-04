@@ -5,19 +5,77 @@
 bool BrcAstCnsm::mainFileProcessed=false;
 
 
-std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";//TODO_ 改为 static
+std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
 
- bool BrcAstCnsm::HandleTopLevelDecl(DeclGroupRef DG) {
-  std::vector<Decl*> declVec(DG.begin(),DG.end());
+ void BrcAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
+   std::cout<< fmt::format("HandleTranslationUnit打印各重要对象地址: CI:{:x},this->Ctx:{:x},Ctx:{:x},SM:{:x},mRewriter_ptr:{:x}",
+reinterpret_cast<uintptr_t> (&CI ),
+reinterpret_cast<uintptr_t> (&(this->Ctx) ),
+reinterpret_cast<uintptr_t> (&Ctx ),
+reinterpret_cast<uintptr_t> (&SM ),
+reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
+//  ASTConsumer::HandleTranslationUnit(Ctx);
 
-  //如果本文件已处理，则直接返回。
-  if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
-    return false;
-  }
+   TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl();
 
-  return true;
-}
 
+   //region 做不到 跳过非MainFile，因为：
+   //  translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
+   //    因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
+//  if(!Util::isDeclInMainFile(SM,translationUnitDecl)){
+//    return;
+//  }
+  //endregion
+
+   //region 声明组转为声明vector
+   const DeclContext::decl_range &Decls = translationUnitDecl->decls();
+   std::vector<Decl*> declVec(Decls.begin(), Decls.end());
+   //endregion
+
+   //region 获取主文件ID，文件路径
+   FileID mainFileId;
+   std::string filePath;
+   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+   //endregion
+
+   //region 1.若本文件已处理，则直接返回。
+   if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
+     return ;
+   }
+   //endregion
+
+   //region 2. 插入花括号
+   unsigned long declCnt = declVec.size();
+   for(int i=0; i<declCnt; i++) {
+     Decl *D = declVec[i];
+     //跳过非MainFile中的声明
+     if(!Util::isDeclInMainFile(SM,D)){
+       continue;
+     }
+     //只处理MainFile中的声明
+     this->brcVst.TraverseDecl(D);
+   }
+   //endregion
+
+   //region 3. 插入已处理标记 到主文件第一个声明前
+   bool insertResult;
+   //插入的注释语句不要带换行,这样不破坏原行号
+   //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
+   const std::string brcOkFlagComment = fmt::format("/**{}*/", BrcOkFlagText);
+   Decl* firstDeclInMainFile=Util::firstDeclInMainFile(SM,declVec);
+   if(firstDeclInMainFile){
+     Util::insertCommentBeforeLoc(brcOkFlagComment, firstDeclInMainFile->getBeginLoc(),  brcVst.mRewriter_ptr, insertResult);
+   }
+
+   //endregion
+
+   //region 4. 应用修改到源文件
+   brcVst.mRewriter_ptr->overwriteChangedFiles();
+//   DiagnosticsEngine &de = SM.getDiagnostics();//de是空的，没有DiagnosticsEngine?
+   DiagnosticsEngine &Diags = CI.getDiagnostics();
+   std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
+   //endregion
+ }
 
 //region 判断是否已经处理过了
 bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _brcOk, std::vector<Decl*> declVec){
@@ -59,4 +117,5 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
   _brcOk= (index != std::string::npos);
 
 }
+
 //endregion

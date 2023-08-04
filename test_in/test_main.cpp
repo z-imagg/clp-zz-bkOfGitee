@@ -4,6 +4,8 @@
  */
 class MyClass {
 public:
+    static int ZERO;
+public:
     /**
      * 这是一个示例成员函数
      * @param a 参数a
@@ -29,7 +31,9 @@ int myGlobalFunction(int x, int y) {
 int main() {
   MyClass obj;
   int result = obj.myFunction(10, 20);
-  std::cout << "Result: " << result << std::endl;
+  int x,y,z;
+  if(true)
+  x = y + MyClass::ZERO;
 
   int product = myGlobalFunction(5, 6);
   std::cout << "Product: " << product << std::endl;
