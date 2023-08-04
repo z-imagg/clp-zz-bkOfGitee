@@ -32,14 +32,14 @@ bool BrcVst::insertLRBrace(LocId LBraceLocId, SourceLocation LBraceLoc ,LocId RB
   return true;
 }
 
-bool BrcVst::letLRBraceWrapRange(SourceLocation B,SourceLocation E, const char* whoInserted ){
+bool BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
   mRewriter_ptr->InsertTextBefore(B,"{");
 
   std::string comment;
   Util::wrapByComment(whoInserted,comment);
   std::string RBraceStr("}"+comment);
 
-  mRewriter_ptr->InsertTextAfterToken(E,RBraceStr);
+  mRewriter_ptr->InsertTextBefore(E,RBraceStr);
 }
 
 /**
@@ -199,7 +199,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       CaseStmt *caseK = dyn_cast<CaseStmt>(scK);
 
 
-      //输出case 后表达式
+      //region 输出case 后表达式 , 开发用
       Expr *LHS = caseK->getLHS();
       LangOptions &LO = CI.getLangOpts();
       Token tk;
@@ -208,6 +208,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       const std::string &tkStr = Lexer::getSpelling(tk, SM, LO, &invalid);
 
       llvm::outs() << "case " << tkStr << ":";
+      //endregion
 
     }else if ( isa<DefaultStmt>(*scK)) {
       DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
@@ -218,15 +219,26 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 //    if(subStmtIsCompound){
 //      //case6 应该是块，被 case7 前的注释干扰 导致误判
 //      //  TODO： 如果要完善，nextTokenLocation(nextTokenLocation(... 需要N个nextTokenLocation嵌套，其中遇到注释的时候 忽略 继续嵌套, 直到第一个非注释？才做 < endLoc的判断?
-//      //  简单点可以把这段 块1后还有语句 的逻辑 整个去掉，会导致 一些不需要{}的case 被加上了{}, 并不影响代码结果.
+//      //  简单点可以把这段 块1后还有语句 的逻辑 整个去掉，会导致 一些需要{}的case 没被加上了{}, 估计影响不大?.
 //      bool 块1后还有语句=Util::nextTokenLocation(Util::nextTokenLocation(subStmt->getEndLoc(),SM,LO),SM,LO) < endLoc;
 //      if(块1后还有语句){
 //        subStmtIsCompound=false;
 //      }
 //    }
+
+    //region 开发用输出
     llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
     << ", case结束: " << endLoc.printToString(SM) << "\n";
+    //endregion
+
+    if(!subStmtIsCompound){
+      letLRBraceWrapRangeBfBf(beginLoc, endLoc,
+                              ""
+//                          "TraverseSwitchStmt:CaseStmt|DefaultStmt"
+      );
+    }
   }
+
 
   /**输出
 case 0:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:30:7
@@ -238,12 +250,20 @@ case 6:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:47:14, cas
 case 7:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:52:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:56:7
 default :,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:56:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:59:5
 
-   
+
 case语句列表 按 开始位置 升序 排序
 当前case结束位置 用下一个case开始位置表示， 最后一个case结束位置 用整个switch的结束位置表示
 当前case开始位置 用case或default后的冒号的位置
 SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结尾只能用case2的开始来表达了。
    */
+
+
+  //region  将递归链条正确的接好:  对 当前节点ifStmt的下一层节点child:{then,else}  调用顶层方法TraverseStmt(child)
+  for(int k=0; k < caseCnt; k++) {
+    SwitchCase *scK = caseVec[k];
+    TraverseStmt(scK);
+  }
+  //endregion
 }
 
 
