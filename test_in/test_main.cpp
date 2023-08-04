@@ -25,6 +25,8 @@ public:
  * @return 返回结果
  */
 int myGlobalFunction(int x, int y) {
+  while(x++ + y > 12)
+  y += x  * 2  - y  + MyClass::ZERO    ;     
   return x * y;
 }
 
