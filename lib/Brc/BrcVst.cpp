@@ -156,26 +156,51 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 }
 
 
+bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
+  const SourceLocation &switchEnd = switchStmt->getEndLoc();
 
-bool BrcVst::TraverseCaseStmt(CaseStmt *caseStmt) {
+  SwitchCase *caseList = switchStmt->getSwitchCaseList();
 
-/////////////////////////对当前节点caseStmt 不做 自定义处理
-///////////////////// 自定义处理 完毕
+  // 遍历 case 列表
+  for (clang::SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
+    // 处理每个 case
 
-////////////////////  粘接直接子节点到递归链条:  对 当前节点caseStmt的下一层节点中的单情况体  调用顶层方法TraverseStmt(单情况体)
-                                /////case的其他子节点，比如 'case 值:' 中的 '值' 不做处理。
-  Stmt *body = caseStmt->getSubStmt();//不太确定 case.getSubStmt 是 获取case的单情况体
-  if(body){
-    Stmt::StmtClass bodyStmtClass = body->getStmtClass();
-    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
-      //这一段可以替代shouldInsert
-      TraverseStmt(body);
+    if ( isa<CaseStmt>(*switchCase)) {
+      CaseStmt *caseStmt = dyn_cast<CaseStmt>(switchCase);
+
+      //输出case 后表达式
+      Expr *LHS = caseStmt->getLHS();
+      LangOptions &LO = CI.getLangOpts();
+      Token tk;
+      Lexer::getRawToken(LHS->getExprLoc(),tk,SM,LO,true);
+      bool invalid;
+      const std::string &tkStr = Lexer::getSpelling(tk, SM, LO, &invalid);
+
+      llvm::outs() << "case " << tkStr << ":";
+
+    }else if ( isa<DefaultStmt>(*switchCase)) {
+      DefaultStmt *defaultStmt = dyn_cast<DefaultStmt>(switchCase);
+
+      llvm::outs() << "default "  << ":";
     }
+    // 获取 case 的开始位置和结束位置
+    clang::SourceLocation startLoc = switchCase->getBeginLoc();
+    clang::SourceLocation endLoc = switchCase->getEndLoc();
+
+    // 输出开始位置和结束位置的行号和列号
+    llvm::outs() << "case开始: " << startLoc.printToString(SM)
+    << ", case结束: " << endLoc.printToString(SM) << "\n";
   }
-  return true;
+
+  /**输出
+default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:45:18
+case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:43:7
+case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
+case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:32:17
+case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:28:15
+case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:24:17
+SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结尾只能用case2的开始来表达了。
+   */
 }
-
-
-
 
 
