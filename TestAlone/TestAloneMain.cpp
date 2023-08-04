@@ -10,133 +10,14 @@
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include "clang/Lex/MacroInfo.h"
+#include <vector>
+
 #include <iostream>
 
 using namespace clang;
 
 
-class Util {
-public:
-    static std::string _getSourceText(const clang::SourceManager& SM,const LangOptions &LO, SourceRange sourceRange){
-      CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
-      std::string strSourceText=Lexer::getSourceText(charSourceRange, SM, LO).str();
-      return strSourceText;
-    }
-    static std::string _getSpelling(const clang::SourceManager& SM,const LangOptions &LO, Token token,bool *Invalid = nullptr){
-      const std::string strTok = Lexer::getSpelling(token, SM, LO, Invalid);
-      return strTok;
-    }
-    static std::tuple<int,int> extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation ) {
-      clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
-      int line = presumedLoc.getLine();
-      int column = presumedLoc.getColumn();
-      return std::tuple<int,int>(line,column);
-    }
-    static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM,bool& endIsSemicolon) {
-      const LangOptions &LO = LangOptions();
-      std::string stmtText=Util::_getSourceText(SM, LO, S->getSourceRange());
-      Token JTok;
-
-      // 获取Stmt的结束位置
-      SourceLocation JLoc = S->getEndLoc();
-      if(JLoc.isInvalid()){
-        //如果语句末尾位置 就不合法，则标记没找到分号，再直接返回。
-        endIsSemicolon= false;
-        return JLoc;
-      }
-
-      do{
-
-        Lexer::getRawToken(JLoc, JTok, SM, LO,/*IgnoreWhiteSpace:*/true);
-        //忽略空白字符，IgnoreWhiteSpace：true，很关键，否则可能某个位置导致循环后还是该位置，从而死循环。
-        JLoc = Lexer::getLocForEndOfToken(JTok.getEndLoc(), /*Offset*/1, SM, LO);
-        //偏移量给1,Offset：1,很关键，如果不向前移动 可能循环一次还是在该位置，造成死循环。
-        //取第J次循环的Token的结尾位置，JTok.getEndLoc()，很关键，否则可能下次循环还在该token上，导致死循环。
-      }while (JTok.isNot(tok::semi)
-      && JTok.isNot(tok::eof)
-&& JTok.getLocation().isValid()
-              );
-
-
-      // 获取分号的结束位置
-
-      endIsSemicolon=JTok.is(tok::semi);
-      return JTok.getLocation();
-    }
-};
-
-class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
-public:
-    CompilerInstance& CI;
-
-    explicit MyASTVisitor(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr ) : CI(_CI)  {
-
-    }
-    bool VisitStmt(clang::Stmt *stmt) {
-      bool endIsSemicolon=false;
-      SourceManager &SM = CI.getSourceManager();
-      LangOptions &LO = CI.getLangOpts();
-
-      std::string strSourceText=Util::_getSourceText(SM,LO,stmt->getSourceRange());
-
-      const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
-      const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
-      std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
-      << "\n";
-
-      return true;
-    }
-/*输出:
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: FloatingLiteral
-TraverseStmt: CompoundStmt
-TraverseStmt: ReturnStmt
-TraverseStmt: BinaryOperator
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: DeclRefExpr
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: DeclRefExpr
- */
-};
-
-class MyASTConsumer : public clang::ASTConsumer {
-public:
-    CompilerInstance &CI;
-    MyASTVisitor visitor;
-    explicit MyASTConsumer(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr)  : CI(_CI) ,visitor(_CI,_rewriter_ptr)  {
-
-    }
-
-    void HandleTranslationUnit(clang::ASTContext &Context) override {
-      for (Decl *D : Context.getTranslationUnitDecl()->decls()) {
-        visitor.TraverseDecl(D);
-      }
-
-
-//      TranslationUnitDecl *translationUnitDecl = Context.getTranslationUnitDecl();
-    }
-};
-
-class MyASTFrontendAction : public clang::ASTFrontendAction {
-public:
-    const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
-
-
-    std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &CI, llvm::StringRef InFile) override {
-
-      SourceManager &SM = CI.getSourceManager();
-      LangOptions &langOptions = CI.getLangOpts();
-      ASTContext &astContext = CI.getASTContext();
-
-      CI.getDiagnostics().setSourceManager(&SM);
-
-      mRewriter_ptr->setSourceMgr(SM, langOptions);
-
-
-      return std::make_unique<MyASTConsumer>(CI,mRewriter_ptr);
-    }
-};
 
 int main() {
   // 创建 Clang 编译实例
@@ -173,7 +54,7 @@ int main() {
   CI.getDiagnostics().setClient(TextDiag);
 
   // 创建 ASTFrontendAction 实例
-  clang::FrontendAction* Action = new MyASTFrontendAction();
+  clang::FrontendAction* Action = new clang::SyntaxOnlyAction();
 
   // 设置输入文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
@@ -183,6 +64,44 @@ int main() {
     llvm::errs() << "Clang compilation failed\n";
     return 1;
   }
+
+  Preprocessor &_PP = CI.getPreprocessor();
+  //注意不能用上面的PP,会报指针问题，重新getPreprocessor得到的_PP可以正常使用
+
+//region 获取宏名、宏展开后文本
+  for (clang::Preprocessor::macro_iterator I = _PP.macro_begin(), E = _PP.macro_end(); I != E; ++I) {
+    const clang::IdentifierInfo *II = I->first;
+    const StringRef &IdentifierName = II->getName();
+    const clang::MacroInfo *MI = _PP.getMacroInfo(II);
+    //不显示内置宏
+    if(MI->isBuiltinMacro()){
+      continue;
+    }
+    //只显示本文件中定义的宏，开发用
+    if(!SM.isWrittenInMainFile(MI->getDefinitionLoc())){
+      continue;
+    }
+    if (MI) {
+      // 获取宏展开后的标记序列
+//      clang::MacroInfo::tokens_iterator TI = MI->tokens_begin();
+//      clang::MacroInfo::tokens_iterator TE = MI->tokens_end();
+      const Token* TI = MI->tokens_begin();
+      const Token* TE = MI->tokens_end();
+
+      // 将标记序列转换为文本
+      std::string macroText;
+      for (; TI != TE; ++TI) {
+        const clang::Token &token = *TI;
+        const StringRef &tokenText = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(token.getLocation()), SM, LO);
+        macroText += (" "+ tokenText.str() );
+      }
+
+      // 打印宏展开后的文本
+      std::cout << "宏名字:【" << IdentifierName.str() << "】，宏展开:【" << macroText <<"】"<< std::endl;
+    }
+  }
+
+//endregion
 
   return 0;
 }
