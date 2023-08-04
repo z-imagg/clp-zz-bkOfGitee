@@ -66,24 +66,16 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt)  {
-    bool thenIsCompoundStmt=isa<CompoundStmt>(*thenStmt);
-    bool thenIsIfStmt=isa<IfStmt>(*thenStmt);
-    bool thenIsForStmt=isa<ForStmt>(*thenStmt);
-    bool thenIsWhileStmt=isa<WhileStmt>(*thenStmt);
-    bool thenIsDoStmt=isa<DoStmt>(*thenStmt);
-    if ( (!thenIsCompoundStmt) && (!thenIsIfStmt) && (!thenIsForStmt) && (!thenIsWhileStmt) && (!thenIsDoStmt) ) {
+    bool thenIsAloneContainer = Util::isAloneContainerStmt(thenStmt);
+    if ( !thenIsAloneContainer   ) {
       letLRBraceWrapStmt(thenStmt,"TraverseIfStmt:thenStmt");
     }
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt) {
-    bool elseIsCompoundStmt=isa<CompoundStmt>(*elseStmt);
-    bool elseIsIfStmt=isa<IfStmt>(*elseStmt);
-    bool elseIsForStmt=isa<ForStmt>(*elseStmt);
-    bool elseIsWhileStmt=isa<WhileStmt>(*elseStmt);
-    bool elseIsDoStmt=isa<DoStmt>(*elseStmt);
-    if ( (!elseIsCompoundStmt ) && (!elseIsIfStmt) && (!elseIsForStmt) && (!elseIsWhileStmt) && (!elseIsDoStmt) ){
+    bool elseIsAloneContainer = Util::isAloneContainerStmt(elseStmt);
+    if ( !elseIsAloneContainer ){
       letLRBraceWrapStmt(elseStmt,"TraverseIfStmt:elseStmt");
     }
   }
