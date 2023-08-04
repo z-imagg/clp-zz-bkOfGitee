@@ -215,19 +215,29 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       llvm::outs() << "default "  << ":";
     }
 
+    if(subStmtIsCompound){
+      //case6 应该是块，被 case7 前的注释干扰 导致误判
+      //  TODO： 如果要完善，nextTokenLocation(nextTokenLocation(... 需要N个nextTokenLocation嵌套，其中遇到注释的时候 忽略 继续嵌套, 直到第一个非注释？才做 < endLoc的判断?
+      //  简单点可以把这段 块1后还有语句 的逻辑 整个去掉，会导致 一些不需要{}的case 被加上了{}, 并不影响代码结果.
+      bool 块1后还有语句=Util::nextTokenLocation(Util::nextTokenLocation(subStmt->getEndLoc(),SM,LO),SM,LO) < endLoc;
+      if(块1后还有语句){
+        subStmtIsCompound=false;
+      }
+    }
     llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
     << ", case结束: " << endLoc.printToString(SM) << "\n";
   }
 
   /**输出
-case 0:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:28:7
-case 1:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:28:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:32:7
-case 2:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:32:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:36:7
-case 3:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:36:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
-case 4:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:38:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:45:7
-case4是 块1+单语句2 结构，但SwitchCase::getSubStmt 只拿到了块1 导致误以为 case4 是块
-case 6:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:45:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:49:7
-default :,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:49:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:52:5
+case 0:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:30:7
+case 1:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:30:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:34:7
+case 2:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:34:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
+case 3:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:38:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
+case 4:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:40:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:7
+case 6:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:47:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:52:7
+case6 应该是块，被 case7 前的注释干扰 导致误判
+case 7:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:52:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:56:7
+default :,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:56:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:59:5
 
 case语句列表 按 开始位置 升序 排序
 当前case结束位置 用下一个case开始位置表示， 最后一个case结束位置 用整个switch的结束位置表示
