@@ -25,9 +25,15 @@ public:
  * @return 返回结果
  */
 int myGlobalFunction(int x, int y) {
+  char ch;
   if(x>y)
   while(x++ + y > 12)
-  y += x  * 2  - y  + MyClass::ZERO    ;     
+  y += x  * 2  - y  + MyClass::ZERO    ; 
+  else if(y>0)      
+  for(int t=0; t<x+y; t+=x)
+    y = x + t - 1/t ;      
+  else
+    y = ch * x / y  ;  
   return x * y;
 }
 
