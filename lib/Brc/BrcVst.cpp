@@ -178,17 +178,9 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   for(int k=0; k < caseCnt; k++){
     SwitchCase* scK=caseVec[k];
 
-
-//    beginLoc = scK->getColonLoc();
-//    beginLoc = Lexer::getLocForEndOfToken(scK->getColonLoc(), /*Offset*/0, SM, LO);//offset:0 所取得位置是冒号右边 是期望位置
-//    beginLoc = Lexer::getLocForEndOfToken(scK->getColonLoc(), /*Offset*/1, SM, LO);//offset:1 所取得位置是冒号左边 非期望位置
-//按道理说 offset:1 冒号右边  ，offset:0 冒号左边 才对， 但结果是反过来的。不知道如何解释，据说是因为 冒号这个小Token 所在位置 同时 被一个更大的Token占据，导致offset:1 是 相对于 此大Token的，但这个解释有点勉强。
-    //以下2步骤，确定能移动到下一个token位置？
-    Token colonTok;
-    //步骤1. 取给定位置的Token, 忽略空格、tab等空白符
-    Lexer::getRawToken(scK->getColonLoc(), colonTok, SM, LO,/*IgnoreWhiteSpace:*/true);
-    //步骤2. 相对 该Token的结束位置 右移1个Token 所获得的位置 即 下一个token位置
-    beginLoc = Lexer::getLocForEndOfToken(colonTok.getEndLoc(), /*偏移1个Token*/1, SM, LO);
+    //开始位置为冒号的下一个Token所在位置
+    //    注意此方法中的代码 是否在任何情况下都能实现 移动到下一个位置 有待确定
+    beginLoc = Util::nextTokenLocation(scK->getColonLoc(),SM,LO);
 
 
 
@@ -223,12 +215,12 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   }
 
   /**输出
-case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:27:7
-case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:31:7
-case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:33:7
-case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
-case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:13, case结束: /pubx/clang-brc/test_in/test_main.cpp:44:7
-default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:5
+case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:27:7
+case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:31:7
+case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:33:7
+case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
+case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:44:7
+default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:5
 
 case语句列表 按 开始位置 升序 排序
 当前case结束位置 用下一个case开始位置表示， 最后一个case结束位置 用整个switch的结束位置表示
