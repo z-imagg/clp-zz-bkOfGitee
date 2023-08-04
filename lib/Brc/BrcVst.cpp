@@ -161,9 +161,22 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
   SwitchCase *caseList = switchStmt->getSwitchCaseList();
 
-  // 遍历 case 列表
-  for (clang::SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
-    // 处理每个 case
+  std::vector<SwitchCase*> caseVec;
+  //这里假定了: SwitchCase::getNextSwitchCase 获取的顺序 目前 看是  书写case的次序的逆序,
+  //    但不能排除 出现  乱须 毫无规律，所以 排序 才靠谱
+  for (SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
+    caseVec.push_back(switchCase);
+//    caseVec.insert(caseVec.begin(),switchCase);
+  }
+
+  //对各个case语句 按开始位置 升序 排序
+  std::sort(caseVec.begin(), caseVec.end(), [](clang::SwitchCase* lhs, clang::SwitchCase* rhs) {
+      return lhs->getBeginLoc() < rhs->getBeginLoc();
+  });
+
+
+  for(int k=0; k < caseVec.size(); k++){
+    SwitchCase* switchCase=caseVec[k];
 
     if ( isa<CaseStmt>(*switchCase)) {
       CaseStmt *caseStmt = dyn_cast<CaseStmt>(switchCase);
@@ -193,12 +206,14 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   }
 
   /**输出
-default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:45:18
-case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:43:7
-case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
-case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:32:17
-case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:28:15
 case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:24:17
+case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:28:15
+case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:32:17
+case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
+case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:43:7
+default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:7, case结束: /pubx/clang-brc/test_in/test_main.cpp:45:18
+
+case语句列表 按 开始位置 升序 排序
 SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结尾只能用case2的开始来表达了。
    */
 }
