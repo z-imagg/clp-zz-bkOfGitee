@@ -125,21 +125,30 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
 }
 
 bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
-/////////////////////////对当前节点forStmt做 自定义处理
-  if(Util::parentIsCompound(Ctx,forStmt)){
-    letLRBraceWrapStmt(forStmt, "TraverseForStmt");
+  //region 若NULL，直接返回
+  if(!forStmt){
+    return false;
   }
-///////////////////// 自定义处理 完毕
+  //endregion
 
-////////////////////  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
+  if(bodyStmt)  {
+    bool bodyIsCompoundStmt=isa<CompoundStmt>(*bodyStmt);
+    if ( !bodyIsCompoundStmt ) {
+      letLRBraceWrapStmt(bodyStmt,"TraverseForStmt");
+    }
+  }
+  //endregion
+
+  //region  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
   if(bodyStmt){
     Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
 //    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
-      //这一段可以替代shouldInsert
       TraverseStmt(bodyStmt);
 //    }
   }
+  //endregion
   return true;
 }
 
