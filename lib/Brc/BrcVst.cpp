@@ -178,6 +178,11 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   for(int k=0; k < caseCnt; k++){
     SwitchCase* scK=caseVec[k];
 
+    Stmt *subStmt = scK->getSubStmt();
+//    Util::printStmt(*Ctx,CI,"sub","",subStmt,true);
+//    Util::printStmt(*Ctx,CI,"scK","",scK,true);
+    bool subStmtIsCompound = isa<CompoundStmt>(*subStmt);
+
     //开始位置为冒号的下一个Token所在位置
     //    注意此方法中的代码 是否在任何情况下都能实现 移动到下一个位置 有待确定
     beginLoc = Util::nextTokenLocation(scK->getColonLoc(),SM,LO);
@@ -210,17 +215,19 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       llvm::outs() << "default "  << ":";
     }
 
-    llvm::outs() << "case开始: " << beginLoc.printToString(SM)
+    llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
     << ", case结束: " << endLoc.printToString(SM) << "\n";
   }
 
   /**输出
-case 1:case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:27:7
-case 2:case开始: /pubx/clang-brc/test_in/test_main.cpp:27:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:31:7
-case 3:case开始: /pubx/clang-brc/test_in/test_main.cpp:31:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:33:7
-case 4:case开始: /pubx/clang-brc/test_in/test_main.cpp:33:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
-case 6:case开始: /pubx/clang-brc/test_in/test_main.cpp:40:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:44:7
-default :case开始: /pubx/clang-brc/test_in/test_main.cpp:44:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:5
+case 0:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:28:7
+case 1:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:28:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:32:7
+case 2:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:32:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:36:7
+case 3:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:36:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
+case 4:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:38:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:45:7
+case4是 块1+单语句2 结构，但SwitchCase::getSubStmt 只拿到了块1 导致误以为 case4 是块
+case 6:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:45:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:49:7
+default :,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:49:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:52:5
 
 case语句列表 按 开始位置 升序 排序
 当前case结束位置 用下一个case开始位置表示， 最后一个case结束位置 用整个switch的结束位置表示
