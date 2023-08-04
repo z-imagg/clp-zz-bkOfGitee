@@ -81,7 +81,9 @@ public:
 
       const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<endIsSemicolon<<",semicolonLocStr: " << semicolonLocStr << "\n\n";
+      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
+      std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
+      << "\n";
 
       return true;
     }
