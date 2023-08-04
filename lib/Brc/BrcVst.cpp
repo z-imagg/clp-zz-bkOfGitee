@@ -67,7 +67,9 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt)  {
     bool thenIsCompoundStmt=isa<CompoundStmt>(*thenStmt);
-    if ( !thenIsCompoundStmt ) {
+    bool thenIsForStmt=isa<ForStmt>(*thenStmt);
+    bool thenIsWhileStmt=isa<WhileStmt>(*thenStmt);
+    if ( (!thenIsCompoundStmt) && (!thenIsForStmt) && (!thenIsWhileStmt) ) {
       letLRBraceWrapStmt(thenStmt,"TraverseIfStmt:thenStmt");
     }
   }
@@ -75,7 +77,9 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt) {
     bool elseIsCompoundStmt=isa<CompoundStmt>(*elseStmt);
-    if (!elseIsCompoundStmt ) {
+    bool elseIsIfStmt=isa<IfStmt>(*elseStmt);
+    bool elseIsWhileStmt=isa<WhileStmt>(*elseStmt);
+    if ( (!elseIsCompoundStmt ) && (!elseIsIfStmt) && (!elseIsWhileStmt)){
       letLRBraceWrapStmt(elseStmt,"TraverseIfStmt:elseStmt");
     }
   }
