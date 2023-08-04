@@ -10,6 +10,9 @@
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include "clang/Lex/MacroInfo.h"
+#include <vector>
+
 #include <iostream>
 
 using namespace clang;
@@ -81,9 +84,9 @@ public:
 
       const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
-      std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
-      << "\n";
+//      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
+//      std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
+//      << "\n";
 
       return true;
     }
@@ -187,22 +190,32 @@ int main() {
   Preprocessor &_PP = CI.getPreprocessor();
   //注意不能用上面的PP,会报指针问题，重新getPreprocessor得到的_PP可以正常使用
 
-  // 获取标识符表
-  clang::IdentifierTable &IDTable = _PP.getIdentifierTable();
+//region 获取宏名、宏展开后文本
+  for (clang::Preprocessor::macro_iterator I = _PP.macro_begin(), E = _PP.macro_end(); I != E; ++I) {
+    const clang::IdentifierInfo *II = I->first;
+    const StringRef &IdentifierName = II->getName();
+    const clang::MacroInfo *MI = _PP.getMacroInfo(II);
+    if (MI) {
+      // 获取宏展开后的标记序列
+//      clang::MacroInfo::tokens_iterator TI = MI->tokens_begin();
+//      clang::MacroInfo::tokens_iterator TE = MI->tokens_end();
+      const Token* TI = MI->tokens_begin();
+      const Token* TE = MI->tokens_end();
 
-  // 遍历所有宏名
-  for (clang::IdentifierTable::iterator I = IDTable.begin(), E = IDTable.end(); I != E; ++I) {
-    clang::IdentifierInfo *II = I->second;
-    if (II->hasMacroDefinition()) {
-      // 获取宏信息
-      const clang::MacroInfo *MI = _PP.getMacroInfo(II);
-      if (MI) {
-        // 获取宏名
-        llvm::StringRef macroName = II->getName();
-        std::cout << "宏名: " << macroName.str() << std::endl;
+      // 将标记序列转换为文本
+      std::string macroText;
+      for (; TI != TE; ++TI) {
+        const clang::Token &token = *TI;
+        const StringRef &tokenText = clang::Lexer::getSourceText(clang::CharSourceRange::getTokenRange(token.getLocation()), SM, LO);
+        macroText += (" "+ tokenText.str() );
       }
+
+      // 打印宏展开后的文本
+      std::cout << "宏名字:【" << IdentifierName.str() << "】，宏展开:【" << macroText <<"】"<< std::endl;
     }
   }
+
+//endregion
 
   return 0;
 }
