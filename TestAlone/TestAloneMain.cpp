@@ -195,6 +195,14 @@ int main() {
     const clang::IdentifierInfo *II = I->first;
     const StringRef &IdentifierName = II->getName();
     const clang::MacroInfo *MI = _PP.getMacroInfo(II);
+    //不显示内置宏
+    if(MI->isBuiltinMacro()){
+      continue;
+    }
+    //只显示本文件中定义的宏，开发用
+    if(!SM.isWrittenInMainFile(MI->getDefinitionLoc())){
+      continue;
+    }
     if (MI) {
       // 获取宏展开后的标记序列
 //      clang::MacroInfo::tokens_iterator TI = MI->tokens_begin();
