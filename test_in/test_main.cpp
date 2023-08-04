@@ -35,7 +35,9 @@ int main() {
   int result = obj.myFunction(10, 20);
   int x,y,z;
   if(true)
-  x = y + MyClass::ZERO   ;   
+  x = y + MyClass::ZERO   ;  
+  else
+  z *= x /  myGlobalFunction(z, y)   ;    
 
   int product = myGlobalFunction(5, 6);
   std::cout << "Product: " << product << std::endl;
