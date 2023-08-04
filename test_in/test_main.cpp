@@ -27,13 +27,18 @@ public:
 int myGlobalFunction(int x, int y) {
   char ch;
   if(x>y)
-  while(x++ + y > 12)
-  y += x  * 2  - y  + MyClass::ZERO    ; 
-  else if(y>0)      
-  for(int t=0; t<x+y; t+=x)
-    y = x + t - 1/t ;      
-  else
-    y = ch * x / y  ;  
+    if(x<5)
+      if (y>600)
+      while(x++ + y > 12)
+        y += x  * 2  - y  + MyClass::ZERO    ;
+      else if(y>0)
+        for(int t=0; t<x+y; t+=x)
+          y = x + t - 1/t ;
+      else
+        return ch * x / y  ;
+    else
+      ch = ch * myGlobalFunction(ch, y)   ;
+
   return x * y;
 }
 
