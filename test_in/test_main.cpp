@@ -18,14 +18,31 @@ public:
 
   char* switchDemo(int cnt, short chr){
     double sum=1.*cnt*chr;
-    char L;
+    start: char L;
     switch(chr){
-      case 'A':
+      case 1:
+        int unit;
+        unit=18;
         return NULL;
-      case 'Z':
+      case 2:
+        cnt=L*L;
         cnt++;
         break;
+      case 3:
+        return &L;
+      case 4:
+      {
+        L++;
+        sum=L+sum;
+        if (L)  goto start;
+      }
+      return (char*)0;
+      case 6:{
+        int zB;
+        break;
+      }
       default:
+        sum+=chr*cnt;
         return &L;
     }
     return NULL;
