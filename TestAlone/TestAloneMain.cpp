@@ -31,11 +31,8 @@ public:
       int line = presumedLoc.getLine();
       int column = presumedLoc.getColumn();
       return std::tuple<int,int>(line,column);
-
     }
     static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM,bool& endIsSemicolon) {
-
-
       const LangOptions &LO = LangOptions();
       std::string stmtText=Util::_getSourceText(SM, LO, S->getSourceRange());
       Token JTok;
@@ -47,41 +44,24 @@ public:
         endIsSemicolon= false;
         return JLoc;
       }
-      const std::tuple<int, int> &JLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
 
-      const std::tuple<int, int> &initNextTokenEndLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
-
-      std::tuple<int, int> NextTokenEndLocLC;//开发看行号
-      bool JTokInvalid;
-
-      int J=0;
       do{
-        //region 开发打印日志
-        const std::string &JTokStr = Util::_getSpelling(SM, LO, JTok, &JTokInvalid);
-        std::cout << "S:"<< S->getStmtClassName() <<":『" << stmtText << "』@ " << "循环变量J:" << J << ",JTLV:" << JTok.getLocation().isValid() << ",JLV:" << JLoc.isValid() << ",JTiV:" << JTokInvalid << ",JT:【" << JTokStr << "】,"  << JLoc.printToString(SM) << " #" << std::endl;
-        J++;
-        //endregion
 
         Lexer::getRawToken(JLoc, JTok, SM, LO,/*IgnoreWhiteSpace:*/true);
         //忽略空白字符，IgnoreWhiteSpace：true，很关键，否则可能某个位置导致循环后还是该位置，从而死循环。
-        NextTokenEndLocLC = extractLineAndColumn(SM, JLoc);//开发看行号
         JLoc = Lexer::getLocForEndOfToken(JTok.getEndLoc(), /*Offset*/1, SM, LO);
         //偏移量给1,Offset：1,很关键，如果不向前移动 可能循环一次还是在该位置，造成死循环。
         //取第J次循环的Token的结尾位置，JTok.getEndLoc()，很关键，否则可能下次循环还在该token上，导致死循环。
       }while (JTok.isNot(tok::semi)
-      && JTok.isNot(tok::eof)//这里不太确定
+      && JTok.isNot(tok::eof)
 && JTok.getLocation().isValid()
               );
 
 
       // 获取分号的结束位置
-//      SourceLocation SemicolonEndLoc = Lexer::getLocForEndOfToken(JTok.getLocation(), 0, SM, LO);//还有问题：当出来时候，JTok的下一个居然是分号，却没注意到 比如 return a+b
-//      const std::tuple<int, int> &SemicolonEndLocLC = extractLineAndColumn(SM, SemicolonEndLoc);//开发看行号
 
       endIsSemicolon=JTok.is(tok::semi);
-//      return SemicolonEndLoc;
       return JTok.getLocation();
-//        return JLoc;
     }
 };
 
@@ -99,8 +79,6 @@ public:
 
       std::string strSourceText=Util::_getSourceText(SM,LO,stmt->getSourceRange());
 
-//      bool eq=(strSourceText=="float fff = a + b / 10  + MyClass::ZERO     ");//此文本是从程序输出拿到的
-      bool eq=(strSourceText=="return a + ");//此文本是从程序输出拿到的
       const SourceLocation &semicolonLoc = Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
       const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
       llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<endIsSemicolon<<",semicolonLocStr: " << semicolonLocStr << "\n\n";
