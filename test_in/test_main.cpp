@@ -15,6 +15,21 @@ public:
     int myFunction(int a, int b) {
       return a + b;
     }
+
+  char* switchDemo(int cnt, short chr){
+    double sum=1.*cnt*chr;
+    char L;
+    switch(chr){
+      case 'A':
+        return NULL;
+      case 'Z':
+        cnt++;
+        break;
+      default:
+        return &L;
+    }
+    return NULL;
+  }
 };
 
 // 这是一个示例全局函数
