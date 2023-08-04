@@ -158,6 +158,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 
 bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   SwitchCase *caseList = switchStmt->getSwitchCaseList();
+  LangOptions &LO = CI.getLangOpts();
 
   std::vector<SwitchCase*> caseVec;
   //这里假定了: SwitchCase::getNextSwitchCase 获取的顺序 目前 看是  书写case的次序的逆序,
@@ -177,6 +178,21 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   for(int k=0; k < caseCnt; k++){
     SwitchCase* scK=caseVec[k];
 
+
+//    beginLoc = scK->getColonLoc();
+//    beginLoc = Lexer::getLocForEndOfToken(scK->getColonLoc(), /*Offset*/0, SM, LO);//offset:0 所取得位置是冒号右边 是期望位置
+//    beginLoc = Lexer::getLocForEndOfToken(scK->getColonLoc(), /*Offset*/1, SM, LO);//offset:1 所取得位置是冒号左边 非期望位置
+//按道理说 offset:1 冒号右边  ，offset:0 冒号左边 才对， 但结果是反过来的。不知道如何解释，据说是因为 冒号这个小Token 所在位置 同时 被一个更大的Token占据，导致offset:1 是 相对于 此大Token的，但这个解释有点勉强。
+    //以下2步骤，确定能移动到下一个token位置？
+    Token colonTok;
+    //步骤1. 取给定位置的Token, 忽略空格、tab等空白符
+    Lexer::getRawToken(scK->getColonLoc(), colonTok, SM, LO,/*IgnoreWhiteSpace:*/true);
+    //步骤2. 相对 该Token的结束位置 右移1个Token 所获得的位置 即 下一个token位置
+    beginLoc = Lexer::getLocForEndOfToken(colonTok.getEndLoc(), /*偏移1个Token*/1, SM, LO);
+
+
+
+
     if(k<caseCnt-1){
       endLoc=caseVec[k+1]->getBeginLoc();
     }else{
@@ -184,8 +200,6 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
     }
     if ( isa<CaseStmt>(*scK)) {
       CaseStmt *caseK = dyn_cast<CaseStmt>(scK);
-      beginLoc = caseK->getColonLoc();
-//      beginLoc = Lexer::getLocForEndOfToken(caseK->getColonLoc(), /*Offset*/1, SM, LO);
 
 
       //输出case 后表达式
@@ -200,7 +214,6 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
     }else if ( isa<DefaultStmt>(*scK)) {
       DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
-      beginLoc = defaultK->getColonLoc();
 
       llvm::outs() << "default "  << ":";
     }
