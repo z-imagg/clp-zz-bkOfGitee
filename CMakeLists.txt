@@ -7,6 +7,7 @@ set(LIBFMT_INCLUDE "${LIBFMT_DIR}/include/")
 set(LIBFMT_STATIC "${LIBFMT_DIR}/build/libfmt.a")
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/base_home/include/")
 
 if (NOT EXISTS "${LIBFMT_STATIC}")
   MESSAGE(FATAL_ERROR "libfmt静态库${LIBFMT_STATIC} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
@@ -97,11 +98,5 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
-#===============================================================================
-# 4. ADD SUB-TARGETS
-# Doing this at the end so that all definitions and link/include paths are
-# available for the sub-projects.
-#===============================================================================
-add_subdirectory(lib)
-#add_subdirectory(tools)
+add_subdirectory(BrcPlugin)
 add_subdirectory(BrcAlone)

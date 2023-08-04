@@ -10,7 +10,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
 #include "clang/Basic/SourceManager.h"
-#include "LocId.h"
+#include "base/LocId.h"
 
 using namespace llvm;
 using namespace clang;
