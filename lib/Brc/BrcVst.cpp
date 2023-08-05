@@ -33,9 +33,9 @@ void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const 
 
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
   if(
-    SM.isInSystemMacro(B) || SM.isMacroBodyExpansion(B) || SM.isMacroArgExpansion(B)
+    Util::LocIsInMacro(B,SM)
     ||
-    SM.isInSystemMacro(E) || SM.isMacroBodyExpansion(E) || SM.isMacroArgExpansion(E)
+    Util::LocIsInMacro(E,SM)
   ){
     return;
   }
