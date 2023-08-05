@@ -2,7 +2,7 @@
 /**
  * 这是一个示例类
  */
-/**__BrcOkFlagText*/class MyClass {
+class MyClass {
 public:
     static int ZERO;
 public:
@@ -27,21 +27,21 @@ public:
       }
 
 
-      case 1:{
+      case 1:
         int unit;
         unit=18;
         return NULL;
-      }/*TraverseSwitchStmt*/case 2:{
+      case 2:
         cnt=L*L;
         cnt++;
         break;
-      }/*TraverseSwitchStmt*/case 3:{
+      case 3:
         return &L;
-      }/*TraverseSwitchStmt*/case 4:
+      case 4:
       {
         L++;
         sum=L+sum;
-        if (L)  {goto start;}/*TraverseIfStmt:thenStmt*/
+        if (L)  goto start;
       }
       return (char*)0;
       case 6:{
@@ -53,10 +53,10 @@ public:
         int uuuuu;
         break;
       }
-      default:{
+      default:
         sum+=chr*cnt;
         return &L;
-    }/*TraverseSwitchStmt*/}
+    }
     return NULL;
   }
 };
@@ -76,14 +76,14 @@ int myGlobalFunction(int x, int y) {
     if(x<5)
       if (y>600)
       while(x++ + y > 12)
-        {y += x  * 2  - y  + MyClass::ZERO    ;}/*TraverseWhileStmt*/
+        y += x  * 2  - y  + MyClass::ZERO    ;
       else if(y>0)
         for(int t=0; t<x+y; t+=x)
-          {y = x + t - 1/t ;}/*TraverseForStmt*/
+          y = x + t - 1/t ;
       else
-        {return ch * x / y  ;}/*TraverseIfStmt:elseStmt*/
+        return ch * x / y  ;
     else
-      {ch = ch * myGlobalFunction(ch, y)   ;}/*TraverseIfStmt:elseStmt*/
+      ch = ch * myGlobalFunction(ch, y)   ;
 
   return x * y;
 }
@@ -98,9 +98,9 @@ int main() {
   int result = obj.myFunction(10, 20);
   int x,y,z;
   if(true)
-  {x = y + MyClass::ZERO   ;}/*TraverseIfStmt:thenStmt*/  
+  x = y + MyClass::ZERO   ;  
   else
-  {z *= x /  myGlobalFunction(z, y)   ;}/*TraverseIfStmt:elseStmt*/    
+  z *= x /  myGlobalFunction(z, y)   ;    
 
   int product = myGlobalFunction(5, 6);
   std::cout << "Product: " << product << std::endl;

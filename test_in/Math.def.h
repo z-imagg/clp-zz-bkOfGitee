@@ -1,1 +1,1 @@
-{PI=3.14;}/*TraverseIfStmt:thenStmt*/
+PI=3.14;
