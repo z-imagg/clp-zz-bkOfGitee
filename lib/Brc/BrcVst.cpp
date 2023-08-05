@@ -159,11 +159,21 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
+
+    int line=-1,col=-1;
+    Util::extractLineAndColumn(SM,thenStmt->getBeginLoc(),line,col);
+    Util::printStmt(*Ctx,CI,"thenStmt",fmt::format("{}...{}",line,col),thenStmt,true);//开发用
+
     letLRBraceWrapStmtBfAfTk(thenStmt, "BrcThen");
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
+
+    int line=-1,col=-1;
+    Util::extractLineAndColumn(SM,elseStmt->getBeginLoc(),line,col);
+    Util::printStmt(*Ctx,CI,"elseStmt",fmt::format("{}...{}",line,col),elseStmt,true);//开发用
+
     letLRBraceWrapStmtBfAfTk(elseStmt, "BrcElse");
   }
 //endregion 自定义处理 完毕
@@ -202,6 +212,10 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
+    int line=-1,col=-1;
+    Util::extractLineAndColumn(SM,bodyStmt->getBeginLoc(),line,col);
+    Util::printStmt(*Ctx,CI,"whileStmt",fmt::format("{}...{}",line,col),bodyStmt,true);//开发用
+
     letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcWhl");
   }
 
@@ -241,6 +255,11 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
+
+    int line=-1,col=-1;
+    Util::extractLineAndColumn(SM,bodyStmt->getBeginLoc(),line,col);
+    Util::printStmt(*Ctx,CI,"forStmt",fmt::format("{}...{}",line,col),bodyStmt,true);//开发用
+
     letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcFor");
   }
   //endregion
@@ -350,9 +369,84 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
     //如果case体不是块，才用花括号包裹.
     if(!subStmtIsCompound){
-      letLRBraceWrapRangeBfBf(beginLoc, endLoc,
-                              "BrcSw"
-      );
+      bool caseKInMacro=false;
+
+      std::string msg;
+      CaseStmt *caseK=NULL;
+      if ( isa<CaseStmt>(*scK)) {
+        caseK = dyn_cast<CaseStmt>(scK);
+        Stmt::StmtClass caseKSCls = caseK->getStmtClass();//  clang::Stmt::CaseStmtClass
+
+        bool isMacroEllipsisLoc = Util::LocIsInMacro(caseK->getEllipsisLoc(), SM);
+        caseKInMacro = caseKInMacro || isMacroEllipsisLoc;
+        bool isMacroCaseKBeginLoc = Util::LocIsInMacro(caseK->getBeginLoc(),SM);
+        caseKInMacro = caseKInMacro || isMacroCaseKBeginLoc;
+        msg=fmt::format("{},isMacroEllipsisLoc={},isMacroCaseKBeginLoc={},",msg,isMacroEllipsisLoc,isMacroCaseKBeginLoc);
+      }else if ( isa<DefaultStmt>(*scK)) {
+        DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
+        bool isMacro_defaultKColonLoc = Util::LocIsInMacro(defaultK->getColonLoc(),SM);
+        caseKInMacro = caseKInMacro || isMacro_defaultKColonLoc;
+        msg=fmt::format("{},isMacro_defaultKColonLoc={},",msg,isMacro_defaultKColonLoc);
+      }
+
+
+      Stmt *scKSubStmt = scK->getSubStmt();
+      bool isMacroScKSubStmtBeginLoc = Util::LocIsInMacro(scKSubStmt->getBeginLoc(),SM);
+      caseKInMacro = caseKInMacro || isMacroScKSubStmtBeginLoc;
+      bool isMacroScKSubStmtEndLoc = Util::LocIsInMacro(scKSubStmt->getEndLoc(),SM);
+      caseKInMacro = caseKInMacro || isMacroScKSubStmtEndLoc;
+      msg=fmt::format("{},isMacroScKSubStmtBeginLoc={},isMacroScKSubStmtEndLoc={},",msg,isMacroScKSubStmtBeginLoc,isMacroScKSubStmtEndLoc);
+
+      SourceLocation scKB = scK->getBeginLoc();
+      bool isMacro_scKB = Util::LocIsInMacro(scKB,SM);
+      caseKInMacro = caseKInMacro || isMacro_scKB;
+      msg=fmt::format("{},isMacro_scKB={},",msg,isMacro_scKB);
+
+      SourceLocation scKE = scK->getEndLoc();
+      bool isMacro_scKE = Util::LocIsInMacro(scKE,SM);
+      caseKInMacro = caseKInMacro || isMacro_scKE;
+      msg=fmt::format("{},isMacro_scKE={},",msg,isMacro_scKE);
+
+      bool isMacro_beginLoc = Util::LocIsInMacro(beginLoc,SM);
+      caseKInMacro = caseKInMacro || isMacro_beginLoc;
+      bool isMacro_endLoc = Util::LocIsInMacro(endLoc,SM);
+      caseKInMacro = caseKInMacro || isMacro_endLoc;
+      msg=fmt::format("{},isMacro_beginLoc={},isMacro_endLoc={},",msg,isMacro_beginLoc,isMacro_endLoc);
+
+      SourceLocation beginLocNext=Util::nextTokenLocation(beginLoc,SM,LO);
+      bool isMacro_beginLocNext = Util::LocIsInMacro(beginLocNext,SM);
+      caseKInMacro = caseKInMacro || isMacro_beginLocNext;
+      msg=fmt::format("{},isMacro_beginLocNext={},",msg,isMacro_beginLocNext);
+
+      SourceLocation beginLocPrev=Util::nextTokenLocation(beginLoc,SM,LO,-1);
+      bool isMacro_beginLocPrev = Util::LocIsInMacro(beginLocPrev,SM);
+      caseKInMacro = caseKInMacro || isMacro_beginLocPrev;
+      msg=fmt::format("{},isMacro_beginLocPrev={},",msg,isMacro_beginLocPrev);
+
+      SourceLocation endLocPrev=Util::nextTokenLocation(endLoc,SM,LO,-1);
+      bool isMacro_endLocPrev = Util::LocIsInMacro(endLocPrev,SM);
+      caseKInMacro = caseKInMacro || isMacro_endLocPrev;
+      msg=fmt::format("{},isMacro_endLocPrev={},",msg,isMacro_endLocPrev);
+
+      SourceLocation ColonLoc=scK->getColonLoc();
+      bool isMacro_ColonLoc = Util::LocIsInMacro(ColonLoc,SM);
+      caseKInMacro = caseKInMacro || isMacro_ColonLoc;
+      msg=fmt::format("{},isMacro_ColonLoc={},",msg,isMacro_ColonLoc);
+
+      if(
+//        !scKInMacro  //这样可以，但可能会不准，因为case开始结束位置不是宏，不能代表要插入花括号的开始结束位置不是宏
+//        !beginTokInMacro  && !endTokInMacro 不对
+//        !ColonInMacro//可以
+        !caseKInMacro
+      ) {
+      int line=-1,col=-1;
+      Util::extractLineAndColumn(SM,scK->getBeginLoc(),line,col);
+      msg=fmt::format("{},line={}...col={},",msg,line,col);
+      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
+      letLRBraceWrapRangeBfBf(beginLoc, endLoc, "BrcSw"  );
+      }
+      
+
     }
   }
 

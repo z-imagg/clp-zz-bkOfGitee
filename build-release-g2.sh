@@ -17,7 +17,7 @@ cd $BUILD_HOME
 # -rwxrwxr-x 1 zz zz 27M  7月 24 15:03 /pubx/clang-brc/build/lib/libBrcPlugin.so
 
 #-S .. -B .
-cmake -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_FLAGS="$LIB_Brc_CXX_FLAGS"   -DCMAKE_C_FLAGS="$LIB_Brc_CXX_FLAGS" -S $SRC_HOME  -B $BUILD_HOME
+cmake -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_FLAGS="$LIB_Brc_CXX_FLAGS"   -DCMAKE_C_FLAGS="$LIB_Brc_CXX_FLAGS" -S $SRC_HOME  -B $BUILD_HOME
 
 #-DCMAKE_VERBOSE_MAKEFILE=True
 #make -j8
