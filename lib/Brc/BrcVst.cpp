@@ -30,6 +30,14 @@ using namespace clang;
 
 
 void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
+
+  //region 跳过非MainFile. 场景: '#include "xxx.def"', 跳过xxx.def， 即 不修改xxx.def
+  if( !Util::LocFileIDEqMainFileID(SM, B) || !Util::LocFileIDEqMainFileID(SM, E) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return  ;
+  }
+  //endregion
+
   mRewriter_ptr->InsertTextBefore(B,"{");
 
   std::string comment;
