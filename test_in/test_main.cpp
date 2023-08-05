@@ -1,14 +1,29 @@
-
-bool  nonMicrosoftDemangle(  char *MangledName, char * &Result) {
-  char *Demangled = nullptr;
-  if (MangledName+1)
-    Demangled = MangledName+1;
-  else if (MangledName+2)
-    Demangled = MangledName+3;
-
-  if (!Demangled)//bug: 第二批if 即此if 的then不会被插入花括号
+// from file : /pubx/llvm-project/clang/lib/ARCMigrate/Transforms.cpp
+bool hasSideEffects(char *E, int &Ctx) {
+  if (!E || !Ctx)
     return false;
 
-  Result = Demangled;
+  E = (char*)Ctx;
+  char *ME = E+10;
+  if (!ME)
+    return true;
+  switch (*ME) {
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+    switch (*E) {
+    case 5:
+      return false;
+    case 6:
+      return *ME>Ctx;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
+
   return true;
 }
