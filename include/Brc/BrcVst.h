@@ -34,10 +34,8 @@ public:
     }
 
 
-    bool insertLRBrace(LocId LBraceLocId, SourceLocation LBraceLoc ,LocId RBraceLocId, SourceLocation RBraceLoc , const char* whoInserted);
-
-    bool letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
-    bool letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted="");
+    void letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
+    void letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted="");
 
     virtual bool TraverseIfStmt(IfStmt *ifStmt);
 

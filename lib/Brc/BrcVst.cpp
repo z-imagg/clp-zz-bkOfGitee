@@ -28,11 +28,8 @@ using namespace clang;
 
 
 
-bool BrcVst::insertLRBrace(LocId LBraceLocId, SourceLocation LBraceLoc ,LocId RBraceLocId, SourceLocation RBraceLoc , const char* whoInserted){
-  return true;
-}
 
-bool BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
+void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
   mRewriter_ptr->InsertTextBefore(B,"{");
 
   std::string comment;
@@ -48,7 +45,7 @@ bool BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const c
  * @param whoInserted
  * @return
  */
-bool BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
+void BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
   mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
   const SourceLocation &stmtEndLoc = stmt->getEndLoc();
 
@@ -264,6 +261,7 @@ SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结�
     TraverseStmt(scK);
   }
   //endregion
+  return false;
 }
 
 
