@@ -1,29 +1,29 @@
 // from file : /pubx/llvm-project/clang/lib/ARCMigrate/Transforms.cpp
-/**__BrcOkFlagText*/bool hasSideEffects(char *E, int &Ctx) {
+bool hasSideEffects(char *E, int &Ctx) {
   if (!E || !Ctx)
-    {return false;}/*TraverseIfStmt:thenStmt*/
+    return false;
 
   E = (char*)Ctx;
   char *ME = E+10;
   if (!ME)
-    {return true;}/*TraverseIfStmt:thenStmt*/
+    return true;
   switch (*ME) {
-  case 1:{
-  }case 2:{
-  }case 3:{
-  }case 4:{
+  case 1:
+  case 2:
+  case 3:
+  case 4:
     switch (*E) {
-    case 5:{{{{
+    case 5:
       return false;
-    }}}}case 6:{{{{
+    case 6:
       return *ME>Ctx;
-    }}}}default:{{{{
+    default:
       break;
-    }}}}}
+    }
     break;
-  }default:{
+  default:
     break;
-  }}
+  }
 
   return true;
 }
