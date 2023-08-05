@@ -29,7 +29,7 @@ using namespace clang;
 
 
 
-void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
+void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
 
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
   if(
@@ -63,7 +63,7 @@ void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const c
   //endregion
 
   //region 插入左右花括号
-  mRewriter_ptr->InsertTextBefore(B,"{");
+  mRewriter_ptr->InsertTextAfterToken(B,"{");
 
   std::string comment;
   Util::wrapByComment(whoInserted,comment);
@@ -308,7 +308,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
     //开始位置为冒号的下一个Token所在位置
     //    注意此方法中的代码 是否在任何情况下都能实现 移动到下一个位置 有待确定
-    beginLoc = Util::nextTokenLocation(scK->getColonLoc(),SM,LO);
+    beginLoc = scK->getColonLoc();
 
 
 
@@ -432,7 +432,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       Util::extractLineAndColumn(SM,scK->getBeginLoc(),line,col);
       msg=fmt::format("{},line={}...col={},",msg,line,col);
 //      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
-      letLRBraceWrapRangeBfBf(beginLoc, endLoc, "BrcSw"  );
+        letLRBraceWrapRangeAftBf(beginLoc, endLoc, "BrcSw");
       }
       
 

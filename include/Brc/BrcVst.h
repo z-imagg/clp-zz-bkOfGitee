@@ -34,7 +34,7 @@ public:
     }
 
 
-    void letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
+    void letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
     void letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted="");
 
     virtual bool TraverseIfStmt(IfStmt *ifStmt);
