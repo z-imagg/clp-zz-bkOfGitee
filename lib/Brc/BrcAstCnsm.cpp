@@ -19,7 +19,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl();
 
 
-   //region 做不到 跳过非MainFile，因为：
+   //region 顶层翻译单元 的 声明们 既有 主文件的 又有 非主文件的，故 在顶层 不合适 做 跳过 非主文件
    //  translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
    //    因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
 //  if(!Util::isDeclInMainFile(SM,translationUnitDecl)){
