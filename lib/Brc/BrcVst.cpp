@@ -121,7 +121,13 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
 
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
-  if(endIsSemicolon){
+  if(endIsSemicolon &&
+
+//bug场景举例:for体为无分号单语句，比如switch，找 该体 末尾分号 将得到for外后其他语句的无关分号 此明显错误,
+// 解决办法:找到的分号位置须在体内
+//   即 找到的分号位置 必须 小于等于 体结束位置
+  endSemicolonLoc<=endLoc
+  ){
     //只有找到分号位置，才可以插入左右花括号。
     //   不能造成插入了左花括号，却没找到分号，然后没法插入右花括号，也没法撤销左花括号，而陷入语法错误。
     mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
@@ -237,6 +243,8 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
     return false;
   }
   //endregion
+
+//  Util::printStmt(*Ctx,CI,"forStmt","",forStmt, true); //开发用打印
 
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
