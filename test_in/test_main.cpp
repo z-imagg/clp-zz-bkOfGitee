@@ -88,6 +88,11 @@ int myGlobalFunction(int x, int y) {
   return x * y;
 }
 
+void func_macro_inc(){
+  double PI;
+  if(true)
+#include "Math.def.h"
+}
 int main() {
   MyClass obj;
   int result = obj.myFunction(10, 20);
