@@ -87,10 +87,11 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   SourceLocation endLoc = stmt->getEndLoc();
   
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
+
   if(
-    SM.isInSystemMacro(beginLoc) || SM.isMacroBodyExpansion(beginLoc) || SM.isMacroArgExpansion(beginLoc)
+    Util::LocIsInMacro(beginLoc,SM)
     ||
-    SM.isInSystemMacro(endLoc) || SM.isMacroBodyExpansion(endLoc) || SM.isMacroArgExpansion(endLoc)
+    Util::LocIsInMacro(endLoc,SM)
   ){
     return;
   }
