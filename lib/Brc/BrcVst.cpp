@@ -45,9 +45,8 @@ void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const c
  * @param whoInserted
  * @return
  */
-void BrcVst::letLRBraceWrapStmt(Stmt *stmt, const char* whoInserted){
+void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
-  const SourceLocation &stmtEndLoc = stmt->getEndLoc();
 
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
@@ -74,12 +73,12 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
-      letLRBraceWrapStmt(thenStmt,"TraverseIfStmt:thenStmt");
+    letLRBraceWrapStmtBfAfTk(thenStmt, "TraverseIfStmt:thenStmt");
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
-      letLRBraceWrapStmt(elseStmt,"TraverseIfStmt:elseStmt");
+    letLRBraceWrapStmtBfAfTk(elseStmt, "TraverseIfStmt:elseStmt");
   }
 //endregion 自定义处理 完毕
 
@@ -106,7 +105,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-      letLRBraceWrapStmt(bodyStmt,"TraverseWhileStmt");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "TraverseWhileStmt");
   }
 
   //endregion 自定义处理 完毕
@@ -135,7 +134,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-      letLRBraceWrapStmt(bodyStmt,"TraverseForStmt");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "TraverseForStmt");
   }
   //endregion
 
