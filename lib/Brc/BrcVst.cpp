@@ -149,12 +149,12 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
-    letLRBraceWrapStmtBfAfTk(thenStmt, "TraverseIfStmt:thenStmt");
+    letLRBraceWrapStmtBfAfTk(thenStmt, "TrvThen");
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
-    letLRBraceWrapStmtBfAfTk(elseStmt, "TraverseIfStmt:elseStmt");
+    letLRBraceWrapStmtBfAfTk(elseStmt, "TrvElse");
   }
 //endregion 自定义处理 完毕
 
@@ -192,7 +192,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    letLRBraceWrapStmtBfAfTk(bodyStmt, "TraverseWhileStmt");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "TrvWhl");
   }
 
   //endregion 自定义处理 完毕
@@ -231,7 +231,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    letLRBraceWrapStmtBfAfTk(bodyStmt, "TraverseForStmt");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "TrvFor");
   }
   //endregion
 
@@ -341,7 +341,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
     //如果case体不是块，才用花括号包裹.
     if(!subStmtIsCompound){
       letLRBraceWrapRangeBfBf(beginLoc, endLoc,
-                              "TraverseSwitchStmt"
+                              "TrvSw"
       );
     }
   }
