@@ -46,6 +46,26 @@ void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const c
  * @return
  */
 void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
+  SourceLocation beginLoc = stmt->getBeginLoc();
+  //region 如果被包裹语句 处在宏中 则不处理 直接返回。 暂时不确定要不要这段
+//  if(
+//    SM.isInSystemMacro(beginLoc)
+//    ||
+//    SM.isMacroBodyExpansion(beginLoc)
+//    ||
+//    SM.isMacroArgExpansion(beginLoc)
+//  ){
+//    return;
+//  }
+  //endregion
+
+  //region 跳过非MainFile. 场景: '#include "xxx.def"', 跳过xxx.def， 即 不修改xxx.def
+  if( !Util::LocFileIDEqMainFileID(SM, beginLoc) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return  ;
+  }
+  //endregion
+
   mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
 
   bool endIsSemicolon=false;
