@@ -38,13 +38,32 @@ void BrcVst::letLRBraceWrapRangeBfBf(SourceLocation B, SourceLocation E, const c
   }
   //endregion
 
+
+  //region 获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  //endregion
+
+  //region 若此位置已经插入过左花括号, 则不再插入，防止重复
+  LocId LBraceLocId=LocId::buildFor(filePath, B, SM);
+  if(Util::LocIdSetContains(LBraceLocIdSet,LBraceLocId)){
+    return ;
+  }
+  //endregion
+
+  //region 插入左右花括号
   mRewriter_ptr->InsertTextBefore(B,"{");
 
   std::string comment;
   Util::wrapByComment(whoInserted,comment);
   std::string RBraceStr("}"+comment);
 
+  //记录已插入左花括号的节点ID们以防重： 即使重复遍历了 但不会重复插入
+  LBraceLocIdSet.insert(LBraceLocId);
+  
   mRewriter_ptr->InsertTextBefore(E,RBraceStr);
+  //endregion
 }
 
 /**
@@ -74,6 +93,21 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   }
   //endregion
 
+
+  //region 获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  //endregion
+
+  //region 若此位置已经插入过左花括号, 则不再插入，防止重复
+  LocId LBraceLocId=LocId::buildFor(filePath, beginLoc, SM);
+  if(Util::LocIdSetContains(LBraceLocIdSet,LBraceLocId)){
+    return ;
+  }
+  //endregion
+
+  //region 插入左右花括号
   mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
 
   bool endIsSemicolon=false;
@@ -84,7 +118,11 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
     std::string RBraceStr("}"+comment);
 
     mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,RBraceStr);
+
+    //记录已插入左花括号的节点ID们以防重： 即使重复遍历了 但不会重复插入
+    LBraceLocIdSet.insert(LBraceLocId);
   }
+  //endregion
 
 }
 
