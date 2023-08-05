@@ -40,4 +40,4 @@ private:
     const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.
 };
 
-static FrontendPluginRegistry::Add<BrcAstAct>   actRegistry(/*Name=*/"Brc",  /*Description=*/"加花括号插件");
+static FrontendPluginRegistry::Add<BrcAstAct>   actRegistry(/*Name=*/"BrcPlugin",  /*Description=*/"加花括号插件");
