@@ -360,6 +360,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
     if(!subStmtIsCompound){
       bool caseKInMacro=false;
 
+      //region 该case中是否含有宏，若有宏，不加花括号。 虽然有误杀，但保险。
       std::string msg;
       CaseStmt *caseK=NULL;
       if ( isa<CaseStmt>(*scK)) {
@@ -421,11 +422,10 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       bool isMacro_ColonLoc = Util::LocIsInMacro(ColonLoc,SM);
       caseKInMacro = caseKInMacro || isMacro_ColonLoc;
       msg=fmt::format("{},isMacro_ColonLoc={},",msg,isMacro_ColonLoc);
+      //endregion. 。
 
       if(
-//        !scKInMacro  //这样可以，但可能会不准，因为case开始结束位置不是宏，不能代表要插入花括号的开始结束位置不是宏
-//        !beginTokInMacro  && !endTokInMacro 不对
-//        !ColonInMacro//可以
+      //该case中若有宏，不加花括号。 虽然有误杀，但保险。
         !caseKInMacro
       ) {
       int line=-1,col=-1;
