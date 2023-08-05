@@ -38,6 +38,24 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
    //endregion
 
+   //region 若是系统文件 或 tick文件则跳过
+   if(Util::isSysSrcFile(filePath)  || Util::isTickSrcFile(filePath)){
+     return ;
+   }
+   //endregion
+
+   //region 打印文件路径 开发用
+   FrontendOptions &frontendOptions = CI.getFrontendOpts();
+   std::cout << "查看，文件路径:" << filePath << ",mainFileId:" << mainFileId.getHashValue() << ",frontendOptions.ProgramAction:" << frontendOptions.ProgramAction << "，Ctx.TUKind:" << Ctx.TUKind <<  std::endl;
+   //endregion
+   
+   //region 复制源文件 到 /build/srcCopy/, 开关copySrcFile=true.
+   // (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
+   if(Util::envVarEq("copySrcFile","true")){
+     Util::copySrcFile(filePath,"/build/srcCopy/");
+   }
+   //endregion
+
    //region 1.若本文件已处理，则直接返回。
    if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
      return ;
