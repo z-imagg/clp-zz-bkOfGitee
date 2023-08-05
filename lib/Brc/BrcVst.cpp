@@ -196,20 +196,22 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
 
       //region 输出case 后表达式 , 开发用
-      Expr *LHS = caseK->getLHS();
-      LangOptions &LO = CI.getLangOpts();
-      Token tk;
-      Lexer::getRawToken(LHS->getExprLoc(),tk,SM,LO,true);
-      bool invalid;
-      const std::string &tkStr = Lexer::getSpelling(tk, SM, LO, &invalid);
-
-      llvm::outs() << "case " << tkStr << ":";
+//      Expr *LHS = caseK->getLHS();
+//      LangOptions &LO = CI.getLangOpts();
+//      Token tk;
+//      Lexer::getRawToken(LHS->getExprLoc(),tk,SM,LO,true);
+//      bool invalid;
+//      const std::string &tkStr = Lexer::getSpelling(tk, SM, LO, &invalid);
+//
+//      llvm::outs() << "case " << tkStr << ":";
       //endregion
 
     }else if ( isa<DefaultStmt>(*scK)) {
       DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
 
-      llvm::outs() << "default "  << ":";
+      //region 输出default , 开发用
+//      llvm::outs() << "default "  << ":";
+      //endregion
     }
 
 //    if(subStmtIsCompound){
@@ -223,14 +225,14 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 //    }
 
     //region 开发用输出
-    llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
-    << ", case结束: " << endLoc.printToString(SM) << "\n";
+//    llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
+//    << ", case结束: " << endLoc.printToString(SM) << "\n";
     //endregion
 
+    //如果case体不是块，才用花括号包裹.
     if(!subStmtIsCompound){
       letLRBraceWrapRangeBfBf(beginLoc, endLoc,
-                              ""
-//                          "TraverseSwitchStmt:CaseStmt|DefaultStmt"
+                              "TraverseSwitchStmt"
       );
     }
   }
