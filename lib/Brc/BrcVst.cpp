@@ -159,21 +159,11 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
-
-    int line=-1,col=-1;
-    Util::extractLineAndColumn(SM,thenStmt->getBeginLoc(),line,col);
-    Util::printStmt(*Ctx,CI,"thenStmt",fmt::format("{}...{}",line,col),thenStmt,true);//开发用
-
     letLRBraceWrapStmtBfAfTk(thenStmt, "BrcThen");
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
-
-    int line=-1,col=-1;
-    Util::extractLineAndColumn(SM,elseStmt->getBeginLoc(),line,col);
-    Util::printStmt(*Ctx,CI,"elseStmt",fmt::format("{}...{}",line,col),elseStmt,true);//开发用
-
     letLRBraceWrapStmtBfAfTk(elseStmt, "BrcElse");
   }
 //endregion 自定义处理 完毕
@@ -212,10 +202,6 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    int line=-1,col=-1;
-    Util::extractLineAndColumn(SM,bodyStmt->getBeginLoc(),line,col);
-    Util::printStmt(*Ctx,CI,"whileStmt",fmt::format("{}...{}",line,col),bodyStmt,true);//开发用
-
     letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcWhl");
   }
 
@@ -255,11 +241,6 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-
-    int line=-1,col=-1;
-    Util::extractLineAndColumn(SM,bodyStmt->getBeginLoc(),line,col);
-    Util::printStmt(*Ctx,CI,"forStmt",fmt::format("{}...{}",line,col),bodyStmt,true);//开发用
-
     letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcFor");
   }
   //endregion
