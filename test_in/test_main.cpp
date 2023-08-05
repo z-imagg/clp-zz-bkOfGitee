@@ -61,6 +61,8 @@ public:
   }
 };
 
+int MyClass::ZERO=0;
+
 // 这是一个示例全局函数
 /**
  * @brief 这是一个示例全局函数
