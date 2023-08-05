@@ -94,7 +94,7 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   }
   //endregion
 
-  return true;
+  return false;
 }
 bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 若NULL，直接返回
@@ -122,7 +122,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   }
   //endregion
 
-  return true;
+  return false;
 }
 
 bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
@@ -149,7 +149,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 //    }
   }
   //endregion
-  return true;
+  return false;
 }
 
 
