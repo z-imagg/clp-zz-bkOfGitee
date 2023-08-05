@@ -12,7 +12,7 @@
 using namespace llvm;
 using namespace clang;
 
-static llvm::cl::OptionCategory CTkAloneCategory("BrcAlone选项");
+static llvm::cl::OptionCategory BrcAloneCategory("BrcAlone选项");
 
 class _BrcAstAct : public ASTFrontendAction {
 public:
@@ -37,7 +37,7 @@ private:
 
 int main(int Argc, const char **Argv) {
   const std::unique_ptr<tooling::FrontendActionFactory> &frontendActionFactory = clang::tooling::newFrontendActionFactory<_BrcAstAct>();
-  int Result =   act_main(Argc,Argv,CTkAloneCategory,frontendActionFactory,"加花括号插件", false);
+  int Result =   act_main(Argc,Argv,BrcAloneCategory,frontendActionFactory,"加花括号插件", false);
   return Result;
 }
 
