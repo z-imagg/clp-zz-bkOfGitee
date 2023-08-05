@@ -431,7 +431,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       int line=-1,col=-1;
       Util::extractLineAndColumn(SM,scK->getBeginLoc(),line,col);
       msg=fmt::format("{},line={}...col={},",msg,line,col);
-      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
+//      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
       letLRBraceWrapRangeBfBf(beginLoc, endLoc, "BrcSw"  );
       }
       
