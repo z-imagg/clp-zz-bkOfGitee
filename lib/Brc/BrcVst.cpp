@@ -108,11 +108,14 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   //endregion
 
   //region 插入左右花括号
-  mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
 
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
   if(endIsSemicolon){
+    //只有找到分号位置，才可以插入左右花括号。
+    //   不能造成插入了左花括号，却没找到分号，然后没法插入右花括号，也没法撤销左花括号，而陷入语法错误。
+    mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
+
     std::string comment;
     Util::wrapByComment(whoInserted,comment);
     std::string RBraceStr("}"+comment);
