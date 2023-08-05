@@ -69,6 +69,13 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   }
   //endregion
 
+  //region 跳过非MainFile
+  if( !Util::LocFileIDEqMainFileID(SM, ifStmt->getBeginLoc()) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return false;
+  }
+  //endregion
+  
   //region 自定义处理: if的then语句、else语句 若非块语句 则用花括号包裹
 
   Stmt *thenStmt = ifStmt->getThen();
@@ -102,6 +109,13 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   }
   //endregion
 
+  //region 跳过非MainFile
+  if( !Util::LocFileIDEqMainFileID(SM, whileStmt->getBeginLoc()) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return false;
+  }
+  //endregion
+
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
@@ -131,6 +145,13 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   }
   //endregion
 
+  //region 跳过非MainFile
+  if( !Util::LocFileIDEqMainFileID(SM, forStmt->getBeginLoc()) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return false;
+  }
+  //endregion
+
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
@@ -153,6 +174,14 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 
 
 bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
+  
+  //region 跳过非MainFile
+  if( !Util::LocFileIDEqMainFileID(SM, switchStmt->getBeginLoc()) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return false;
+  }
+  //endregion
+
   SwitchCase *caseList = switchStmt->getSwitchCaseList();
   LangOptions &LO = CI.getLangOpts();
 
