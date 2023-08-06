@@ -64,16 +64,17 @@ public:
 
 
       //如果遍历到的语句的返回 不完全 含在 限定位置范围内 ，不处理，直接返回。 这种情况可能是拿到了一个更大的非终结符号。
-//      bool FC = caseKSrcRange.fullyContains(stmt->getSourceRange());
-      bool FC = CB<=B && CE>=E;
-      bool FC_=(caseKBL<=sBL) && (caseKEL>=sEL);
-      if(!FC_){//不要用FC 否则结果是错的
+//      bool FC = caseKSrcRange.fullyContains(stmt->getSourceRange());//由于 SourceRange::fullyContains 结果是错误的，因此用自制方法Util::fullContains
+//      bool FC = CB<=B && CE>=E;//此结果也是错误的.
+      bool FC =  Util::fullContains(SM,caseKSrcRange, stmt->getSourceRange());
+      bool FC_=(caseKBL<=sBL) && (caseKEL>=sEL);//这个结果是对的，完善列号即可。 此即 Util::fullContains
+      if(!FC){
         return true;///
       }
 
 
       std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(this));
-      Util::printStmt(CI.getASTContext(),CI,"xxx",rvAdrr,stmt,true);
+//      Util::printStmt(CI.getASTContext(),CI,"xxx",rvAdrr,stmt,true);
 
 
       //如果遍历到的单语句，开始位置在宏中 或 结束位置在宏中，则 给定Switch的限定位置范围内 有宏，直接返回，且不需要再遍历了。
@@ -145,7 +146,14 @@ public:
         std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
         rv.TraverseStmt(swtStmt);
         std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
-        Util::printSourceRangeSimple(CI,"","",SourceRange(beginLoc,endLoc),true);
+//        Util::printSourceRangeSimple(CI,"","",SourceRange(beginLoc,endLoc),true);
+
+        if(rv.hasMacro){
+          //如果此case内有宏，则不处理
+          continue;
+        }
+
+        //否则 此case内无宏，则处理
 
       }
 
@@ -229,7 +237,7 @@ int main() {
   clang::FrontendAction* Action = new MyASTFrontendAction();
 
   HeaderSearchOptions &HSO = CI.getHeaderSearchOpts();
-  HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
+  HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/lib/clang/15.0.0";
 
   // 设置输入文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
