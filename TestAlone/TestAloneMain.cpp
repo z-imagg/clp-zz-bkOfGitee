@@ -100,10 +100,12 @@ public:
         Util::printStmt(CI.getASTContext(),CI,"subS","",subStmt, true);
 
         RangeHasMacroAstVst rv(CI,SourceRange(beginLoc, endLoc));
-        std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(&rv));
-        std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
+//        std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(&rv));
+//        std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
+//        Util::printSourceRangeSimple(CI,"zzz","",SourceRange(beginLoc,endLoc),true);
+//        Util::printStmt(CI.getASTContext(),CI,"subS","",subStmt, true);
         rv.TraverseStmt(swtStmt);
-        std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
+//        std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
 
         if(rv.hasMacro || rv.caseKSubStmtCnt==0){
           //如果此case内有宏，则不处理
