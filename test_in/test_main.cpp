@@ -1,4 +1,3 @@
-#define CASE_SAME(x) case x:
 class MyClass {
 public:
     static int ZERO;
@@ -9,22 +8,16 @@ public:
     float PI;
     start: char L;
     switch(chr){
-      case -4:  case -3:
-      case -2:case-1:
-      sum++;
-      break;
       case 0:
-      {
-        L=(cnt+chr)%50;
-        return &L+1;//case0 结束位置左移1
-      }
-
+      L=(cnt+chr)%50;
+#include "Math.def.h"
+      return &L+1;//case0 结束位置左移1
 
       case 1:
+#define IS_ALICE true
         int/*此非case1结束*/ unit;//case1共3行单语句, 这里是case1的第1行单语句
         unit=18;
         return 0;//case1 结束位置
-        CASE_SAME(-100)
       case 2:
         cnt/*此非case2结束*/=L*L;
         cnt++;
