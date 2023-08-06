@@ -5,6 +5,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
+#include "Brc/RangeHasMacroAstVst.h"
 
 using namespace clang;
 
@@ -342,15 +343,6 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       //endregion
     }
 
-//    if(subStmtIsCompound){
-//      //case6 应该是块，被 case7 前的注释干扰 导致误判
-//      //  TODO： 如果要完善，nextTokenLocation(nextTokenLocation(... 需要N个nextTokenLocation嵌套，其中遇到注释的时候 忽略 继续嵌套, 直到第一个非注释？才做 < endLoc的判断?
-//      //  简单点可以把这段 块1后还有语句 的逻辑 整个去掉，会导致 一些需要{}的case 没被加上了{}, 估计影响不大?.
-//      bool 块1后还有语句=Util::nextTokenLocation(Util::nextTokenLocation(subStmt->getEndLoc(),SM,LO),SM,LO) < endLoc;
-//      if(块1后还有语句){
-//        subStmtIsCompound=false;
-//      }
-//    }
 
     //region 开发用输出
 //    llvm::outs() << ",是否块:"<< std::to_string(subStmtIsCompound) <<",case开始: " << beginLoc.printToString(SM)
@@ -359,83 +351,33 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
     //如果case体不是块，才用花括号包裹.
     if(!subStmtIsCompound){
-      bool caseKInMacro=false;
 
-      //region 该case中是否含有宏，若有宏，不加花括号。 虽然有误杀，但保险。
-      std::string msg;
-      CaseStmt *caseK=NULL;
-      if ( isa<CaseStmt>(*scK)) {
-        caseK = dyn_cast<CaseStmt>(scK);
-        Stmt::StmtClass caseKSCls = caseK->getStmtClass();//  clang::Stmt::CaseStmtClass
+      //region 该case内若含有宏，则不处理。新增一Visitor遍历该case冒号后到下一case前内语句，并判定每一语句是否宏.
+      //   对比:
+      //        Traverse、Visitor 总是能触及到 case内的每条语句的
+      //        case.children、case.getSubStmt只能触及到 case内的前部分语句
+      RangeHasMacroAstVst rv(CI,SourceRange(beginLoc, endLoc));
+      rv.TraverseStmt(switchStmt);
+    //endregion
 
-        bool isMacroEllipsisLoc = Util::LocIsInMacro(caseK->getEllipsisLoc(), SM);
-        caseKInMacro = caseKInMacro || isMacroEllipsisLoc;
-        bool isMacroCaseKBeginLoc = Util::LocIsInMacro(caseK->getBeginLoc(),SM);
-        caseKInMacro = caseKInMacro || isMacroCaseKBeginLoc;
-        msg=fmt::format("{},isMacroEllipsisLoc={},isMacroCaseKBeginLoc={},",msg,isMacroEllipsisLoc,isMacroCaseKBeginLoc);
-      }else if ( isa<DefaultStmt>(*scK)) {
-        DefaultStmt *defaultK = dyn_cast<DefaultStmt>(scK);
-        bool isMacro_defaultKColonLoc = Util::LocIsInMacro(defaultK->getColonLoc(),SM);
-        caseKInMacro = caseKInMacro || isMacro_defaultKColonLoc;
-        msg=fmt::format("{},isMacro_defaultKColonLoc={},",msg,isMacro_defaultKColonLoc);
+      //region 如果此case内有宏，则不处理。 否则 此case内无宏，则处理
+      if(rv.hasMacro){
+        //如果此case内有宏，则不处理
+        continue;
       }
 
-
-      Stmt *scKSubStmt = scK->getSubStmt();
-      bool isMacroScKSubStmtBeginLoc = Util::LocIsInMacro(scKSubStmt->getBeginLoc(),SM);
-      caseKInMacro = caseKInMacro || isMacroScKSubStmtBeginLoc;
-      bool isMacroScKSubStmtEndLoc = Util::LocIsInMacro(scKSubStmt->getEndLoc(),SM);
-      caseKInMacro = caseKInMacro || isMacroScKSubStmtEndLoc;
-      msg=fmt::format("{},isMacroScKSubStmtBeginLoc={},isMacroScKSubStmtEndLoc={},",msg,isMacroScKSubStmtBeginLoc,isMacroScKSubStmtEndLoc);
-
-      SourceLocation scKB = scK->getBeginLoc();
-      bool isMacro_scKB = Util::LocIsInMacro(scKB,SM);
-      caseKInMacro = caseKInMacro || isMacro_scKB;
-      msg=fmt::format("{},isMacro_scKB={},",msg,isMacro_scKB);
-
-      SourceLocation scKE = scK->getEndLoc();
-      bool isMacro_scKE = Util::LocIsInMacro(scKE,SM);
-      caseKInMacro = caseKInMacro || isMacro_scKE;
-      msg=fmt::format("{},isMacro_scKE={},",msg,isMacro_scKE);
-
-      bool isMacro_beginLoc = Util::LocIsInMacro(beginLoc,SM);
-      caseKInMacro = caseKInMacro || isMacro_beginLoc;
-      bool isMacro_endLoc = Util::LocIsInMacro(endLoc,SM);
-      caseKInMacro = caseKInMacro || isMacro_endLoc;
-      msg=fmt::format("{},isMacro_beginLoc={},isMacro_endLoc={},",msg,isMacro_beginLoc,isMacro_endLoc);
-
-      SourceLocation beginLocNext=Util::nextTokenLocation(beginLoc,SM,LO);
-      bool isMacro_beginLocNext = Util::LocIsInMacro(beginLocNext,SM);
-      caseKInMacro = caseKInMacro || isMacro_beginLocNext;
-      msg=fmt::format("{},isMacro_beginLocNext={},",msg,isMacro_beginLocNext);
-
-      SourceLocation beginLocPrev=Util::nextTokenLocation(beginLoc,SM,LO,-1);
-      bool isMacro_beginLocPrev = Util::LocIsInMacro(beginLocPrev,SM);
-      caseKInMacro = caseKInMacro || isMacro_beginLocPrev;
-      msg=fmt::format("{},isMacro_beginLocPrev={},",msg,isMacro_beginLocPrev);
-
-      SourceLocation endLocPrev=Util::nextTokenLocation(endLoc,SM,LO,-1);
-      bool isMacro_endLocPrev = Util::LocIsInMacro(endLocPrev,SM);
-      caseKInMacro = caseKInMacro || isMacro_endLocPrev;
-      msg=fmt::format("{},isMacro_endLocPrev={},",msg,isMacro_endLocPrev);
-
-      SourceLocation ColonLoc=scK->getColonLoc();
-      bool isMacro_ColonLoc = Util::LocIsInMacro(ColonLoc,SM);
-      caseKInMacro = caseKInMacro || isMacro_ColonLoc;
-      msg=fmt::format("{},isMacro_ColonLoc={},",msg,isMacro_ColonLoc);
-      //endregion. 。
-
-      if(
-      //该case中若有宏，不加花括号。 虽然有误杀，但保险。
-        !caseKInMacro
-      ) {
-      int line=-1,col=-1;
-      Util::extractLineAndColumn(SM,scK->getBeginLoc(),line,col);
-      msg=fmt::format("{},line={}...col={},",msg,line,col);
+      //region 开发用
+//      std::string msg;
+//      int line=-1,col=-1;
+//      Util::extractLineAndColumn(SM,scK->getBeginLoc(),line,col);
+//      msg=fmt::format("{},line={}...col={},",msg,line,col);
 //      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
-        letLRBraceWrapRangeAftBf(beginLoc, endLoc, "BrcSw");
-      }
-      
+      //endregion
+
+      //否则 此case内无宏，则处理
+      letLRBraceWrapRangeAftBf(beginLoc, endLoc, "BrcSw");
+
+      //endregion
 
     }
   }
