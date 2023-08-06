@@ -46,12 +46,9 @@ public:
 
         if ( isa<CaseStmt>(*sCaseK)) {
           CaseStmt *caseK = dyn_cast<CaseStmt>(sCaseK);
-          const Stmt::child_range &childRange = caseK->children();
+          caseK->getSourceRange();
 
-          std::vector<Stmt*> childVec(childRange.begin(), childRange.end());
-          std::for_each(childVec.begin(),childVec.end(),[this,k]( Stmt* j){
-              Util::printStmt(this->CI.getASTContext(),this->CI,std::to_string(k)+":childVec[J]","",j,true);
-          });
+          Util::printSourceRangeSimple(CI,"xxx","",caseK->getSourceRange(),true);
 
         }else if ( isa<DefaultStmt>(*sCaseK)) {
           DefaultStmt *defaultK = dyn_cast<DefaultStmt>(sCaseK);
