@@ -352,7 +352,9 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
     //如果case体不是块，才用花括号包裹.
     if(!subStmtIsCompound){
 
-      //region 该case内若含有宏，则不处理。新增一Visitor遍历该case冒号后到下一case前内语句，并判定每一语句是否宏.
+      //region 用一Visitor遍历该switch中每个语句 且 限制范围为 case内，记录 case内 是否有宏、子语句个数
+      //   理论上可以写成 用一Visitor遍历该case中每个语句 且 限制范围为 case内，但这又回到之前的老问题 即 拿不到case的完整子语句们。 但能拿到完整switch啊，所以才有上面遍历办法。
+      // case内 即 case冒号后到下一case前内语句，
       //   对比:
       //        Traverse、Visitor 总是能触及到 case内的每条语句的
       //        case.children、case.getSubStmt只能触及到 case内的前部分语句
@@ -360,11 +362,13 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       rv.TraverseStmt(switchStmt);
     //endregion
 
-      //region 如果此case内有宏，则不处理。 否则 此case内无宏，则处理
+      //region 如果此case内有宏 或 该case内无语句，则不处理。
+      // 如果此case内有宏 或 该case冒号到下'case'前无语句，则不处理。 否则 此case内无宏，则处理
       if(rv.hasMacro || rv.caseKSubStmtCnt==0){
         //如果此case内有宏，则不处理
         continue;
       }
+      //endregion
 
       //region 开发用
 //      std::string msg;
@@ -374,7 +378,8 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 //      Util::printStmt(*Ctx,CI,"scK",msg,scK,true);//开发用
       //endregion
 
-      //否则 此case内无宏，则处理
+      //region 否则  处理 此case
+      // 否则 此case内 无宏、且有语句，则处理
       letLRBraceWrapRangeAftBf(beginLoc, endLoc, "BrcSw");
 
       //endregion
