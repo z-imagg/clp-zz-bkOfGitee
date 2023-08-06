@@ -1,109 +1,54 @@
-#include <iostream>
-/**
- * 这是一个示例类
- */
 class MyClass {
 public:
     static int ZERO;
 public:
-    /**
-     * 这是一个示例成员函数
-     * @param a 参数a
-     * @param b 参数b
-     * @return 返回结果
-     */
-    int myFunction(int a, int b) {
-      return a + b;
-    }
 
   char* switchDemo(int cnt, short chr){
     double sum=1.*cnt*chr;
+    float PI;
     start: char L;
     switch(chr){
       case 0:
       {
         L=(cnt+chr)%50;
-        return &L+1;
+        return &L+1;//case0 结束位置左移1
       }
 
 
       case 1:
-        int unit;
+        int/*此非case1结束*/ unit;//case1共3行单语句, 这里是case1的第1行单语句
         unit=18;
-        return NULL;
+        return 0;//case1 结束位置
       case 2:
-        cnt=L*L;
+        cnt/*此非case2结束*/=L*L;
         cnt++;
-        break;
+        break;//case2 结束
       case 3:
-        return &L;
+        return/*此非case3结束*/ &L;//case3 结束
       case 4:
       {
         L++;
         sum=L+sum;
-        if (L)  goto start;
+        if (L)  goto start;//这里并不是case4结束, 这里是case4的块1结束, case4 : 块1+散语句，
       }
+      PI=3.14;
       return (char*)0;
       case 6:{
         int zB;
-        break;
-      }
+        break;//case6 结束位置左移1
+      }//case6语句结束, 但后面还有一行注释
       ////////
       case 7:{
         int uuuuu;
-        break;
-      }
+        break;//case7 结束位置左移1
+      }//case7 结束
       default:
-        sum+=chr*cnt;
-        return &L;
+        sum/*此非default结束*/+=chr*cnt;
+        return &L;//default结束
     }
-    return NULL;
+    return 0;
   }
 };
 
 int MyClass::ZERO=0;
 
-// 这是一个示例全局函数
-/**
- * @brief 这是一个示例全局函数
- * @param x 参数x
- * @param y 参数y
- * @return 返回结果
- */
-int myGlobalFunction(int x, int y) {
-  char ch;
-  if(x>y)
-    if(x<5)
-      if (y>600)
-      while(x++ + y > 12)
-        y += x  * 2  - y  + MyClass::ZERO    ;
-      else if(y>0)
-        for(int t=0; t<x+y; t+=x)
-          y = x + t - 1/t ;
-      else
-        return ch * x / y  ;
-    else
-      ch = ch * myGlobalFunction(ch, y)   ;
-
-  return x * y;
-}
-
-void func_macro_inc(){
-  double PI;
-  if(true)
-#include "Math.def.h"
-}
-int main() {
-  MyClass obj;
-  int result = obj.myFunction(10, 20);
-  int x,y,z;
-  if(true)
-  x = y + MyClass::ZERO   ;  
-  else
-  z *= x /  myGlobalFunction(z, y)   ;    
-
-  int product = myGlobalFunction(5, 6);
-  std::cout << "Product: " << product << std::endl;
-
-  return 0;
-}
