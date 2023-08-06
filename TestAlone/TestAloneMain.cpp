@@ -128,7 +128,7 @@ int main() {
 
   // 设置输入文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
-  CI.getHeaderSearchOpts().ResourceDir="/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
+  CI.getHeaderSearchOpts().ResourceDir="/media/zz/e/llvm15-g1/lib/clang/15.0.0";
   // 运行 Clang 编译
   if (!CI.ExecuteAction(*Action)) {
     llvm::errs() << "Clang compilation failed\n";
