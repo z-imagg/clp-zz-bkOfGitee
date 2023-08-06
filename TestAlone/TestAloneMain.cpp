@@ -18,32 +18,95 @@
 
 using namespace clang;
 
-class MyPPCallbacks : public clang::PPCallbacks {
+class CollectIncMacro_PPCb : public clang::PPCallbacks {
 public:
+    CompilerInstance &CI;
 
+    static std::unordered_set<LocId,LocId> InclusionDirectiveLocSet;
+    static std::unordered_set<LocId,LocId> MacroDefinedLocSet;
+
+    explicit CollectIncMacro_PPCb(CompilerInstance &_CI) : CI(_CI) {
+
+    }
+
+    //预处理回调收集#includee 以判断case起止范围内 有无#i
     void InclusionDirective(SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName, bool IsAngled,
                             CharSourceRange FilenameRange, Optional<FileEntryRef> File, StringRef SearchPath,
                             StringRef RelativePath, const Module *Imported,
                             SrcMgr::CharacteristicKind FileType) override {
-      std::cout << "Include指令:" << FileName.str() << std::endl;
+      //region 方便变量
+      SourceManager &SM = CI.getSourceManager();
+      //endregion
+
+      //region 获取主文件ID,文件路径
+      FileID mainFileId;
+      std::string filePath;
+      Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+      //endregion
+
+      //region 跳过非主文件
+      if(!SM.isWrittenInMainFile(HashLoc)){
+        return;
+      }
+      //endregion
+
+      //region 收集 #include指令 位置
+      InclusionDirectiveLocSet.insert(LocId::buildFor(filePath,HashLoc,SM));
+      std::cout << "Include指令:" << FileName.str() << std::endl;//开发打印日志
+      //endregion
     }
 
+    //预处理回调收集#define 以判断case起止范围内 有无#d
     virtual void MacroDefined(const clang::Token& MacroNameTok,
                               const clang::MacroDirective* MD) override {
+      //region 方便变量
       const clang::MacroInfo* MI = MD->getMacroInfo();
-      std::cout << "宏定义:" << MacroNameTok.getIdentifierInfo()->getName().str() << std::endl;
+      SourceManager &SM = CI.getSourceManager();
+      //endregion
+
+      //region 获取主文件ID,文件路径
+      FileID mainFileId;
+      std::string filePath;
+      Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+      //endregion
+
+      //region 跳过非主文件
+      SourceLocation macroNameTkLoc = MacroNameTok.getLocation();
+      if(!SM.isWrittenInMainFile(macroNameTkLoc)){
+        return;
+      }
+      //endregion
+
+      //region 收集 #define定义 位置
+      MacroDefinedLocSet.insert(LocId::buildFor(filePath,macroNameTkLoc,SM));
+      std::cout << "宏定义:" << MacroNameTok.getIdentifierInfo()->getName().str() << std::endl;//开发打印日志
+      //endregion
     }
-/*输出
-宏定义:__llvm__
-宏定义:__clang__
-...省略了大量 宏定义、Include指令
-Include指令:stdio.h
-宏定义:_STDIO_H
-...省略了大量 宏定义、Include指令
-Include指令:Math.def.h
-宏定义:IS_ALICE
- */
+
+    static bool hasInclusionDirective(SourceManager& SM, SourceRange range){
+      bool hasIncDInRange=std::any_of(
+              CollectIncMacro_PPCb::InclusionDirectiveLocSet.begin(),
+              CollectIncMacro_PPCb::InclusionDirectiveLocSet.end(),
+              [&range,&SM](LocId locIdK){
+            return locIdK.containedByRange(SM,range);
+          }
+      );
+      return hasIncDInRange;
+    }
+    static bool hasMacroDefined(SourceManager& SM, SourceRange range){
+      bool hasMacroDInRange=std::any_of(
+              CollectIncMacro_PPCb::MacroDefinedLocSet.begin(),
+              CollectIncMacro_PPCb::MacroDefinedLocSet.end(),
+              [&range,&SM](LocId locIdK){
+                  return locIdK.containedByRange(SM,range);
+              }
+      );
+      return hasMacroDInRange;
+    }
 };
+
+std::unordered_set<LocId,LocId> CollectIncMacro_PPCb::InclusionDirectiveLocSet;
+std::unordered_set<LocId,LocId> CollectIncMacro_PPCb::MacroDefinedLocSet;
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
@@ -96,10 +159,8 @@ public:
         }
 
 
-        Util::printSourceRangeSimple(CI,"zzz","",SourceRange(beginLoc,endLoc),true);
-        Util::printStmt(CI.getASTContext(),CI,"subS","",subStmt, true);
-
-        RangeHasMacroAstVst rv(CI,SourceRange(beginLoc, endLoc));
+        SourceRange BE = SourceRange(beginLoc, endLoc);
+        RangeHasMacroAstVst rv(CI,BE);
 //        std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(&rv));
 //        std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
 //        Util::printSourceRangeSimple(CI,"zzz","",SourceRange(beginLoc,endLoc),true);
@@ -107,13 +168,20 @@ public:
         rv.TraverseStmt(swtStmt);
 //        std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
 
-        if(rv.hasMacro || rv.caseKSubStmtCnt==0){
-          //如果此case内有宏，则不处理
+        if(
+    //如果此case内有宏，则不处理
+    rv.hasMacro ||
+    //如果此case内无子语句，则不处理
+    rv.caseKSubStmtCnt==0 ||
+    //预处理回调已经收集了#include、#define ，这里判断case起止范围内 有无#i、#d，若有 则不处理该case
+     CollectIncMacro_PPCb::hasInclusionDirective(SM, BE) || CollectIncMacro_PPCb::hasMacroDefined(SM, BE)
+        ){
+//          Util::printSourceRangeSimple(CI,fmt::format("忽略case{}",k),"",BE,true);
           continue;
         }
 
-        //否则 此case内无宏，则处理
-
+        //否则处理此case
+        Util::printSourceRangeSimple(CI,fmt::format("处理case{}",k),"",BE,true);
       }
 
       return true;
@@ -155,7 +223,7 @@ public:
       mRewriter_ptr->setSourceMgr(SM, langOptions);
 
       // 创建MyPPCallbacks对象
-      PP.addPPCallbacks(std::make_unique<MyPPCallbacks>( ));
+      PP.addPPCallbacks(std::make_unique<CollectIncMacro_PPCb>(CI));
 
       
       return std::make_unique<MyASTConsumer>(CI,mRewriter_ptr);
