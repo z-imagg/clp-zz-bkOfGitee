@@ -131,15 +131,21 @@ public:
 };
 
 int main() {
-  // 创建 Clang 编译实例
+  //region 创建编译器实例
   clang::CompilerInstance CI;
+  //endregion
 
+  //region 创建 诊断器、文件管理器、源码管理器
   CI.createDiagnostics();
   CI.createFileManager();
   CI.createSourceManager(CI.getFileManager());
+  //endregion
 
+  //region 设置语言为C++
   CI.getLangOpts().CPlusPlus = true;
+  //endregion
 
+  //region 设置目标平台
   CI.getTargetOpts().Triple= "x86_64-pc-linux-gnu";
 
   llvm::Triple triple("x86_64-pc-linux-gnu");
@@ -147,38 +153,46 @@ int main() {
   targetOpts->Triple=triple.str();
   TargetInfo* targetInfo=  TargetInfo::CreateTargetInfo(CI.getDiagnostics(), targetOpts) ;
   CI.setTarget(targetInfo);
+  //endregion
 
+  //region 创建预处理器、用目标平台初始化预处理器
   CI.createPreprocessor(clang::TU_Complete);
   CI.getPreprocessor().Initialize(*targetInfo);
+  //region
 
 
   SourceManager& SM=CI.getSourceManager();
   LangOptions &LO = CI.getLangOpts();
   Preprocessor &PP = CI.getPreprocessor();
 
-  //添加诊断
+  //region 添加诊断
   llvm::raw_ostream &OS = llvm::outs();
   DiagnosticOptions *diagnosticOptions = new clang::DiagnosticOptions();
   clang::TextDiagnosticPrinter *TextDiag = new TextDiagnosticPrinter(OS, diagnosticOptions);
   TextDiag->BeginSourceFile(LO,&PP);
 //  TextDiag->EndSourceFile();
   CI.getDiagnostics().setClient(TextDiag);
+  //end
 
-  // 创建 ASTFrontendAction 实例
+  //region 创建自定义Action 即 自定义clang插件
   clang::FrontendAction* Action = new MyASTFrontendAction();
+  //endregion
 
+  //region 设置ResourceDir?  这一步不确定是否生效 或 是否写对了 或 是否必要 (应该是必须要的)?
   HeaderSearchOptions &HSO = CI.getHeaderSearchOpts();
   HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/lib/clang/15.0.0";
+  //endregion
 
-  // 设置输入文件
+  //region 添加输入源码文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
+  //endregion
 
-//  HSO
-  // 运行 Clang 编译
+  //region 运行自定义Action
   if (!CI.ExecuteAction(*Action)) {
     llvm::errs() << "Clang compilation failed\n";
     return 1;
   }
+  //endregion
 
   return 0;
 }
