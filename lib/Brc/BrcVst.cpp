@@ -361,7 +361,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
     //endregion
 
       //region 如果此case内有宏，则不处理。 否则 此case内无宏，则处理
-      if(rv.hasMacro){
+      if(rv.hasMacro || rv.caseKSubStmtCnt==0){
         //如果此case内有宏，则不处理
         continue;
       }
