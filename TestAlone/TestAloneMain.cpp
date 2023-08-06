@@ -12,58 +12,11 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <iostream>
 
+#include "base/Util.h"
+
 using namespace clang;
 
 
-class _Util {
-public:
-    static std::string _getSourceText(const clang::SourceManager& SM,const LangOptions &LO, SourceRange sourceRange){
-      CharSourceRange charSourceRange=CharSourceRange::getCharRange(sourceRange);
-      std::string strSourceText=Lexer::getSourceText(charSourceRange, SM, LO).str();
-      return strSourceText;
-    }
-    static std::string _getSpelling(const clang::SourceManager& SM,const LangOptions &LO, Token token,bool *Invalid = nullptr){
-      const std::string strTok = Lexer::getSpelling(token, SM, LO, Invalid);
-      return strTok;
-    }
-    static std::tuple<int,int> extractLineAndColumn(const clang::SourceManager& SM, const clang::SourceLocation& sourceLocation ) {
-      clang::PresumedLoc presumedLoc = SM.getPresumedLoc(sourceLocation);
-      int line = presumedLoc.getLine();
-      int column = presumedLoc.getColumn();
-      return std::tuple<int,int>(line,column);
-    }
-    static SourceLocation getStmtEndSemicolonLocation(const Stmt *S, const SourceManager &SM,bool& endIsSemicolon) {
-      const LangOptions &LO = LangOptions();
-      std::string stmtText=_Util::_getSourceText(SM, LO, S->getSourceRange());
-      Token JTok;
-
-      // 获取Stmt的结束位置
-      SourceLocation JLoc = S->getEndLoc();
-      if(JLoc.isInvalid()){
-        //如果语句末尾位置 就不合法，则标记没找到分号，再直接返回。
-        endIsSemicolon= false;
-        return JLoc;
-      }
-
-      do{
-
-        Lexer::getRawToken(JLoc, JTok, SM, LO,/*IgnoreWhiteSpace:*/true);
-        //忽略空白字符，IgnoreWhiteSpace：true，很关键，否则可能某个位置导致循环后还是该位置，从而死循环。
-        JLoc = Lexer::getLocForEndOfToken(JTok.getEndLoc(), /*Offset*/1, SM, LO);
-        //偏移量给1,Offset：1,很关键，如果不向前移动 可能循环一次还是在该位置，造成死循环。
-        //取第J次循环的Token的结尾位置，JTok.getEndLoc()，很关键，否则可能下次循环还在该token上，导致死循环。
-      }while (JTok.isNot(tok::semi)
-      && JTok.isNot(tok::eof)
-&& JTok.getLocation().isValid()
-              );
-
-
-      // 获取分号的结束位置
-
-      endIsSemicolon=JTok.is(tok::semi);
-      return JTok.getLocation();
-    }
-};
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
@@ -72,32 +25,30 @@ public:
     explicit MyASTVisitor(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr ) : CI(_CI)  {
 
     }
-    bool VisitStmt(clang::Stmt *stmt) {
-      bool endIsSemicolon=false;
-      SourceManager &SM = CI.getSourceManager();
+
+    virtual bool TraverseSwitchStmt(SwitchStmt *swtStmt){
+      SwitchCase *caseList = swtStmt->getSwitchCaseList();
       LangOptions &LO = CI.getLangOpts();
 
-      std::string strSourceText=_Util::_getSourceText(SM,LO,stmt->getSourceRange());
+      std::vector<SwitchCase*> caseVec;
+      for (SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
+        caseVec.push_back(switchCase);
+      }
 
-      const SourceLocation &semicolonLoc = _Util::getStmtEndSemicolonLocation(stmt, SM,endIsSemicolon);//条件断点 eq为真
-      const std::string &semicolonLocStr = semicolonLoc.printToString(SM);
-      llvm::outs() << "访问到语句: " << stmt->getStmtClassName()  << ": 【" << strSourceText  << "】,结尾是否分号:"<<
-      std::to_string(endIsSemicolon)+""+(endIsSemicolon?(",结尾分号位置: " + semicolonLocStr):"" )
-      << "\n";
+      std::sort(caseVec.begin(), caseVec.end(), [](clang::SwitchCase* lhs, clang::SwitchCase* rhs) {
+          return lhs->getBeginLoc() < rhs->getBeginLoc();
+      });
+
+
+      size_t caseCnt = caseVec.size();
+      for(int k=0; k < caseCnt; k++) {
+        SwitchCase *sCaseK = caseVec[k];
+        Stmt *subStmt = sCaseK->getSubStmt();
+        Util::printStmt(CI.getASTContext(),CI,"sCaseK.getSubStmt","",subStmt, true);
+      }
 
       return true;
     }
-/*输出:
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: FloatingLiteral
-TraverseStmt: CompoundStmt
-TraverseStmt: ReturnStmt
-TraverseStmt: BinaryOperator
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: DeclRefExpr
-TraverseStmt: ImplicitCastExpr
-TraverseStmt: DeclRefExpr
- */
 };
 
 class MyASTConsumer : public clang::ASTConsumer {
@@ -177,7 +128,7 @@ int main() {
 
   // 设置输入文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
-
+  CI.getHeaderSearchOpts().ResourceDir="/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
   // 运行 Clang 编译
   if (!CI.ExecuteAction(*Action)) {
     llvm::errs() << "Clang compilation failed\n";
