@@ -4,6 +4,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "Brc/CollectIncMacro_PPCb.h"
 
 using namespace llvm;
 using namespace clang;
@@ -15,10 +16,13 @@ public:
                       llvm::StringRef inFile) override {
       SourceManager &SM = CI.getSourceManager();
       LangOptions &langOptions = CI.getLangOpts();
+      Preprocessor &PP = CI.getPreprocessor();
       ASTContext &astContext = CI.getASTContext();
       CI.getDiagnostics().setSourceManager(&SM);
       mRewriter_ptr->setSourceMgr(SM, langOptions);
 
+      // Act中 添加 收集#include、#define的 预处理回调
+      PP.addPPCallbacks(std::make_unique<CollectIncMacro_PPCb>(CI));
 
       return std::make_unique<BrcAstCnsm>(CI,mRewriter_ptr, &astContext, SM, langOptions);
     }

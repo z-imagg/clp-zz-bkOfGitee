@@ -6,6 +6,7 @@
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
 #include "Brc/RangeHasMacroAstVst.h"
+#include "Brc/CollectIncMacro_PPCb.h"
 
 using namespace clang;
 
@@ -358,13 +359,21 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
       //   对比:
       //        Traverse、Visitor 总是能触及到 case内的每条语句的
       //        case.children、case.getSubStmt只能触及到 case内的前部分语句
-      RangeHasMacroAstVst rv(CI,SourceRange(beginLoc, endLoc));
+      SourceRange BE=SourceRange(beginLoc, endLoc);
+      RangeHasMacroAstVst rv(CI,BE);
       rv.TraverseStmt(switchStmt);
     //endregion
 
-      //region 如果此case内有宏 或 该case内无语句，则不处理。
+      //region 如果此case内有宏 或 该case内无语句 或 该case内有#include 或 该case内有#define，则不处理。
       // 如果此case内有宏 或 该case冒号到下'case'前无语句，则不处理。 否则 此case内无宏，则处理
-      if(rv.hasMacro || rv.caseKSubStmtCnt==0){
+      if(
+      //如果此case内有宏，则不处理
+      rv.hasMacro ||
+      //如果此case内无子语句，则不处理
+      rv.caseKSubStmtCnt==0 ||
+      //预处理回调已经收集了#include、#define ，这里判断case起止范围内 有无#i、#d，若有 则不处理该case
+      CollectIncMacro_PPCb::hasInclusionDirective(SM, BE) || CollectIncMacro_PPCb::hasMacroDefined(SM, BE)
+      ){
         //如果此case内有宏，则不处理
         continue;
       }
