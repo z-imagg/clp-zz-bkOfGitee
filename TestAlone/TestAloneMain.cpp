@@ -17,6 +17,41 @@
 using namespace clang;
 
 
+class RangeHasMacroAstVisitor : public RecursiveASTVisitor<RangeHasMacroAstVisitor> {
+public:
+    CompilerInstance& CI;
+    SourceRange sourceRange;
+    bool hasMacro;
+
+    explicit RangeHasMacroAstVisitor(CompilerInstance &_CI , SourceRange _sourceRange )
+    :
+    CI(_CI),
+    sourceRange(_sourceRange),
+    hasMacro(false)
+    {
+
+    }
+    bool VisitStmt(clang::Stmt *stmt) {
+
+      if (clang::isa<clang::CompoundStmt>(stmt)) {
+        return true;
+      }
+
+      SourceLocation B = stmt->getBeginLoc();
+      SourceLocation E = stmt->getEndLoc();
+
+      bool contain=sourceRange.fullyContains(stmt->getSourceRange());
+      if(!contain){
+        return true;
+      }
+
+      Util::printStmt(CI.getASTContext(),CI,"xxx","",stmt,true);
+//      Util::LocIsInMacro()
+
+      return true;
+    }
+};
+
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
@@ -44,15 +79,26 @@ public:
       for(int k=0; k < caseCnt; k++) {
         SwitchCase *sCaseK = caseVec[k];
 
+        SourceLocation beginLoc;
+        SourceLocation endLoc;
+        beginLoc = sCaseK->getColonLoc();
+        if(k<caseCnt-1){
+          endLoc=caseVec[k+1]->getBeginLoc();
+        }else{
+          endLoc=swtStmt->getEndLoc();
+        }
+
         if ( isa<CaseStmt>(*sCaseK)) {
           CaseStmt *caseK = dyn_cast<CaseStmt>(sCaseK);
-          caseK->getSourceRange();
-
-          Util::printSourceRangeSimple(CI,"xxx","",caseK->getSourceRange(),true);
 
         }else if ( isa<DefaultStmt>(*sCaseK)) {
           DefaultStmt *defaultK = dyn_cast<DefaultStmt>(sCaseK);
         }
+
+
+        RangeHasMacroAstVisitor rv(CI,SourceRange(beginLoc, endLoc));
+        std::cout<<k<<std::endl;
+        rv.TraverseStmt(swtStmt);
 
       }
 
