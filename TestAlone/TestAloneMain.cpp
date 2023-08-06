@@ -170,7 +170,6 @@ int main() {
   DiagnosticOptions *diagnosticOptions = new clang::DiagnosticOptions();
   clang::TextDiagnosticPrinter *TextDiag = new TextDiagnosticPrinter(OS, diagnosticOptions);
   TextDiag->BeginSourceFile(LO,&PP);
-//  TextDiag->EndSourceFile();
   CI.getDiagnostics().setClient(TextDiag);
   //end
 
