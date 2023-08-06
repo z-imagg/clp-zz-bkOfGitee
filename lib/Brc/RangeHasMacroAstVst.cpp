@@ -20,9 +20,11 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     //    否则只记录了第一个 在caseK范围内的语句,后续的语句都没记录，显然计数不对。
     //若 当前stmt 是 caseK的子语句， 则累加子语句个数
     caseKSubStmtCnt++;
-//  Util::printStmt(CI.getASTContext(),CI,"caseK的子语句","",stmt,true);
   }
   //endregion
+
+
+//  Util::printStmt(CI.getASTContext(),CI,"caseK的子语句","",stmt,true);
 
   //到此处， 语句stmt 一定是 caseK的子语句
 

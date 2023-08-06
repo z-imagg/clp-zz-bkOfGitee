@@ -158,12 +158,14 @@ int main() {
   //region 创建预处理器、用目标平台初始化预处理器
   CI.createPreprocessor(clang::TU_Complete);
   CI.getPreprocessor().Initialize(*targetInfo);
-  //region
+  //endregion
 
-
+  //region 为方便 而有 变量 SM、LO、PP
   SourceManager& SM=CI.getSourceManager();
   LangOptions &LO = CI.getLangOpts();
   Preprocessor &PP = CI.getPreprocessor();
+  //endregion
+
 
   //region 添加诊断
   llvm::raw_ostream &OS = llvm::outs();
@@ -171,7 +173,7 @@ int main() {
   clang::TextDiagnosticPrinter *TextDiag = new TextDiagnosticPrinter(OS, diagnosticOptions);
   TextDiag->BeginSourceFile(LO,&PP);
   CI.getDiagnostics().setClient(TextDiag);
-  //end
+  //endregion
 
   //region 创建自定义Action 即 自定义clang插件
   clang::FrontendAction* Action = new MyASTFrontendAction();
