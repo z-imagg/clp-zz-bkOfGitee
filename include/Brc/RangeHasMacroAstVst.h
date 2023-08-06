@@ -25,6 +25,7 @@ using namespace clang;
 class RangeHasMacroAstVst : public RecursiveASTVisitor<RangeHasMacroAstVst> {
 public:
     CompilerInstance& CI;
+    //限定位置范围，即 caseK起至范围 ： 即case[K]的冒号 到 case[K+1]的'case'前
     SourceRange caseKSrcRange;
     bool hasMacro;
     //caseK的子语句个数
