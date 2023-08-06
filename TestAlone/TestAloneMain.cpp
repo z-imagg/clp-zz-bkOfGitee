@@ -18,6 +18,32 @@
 
 using namespace clang;
 
+class MyPPCallbacks : public clang::PPCallbacks {
+public:
+
+    void InclusionDirective(SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName, bool IsAngled,
+                            CharSourceRange FilenameRange, Optional<FileEntryRef> File, StringRef SearchPath,
+                            StringRef RelativePath, const Module *Imported,
+                            SrcMgr::CharacteristicKind FileType) override {
+      std::cout << "Include指令:" << FileName.str() << std::endl;
+    }
+
+    virtual void MacroDefined(const clang::Token& MacroNameTok,
+                              const clang::MacroDirective* MD) override {
+      const clang::MacroInfo* MI = MD->getMacroInfo();
+      std::cout << "宏定义:" << MacroNameTok.getIdentifierInfo()->getName().str() << std::endl;
+    }
+/*输出
+宏定义:__llvm__
+宏定义:__clang__
+...省略了大量 宏定义、Include指令
+Include指令:stdio.h
+宏定义:_STDIO_H
+...省略了大量 宏定义、Include指令
+Include指令:Math.def.h
+宏定义:IS_ALICE
+ */
+};
 
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
@@ -119,13 +145,17 @@ public:
 
       SourceManager &SM = CI.getSourceManager();
       LangOptions &langOptions = CI.getLangOpts();
+      Preprocessor &PP = CI.getPreprocessor();
       ASTContext &astContext = CI.getASTContext();
 
       CI.getDiagnostics().setSourceManager(&SM);
 
       mRewriter_ptr->setSourceMgr(SM, langOptions);
 
+      // 创建MyPPCallbacks对象
+      PP.addPPCallbacks(std::make_unique<MyPPCallbacks>( ));
 
+      
       return std::make_unique<MyASTConsumer>(CI,mRewriter_ptr);
     }
 };
@@ -179,13 +209,20 @@ int main() {
   clang::FrontendAction* Action = new MyASTFrontendAction();
   //endregion
 
-  //region 设置ResourceDir?  这一步不确定是否生效 或 是否写对了 或 是否必要 (应该是必须要的)?
+  //region 设置头文件路径
   HeaderSearchOptions &HSO = CI.getHeaderSearchOpts();
-  HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/lib/clang/15.0.0";
+  HSO.AddPath("/usr/include/",clang::frontend::Angled, false, false);
+  HSO.AddPath("/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/",clang::frontend::Angled, false, false);
+  HSO.AddPath("/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/",clang::frontend::Angled, false, false);
+  //ResourceDir 应该是有用的，但是不知道如何正确添加
+//  HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
   //endregion
 
+//  PP.EnterSourceFile()
+
   //region 添加输入源码文件
-  CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
+  FrontendInputFile srcFile = clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX));
+  CI.getFrontendOpts().Inputs.push_back(srcFile);
   //endregion
 
   //region 运行自定义Action

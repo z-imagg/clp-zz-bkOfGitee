@@ -1,3 +1,4 @@
+#include <stdio.h>
 class MyClass {
 public:
     static int ZERO;
