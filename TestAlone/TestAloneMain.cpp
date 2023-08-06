@@ -20,34 +20,73 @@ using namespace clang;
 class RangeHasMacroAstVisitor : public RecursiveASTVisitor<RangeHasMacroAstVisitor> {
 public:
     CompilerInstance& CI;
-    SourceRange sourceRange;
+    SourceRange caseKSrcRange;
     bool hasMacro;
 
     explicit RangeHasMacroAstVisitor(CompilerInstance &_CI , SourceRange _sourceRange )
     :
-    CI(_CI),
-    sourceRange(_sourceRange),
-    hasMacro(false)
+            CI(_CI),
+            caseKSrcRange(_sourceRange),
+            hasMacro(false)
     {
 
     }
     bool VisitStmt(clang::Stmt *stmt) {
+      SourceLocation CB = caseKSrcRange.getBegin();
+      SourceLocation CE = caseKSrcRange.getEnd();
 
+
+      SourceManager &SM = CI.getSourceManager();
+      int caseKBL,caseKBC;
+      Util::extractLineAndColumn(SM,CB,caseKBL,caseKBC);
+      int caseKEL,caseKEC;
+      Util::extractLineAndColumn(SM,CE,caseKEL,caseKEC);
+
+
+
+      SourceLocation B = stmt->getBeginLoc();
+      SourceLocation E = stmt->getEndLoc();
+      int sBL,sBC;
+      Util::extractLineAndColumn(SM,B,sBL,sBC);
+      int sEL,sEC;
+      Util::extractLineAndColumn(SM,E,sEL,sEC);
+
+      //如果已经确定 给定Switch的限定位置范围内 有宏，则直接返回，且不需要再遍历了
+      if(hasMacro){
+        return false;
+      }
+
+
+      //如果遍历到块语句，不处理，直接返回。因为这里只关心单语句，不关心块语句。
       if (clang::isa<clang::CompoundStmt>(stmt)) {
         return true;
       }
 
-      SourceLocation B = stmt->getBeginLoc();
-      SourceLocation E = stmt->getEndLoc();
 
-      bool contain=sourceRange.fullyContains(stmt->getSourceRange());
-      if(!contain){
-        return true;
+      //如果遍历到的语句的返回 不完全 含在 限定位置范围内 ，不处理，直接返回。 这种情况可能是拿到了一个更大的非终结符号。
+//      bool FC = caseKSrcRange.fullyContains(stmt->getSourceRange());
+      bool FC = CB<=B && CE>=E;
+      bool FC_=(caseKBL<=sBL) && (caseKEL>=sEL);
+      if(!FC_){//不要用FC 否则结果是错的
+        return true;///
       }
 
-      Util::printStmt(CI.getASTContext(),CI,"xxx","",stmt,true);
-//      Util::LocIsInMacro()
 
+      std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(this));
+      Util::printStmt(CI.getASTContext(),CI,"xxx",rvAdrr,stmt,true);
+
+
+      //如果遍历到的单语句，开始位置在宏中 或 结束位置在宏中，则 给定Switch的限定位置范围内 有宏，直接返回，且不需要再遍历了。
+      bool inMacro = Util::LocIsInMacro(B,SM) || Util::LocIsInMacro(E,SM);
+
+      if(!hasMacro ){
+        if(inMacro){
+          hasMacro=true;
+          return false;
+        }
+      }
+
+      //其他情况，继续遍历
       return true;
     }
 };
@@ -62,11 +101,16 @@ public:
     }
 
     virtual bool TraverseSwitchStmt(SwitchStmt *swtStmt){
+      SourceManager &SM = CI.getSourceManager();
+
       SwitchCase *caseList = swtStmt->getSwitchCaseList();
       LangOptions &LO = CI.getLangOpts();
 
       std::vector<SwitchCase*> caseVec;
       for (SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
+        if(Util::LocIsInMacro(switchCase->getBeginLoc(),SM)){//如果此case是宏展开后产物，则跳过
+          continue;
+        }
         caseVec.push_back(switchCase);
       }
 
@@ -97,8 +141,11 @@ public:
 
 
         RangeHasMacroAstVisitor rv(CI,SourceRange(beginLoc, endLoc));
-        std::cout<<k<<std::endl;
+        std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(&rv));
+        std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
         rv.TraverseStmt(swtStmt);
+        std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
+        Util::printSourceRangeSimple(CI,"","",SourceRange(beginLoc,endLoc),true);
 
       }
 

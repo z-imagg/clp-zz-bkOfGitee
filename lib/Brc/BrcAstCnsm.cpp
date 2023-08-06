@@ -128,7 +128,7 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
     return;
   }
   const SourceRange &sourceRange = C->getSourceRange();
-//  Util::printSourceRangeSimple(CI,"查看RawComment","",sourceRange, true);
+//  Util::printSourceRangeSimple(CI,"查看RawComment","",caseKSrcRange, true);
 
   if(_brcOk){
     return;

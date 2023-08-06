@@ -1,3 +1,4 @@
+#define CASE_SAME(x) case x:
 class MyClass {
 public:
     static int ZERO;
@@ -19,6 +20,7 @@ public:
         int/*此非case1结束*/ unit;//case1共3行单语句, 这里是case1的第1行单语句
         unit=18;
         return 0;//case1 结束位置
+        CASE_SAME(-2)
       case 2:
         cnt/*此非case2结束*/=L*L;
         cnt++;
@@ -33,15 +35,15 @@ public:
       }
       PI=3.14;
       return (char*)0;
-      case 6:{
+      case 5:{
         int zB;
-        break;//case6 结束位置左移1
-      }//case6语句结束, 但后面还有一行注释
+        break;//case5 结束位置左移1
+      }//case5语句结束, 但后面还有一行注释
       ////////
-      case 7:{
+      case 6:{
         int uuuuu;
-        break;//case7 结束位置左移1
-      }//case7 结束
+        break;//case6 结束位置左移1
+      }//case6 结束
       default:
         sum/*此非default结束*/+=chr*cnt;
         return &L;//default结束
