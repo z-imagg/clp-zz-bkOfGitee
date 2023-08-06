@@ -43,8 +43,15 @@ public:
       size_t caseCnt = caseVec.size();
       for(int k=0; k < caseCnt; k++) {
         SwitchCase *sCaseK = caseVec[k];
-        Stmt *subStmt = sCaseK->getSubStmt();
-        Util::printStmt(CI.getASTContext(),CI,"sCaseK.getSubStmt","",subStmt, true);
+//        Stmt *subStmt = sCaseK->getSubStmt();
+//        Util::printStmt(CI.getASTContext(),CI,"sCaseK.getSubStmt","",subStmt, true);
+
+        const Stmt::child_range &childRange = sCaseK->children();
+
+        std::vector<Stmt*> childVec(childRange.begin(), childRange.end());
+        std::for_each(childVec.begin(),childVec.end(),[this,k]( Stmt* j){
+          Util::printStmt(this->CI.getASTContext(),this->CI,std::to_string(k)+":childVec[J]","",j,true);
+        });
       }
 
       return true;
@@ -126,9 +133,13 @@ int main() {
   // 创建 ASTFrontendAction 实例
   clang::FrontendAction* Action = new MyASTFrontendAction();
 
+  HeaderSearchOptions &HSO = CI.getHeaderSearchOpts();
+  HSO.ResourceDir="/media/zz/e/llvm15-g1/lib/clang/15.0.0";
+
   // 设置输入文件
   CI.getFrontendOpts().Inputs.push_back(clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX)));
-  CI.getHeaderSearchOpts().ResourceDir="/media/zz/e/llvm15-g1/lib/clang/15.0.0";
+
+//  HSO
   // 运行 Clang 编译
   if (!CI.ExecuteAction(*Action)) {
     llvm::errs() << "Clang compilation failed\n";
