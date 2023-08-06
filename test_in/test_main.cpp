@@ -9,6 +9,10 @@ public:
     float PI;
     start: char L;
     switch(chr){
+      case -4:  case -3:
+      case -2:case-1:
+      sum++;
+      break;
       case 0:
       {
         L=(cnt+chr)%50;
@@ -20,7 +24,7 @@ public:
         int/*此非case1结束*/ unit;//case1共3行单语句, 这里是case1的第1行单语句
         unit=18;
         return 0;//case1 结束位置
-        CASE_SAME(-2)
+        CASE_SAME(-100)
       case 2:
         cnt/*此非case2结束*/=L*L;
         cnt++;
