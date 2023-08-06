@@ -43,15 +43,20 @@ public:
       size_t caseCnt = caseVec.size();
       for(int k=0; k < caseCnt; k++) {
         SwitchCase *sCaseK = caseVec[k];
-//        Stmt *subStmt = sCaseK->getSubStmt();
-//        Util::printStmt(CI.getASTContext(),CI,"sCaseK.getSubStmt","",subStmt, true);
 
-        const Stmt::child_range &childRange = sCaseK->children();
+        if ( isa<CaseStmt>(*sCaseK)) {
+          CaseStmt *caseK = dyn_cast<CaseStmt>(sCaseK);
+          const Stmt::child_range &childRange = caseK->children();
 
-        std::vector<Stmt*> childVec(childRange.begin(), childRange.end());
-        std::for_each(childVec.begin(),childVec.end(),[this,k]( Stmt* j){
-          Util::printStmt(this->CI.getASTContext(),this->CI,std::to_string(k)+":childVec[J]","",j,true);
-        });
+          std::vector<Stmt*> childVec(childRange.begin(), childRange.end());
+          std::for_each(childVec.begin(),childVec.end(),[this,k]( Stmt* j){
+              Util::printStmt(this->CI.getASTContext(),this->CI,std::to_string(k)+":childVec[J]","",j,true);
+          });
+
+        }else if ( isa<DefaultStmt>(*sCaseK)) {
+          DefaultStmt *defaultK = dyn_cast<DefaultStmt>(sCaseK);
+        }
+
       }
 
       return true;
