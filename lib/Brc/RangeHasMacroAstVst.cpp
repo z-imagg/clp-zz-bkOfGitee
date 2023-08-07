@@ -4,6 +4,14 @@
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
 
+  //region 当-I头文件路径没有设置时，VisitStmt(stmt) 中语句的位置范围可能是不合法的
+  SourceRange stmtR = stmt->getSourceRange();
+  bool valid=stmtR.isValid();
+  if(!valid){
+    return true;
+  }
+  //endregion
+
   SourceManager &SM = CI.getSourceManager();
   ASTContext &Ctx = CI.getASTContext();
 
