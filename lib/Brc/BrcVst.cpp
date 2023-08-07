@@ -21,13 +21,35 @@ using namespace clang;
 
 
 
-
-
-
-
-
-
-
+//region 研究用, 找到父亲节点数目大于1 的情况
+bool BrcVst::VisitStmt(clang::Stmt *stmt) {
+  ASTContext &ctx = CI.getASTContext();
+  std::vector<std::tuple<ASTNodeKind,SourceRange,const Stmt*>>  parentVec;
+  const DynTypedNodeList & parents = ctx.getParents(*stmt);
+  Util::collectParentS<Stmt>(parents,parentVec);
+  size_t parentSize=parentVec.size();
+  if(parentSize>1){
+    Util::printStmt(ctx,CI,"发现父数大于1的节点","本语句",stmt,true);
+    for(int i =0; i < parentSize; i++){
+//      parentINodeKind表示第i个父亲节点的ASTNodeKind
+      ASTNodeKind parentINodeKind=std::get<0>(parentVec[i]);
+//      parentISourceRange表示第i个父亲节点的位置范围
+      SourceRange parentISourceRange=std::get<1>(parentVec[i]);
+//      parentI表示第i个父亲节点
+      const Stmt* parentI=std::get<2>(parentVec[i]);
+      if(parentI){
+        Util::printStmt(ctx,CI,"发现父数大于1的节点",fmt::format("其父亲{}:",i),parentI,true);
+      }else{
+        const std::string &parentISourceRangeText = parentISourceRange.printToString(SM);
+        std::string parentINodeKindStr=parentINodeKind.asStringRef().str();
+        std::string errMsg=fmt::format("第{}个父亲节点 ,位置范围 {},  并不是 Stmt类型，其ASTNodeKind是{}, 解决:把类型Stmt改为{}?\n",i,parentISourceRangeText,parentINodeKindStr,parentINodeKindStr);
+        std::cout<<errMsg;
+      }
+    }
+  }
+  return true;
+}
+//endregion
 
 
 
