@@ -34,9 +34,6 @@ public:
     }
 
 
-//region 研究用, 找到父亲节点数目大于1 的情况
-    bool VisitStmt(clang::Stmt *stmt);
-//endregion
 
     void letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
     void letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted="");
