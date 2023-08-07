@@ -20,35 +20,36 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     //若 当前stmt 是 caseK的子语句， 则累加子语句个数
     caseKSubStmtCnt++;
 
-    //若当前语句是变量声明语句 且 ，则累加变量声明语句个数
+    //若当前语句是直接写在'case'内的变量声明   ，则累其语句个数
     if (stmt->getStmtClass() == Stmt::StmtClass::DeclStmtClass) {
-      if (
-          !Util::anyParentClassEqual(&Ctx, stmt, clang::Stmt::ForStmtClass)
-          &&
-          !Util::anyParentClassEqual(&Ctx, stmt, clang::Stmt::CXXForRangeStmtClass)
-        ) {
-        caseKVarDeclStmtCnt++;
+      const Stmt* parentStmt;
+      Stmt::StmtClass parentStmtCls;
+      const Stmt* pParentStmt;
+      Stmt::StmtClass pParentStmtCls;
+      bool only1P=Util::only1ParentStmtClass(Ctx,stmt,parentStmt,parentStmtCls);
+      bool belongSwitchDirectlyInCaseK=
+          //直接写在'case'内, 但是其父亲是switch块的
+          only1P
+           && parentStmtCls==Stmt::StmtClass::CompoundStmtClass
+           && Util::only1ParentStmtClass(Ctx,parentStmt,pParentStmt,pParentStmtCls)
+           && pParentStmtCls==Stmt::StmtClass::SwitchStmtClass
+           ;
+      bool normalDirectlyInCase=
+          //直接写在'case'内，其父亲是case语句的
+          only1P && parentStmtCls == Stmt::StmtClass::CaseStmtClass;
+      if(
+          //直接写在'case'内, 但是其父亲是switch块的
+          belongSwitchDirectlyInCaseK
+          ||
+          //直接写在'case'内，其父亲是case语句的
+          normalDirectlyInCase
+//注意: 直接写的'case {'内的 、 直接写在'case'内  不是一回事，而是差别很大。
+      ){
+        VarDeclDirectlyInCaseKCnt++;
+  Util::printStmt(CI.getASTContext(),CI,"直接写在'case'内","VarDeclDirectlyInCaseKCnt",stmt,true);
       }
 
 
-      //开发用
-      auto parents = Ctx.getParents(*stmt);
-      std::string ParentClsLsStr;
-      for (const auto& parent : parents) {
-        auto stmtParent = parent.get<Stmt>();
-        if (stmtParent  ) {
-          ParentClsLsStr=fmt::format("{},{}", ParentClsLsStr, stmtParent->getStmtClassName());
-        }
-      }
-      Util::printStmt(CI.getASTContext(),CI,"caseK的子语句",ParentClsLsStr,stmt,true);
-      auto p0=parents[0];
-      auto p0s=p0.get<Stmt>();
-      auto p0_e=p0.get<Expr>();//NULL
-      bool end=true;
-      int64_t stmtID = stmt->getID(Ctx);
-      if (  p0s) {
-        Util::printStmt(CI.getASTContext(),CI, "caseK子句:"+std::to_string(stmtID)+":的父亲",ParentClsLsStr,(Stmt*)p0s,true);
-      }
 
     }
   }else{
