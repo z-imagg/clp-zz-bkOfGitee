@@ -35,6 +35,9 @@ public:
         sum=L+sum;
         if (L)  goto start;//这里并不是case4结束, 这里是case4的块1结束, case4 : 块1+散语句，
       }
+      for(int q=0; q<45; q++)
+        L--;
+      double doubleMe;//doubleMe的parent0NodeKind:CompoundStmt，不知道啥意思。 即使没有上面的for(...q...)结果也一样.
       PI=3.14;
       return (char*)0;
       case 5:{
