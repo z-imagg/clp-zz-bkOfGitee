@@ -10,6 +10,7 @@ public:
     start: char L;
     switch(chr){
       case 0:
+      int FLASH;//case0内定义的变量被case4使用了，因此case0不能用花括号包裹。
       L=(cnt+chr)%50;
 #include "Math.def.h"
       return &L+1;//case0 结束位置左移1
@@ -27,6 +28,7 @@ public:
         return/*此非case3结束*/ &L;//case3 结束
       case 4:
       {
+        FLASH--;
         L++;
         sum=L+sum;
         if (L)  goto start;//这里并不是case4结束, 这里是case4的块1结束, case4 : 块1+散语句，
