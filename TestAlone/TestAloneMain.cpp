@@ -19,6 +19,7 @@
 
 using namespace clang;
 
+//TODO: 验证Parent断言：  任何一个Stmt其Parent应该只有一个,  任何一个VarDecl语句其Parent应该只有一个。 但是VarDecl中的Var其Parent常常有多个， 其Parent包括该VarDecl语、所有使用该Var的地方
 class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor> {
 public:
     CompilerInstance& CI;
