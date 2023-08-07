@@ -28,38 +28,64 @@ public:
 
     }
 
-    template<typename NodeTp>
-    void collectParentS( Stmt* stmt,std::vector<std::tuple<ASTNodeKind,const NodeTp*>> & parentVec){
-      ASTContext &ctx = CI.getASTContext();
-      auto parents = ctx.getParents(*stmt);
+    template<typename ParentNodeTp>
+    void collectParentS(const DynTypedNodeList &parents ,std::vector<std::tuple<ASTNodeKind,const ParentNodeTp*>> & parentVec){
+//      const DynTypedNodeList &parents = ctx.getParents(*stmt);
 
-//      /*size_t */ parentSize = parents.size();
-
-//      std::vector<const Stmt*> parentVec;
       for (const auto& parent : parents) {
-        auto stmtParent = parent.get<NodeTp>();
+        auto stmtParent = parent.get<ParentNodeTp>();
         auto parentNodeKind=parent.getNodeKind();
         parentVec.push_back(std::make_tuple(parentNodeKind,stmtParent));
       }
     }
 
+    int StmtParentSizeLE1AssertOkCnt=0;
     bool VisitStmt(clang::Stmt *stmt) {
-      ASTContext &Ctx = CI.getASTContext();
-      std::vector<std::tuple<ASTNodeKind,const Stmt*>>  parentVec;
-      collectParentS<Stmt>(stmt,parentVec);
-      size_t parentSize=parentVec.size();
-    }
-
-
-    bool VisitExpr(clang::Expr *expr) {
-
-    }
-
-    bool VisitVarDecl(VarDecl* varDecl){
       ASTContext &ctx = CI.getASTContext();
-      auto parents=ctx.getParents(*varDecl);
+      std::vector<std::tuple<ASTNodeKind,const Stmt*>>  parentVec;
+      const DynTypedNodeList & parents = ctx.getParents(*stmt);
+      collectParentS<Stmt>(parents,parentVec);
+      size_t parentSize=parentVec.size();
+      if(parentSize>1){
+        Util::printStmt(ctx,CI,"发现父数大于1的节点","本语句",stmt,true);
+        for(int i =0; i < parentSize; i++){
+          const Stmt* parentI=std::get<1>(parentVec[i]);
+          Util::printStmt(ctx,CI,"发现父数大于1的节点",fmt::format("其父亲{}:",i),parentI,true);
+        }
+      }
+      assert(parentSize<=1);
+      StmtParentSizeLE1AssertOkCnt++;
+//      std::cout<<fmt::format("语句父亲尺寸<=1断言正确次数:{},parentSize:{}\n", StmtParentSizeLE1AssertOkCnt,parentSize);
+      return true;
+    }
 
 
+    int ExprParentSizeG1Cnt=0;
+    bool VisitExpr(clang::Expr *expr) {
+      ASTContext &ctx = CI.getASTContext();
+      std::vector<std::tuple<ASTNodeKind,const Expr*>>  parentVec;
+      const DynTypedNodeList & parents = ctx.getParents(*expr);
+      collectParentS<Expr>(parents,parentVec);
+      size_t parentSize=parentVec.size();
+      if(parentSize>1){
+        ExprParentSizeG1Cnt++;
+        std::cout<<fmt::format("表达式父亲尺寸>1次数:{},parentSize:{}\n", ExprParentSizeG1Cnt,parentSize);
+      }
+      return true;
+    }
+
+    int VarDeclParentSizeG1Cnt=0;
+    bool VisitDecl(Decl* decl){
+      ASTContext &ctx = CI.getASTContext();
+      std::vector<std::tuple<ASTNodeKind,const Decl*>>  parentVec;
+      const DynTypedNodeList & parents = ctx.getParents(*decl);
+      collectParentS<Decl>(parents,parentVec);
+      size_t parentSize=parentVec.size();
+      if(parentSize>1){
+        VarDeclParentSizeG1Cnt++;
+        std::cout<<fmt::format("声明父亲尺寸>1次数:{},parentSize:{}\n", VarDeclParentSizeG1Cnt,parentSize);
+      }
+      return true;
     }
 };
 
