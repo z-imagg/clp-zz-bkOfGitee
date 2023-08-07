@@ -28,78 +28,38 @@ public:
 
     }
 
-    virtual bool TraverseSwitchStmt(SwitchStmt *swtStmt){
-      SourceManager &SM = CI.getSourceManager();
+    template<typename NodeTp>
+    void collectParentS( Stmt* stmt,std::vector<std::tuple<ASTNodeKind,const NodeTp*>> & parentVec){
+      ASTContext &ctx = CI.getASTContext();
+      auto parents = ctx.getParents(*stmt);
 
-      SwitchCase *caseList = swtStmt->getSwitchCaseList();
-      LangOptions &LO = CI.getLangOpts();
+//      /*size_t */ parentSize = parents.size();
 
-      std::vector<SwitchCase*> caseVec;
-      for (SwitchCase* switchCase = caseList; switchCase; switchCase = switchCase->getNextSwitchCase()) {
-        if(Util::LocIsInMacro(switchCase->getBeginLoc(),SM)){//如果此case是宏展开后产物，则跳过
-          continue;
-        }
-        caseVec.push_back(switchCase);
+//      std::vector<const Stmt*> parentVec;
+      for (const auto& parent : parents) {
+        auto stmtParent = parent.get<NodeTp>();
+        auto parentNodeKind=parent.getNodeKind();
+        parentVec.push_back(std::make_tuple(parentNodeKind,stmtParent));
       }
+    }
 
-      std::sort(caseVec.begin(), caseVec.end(), [](clang::SwitchCase* lhs, clang::SwitchCase* rhs) {
-          return lhs->getBeginLoc() < rhs->getBeginLoc();
-      });
-
-
-      size_t caseCnt = caseVec.size();
-      for(int k=0; k < caseCnt; k++) {
-        SwitchCase *sCaseK = caseVec[k];
-        Stmt *subStmt = sCaseK->getSubStmt();
-        const Stmt::child_range &child = sCaseK->children();
-        size_t childSize = std::distance(child.begin(), child.end());
-        
-        SourceLocation beginLoc;
-        SourceLocation endLoc;
-        beginLoc = sCaseK->getColonLoc();
-        if(k<caseCnt-1){
-          endLoc=caseVec[k+1]->getBeginLoc();
-        }else{
-          endLoc=swtStmt->getEndLoc();
-        }
-
-        if ( isa<CaseStmt>(*sCaseK)) {
-          CaseStmt *caseK = dyn_cast<CaseStmt>(sCaseK);
-
-        }else if ( isa<DefaultStmt>(*sCaseK)) {
-          DefaultStmt *defaultK = dyn_cast<DefaultStmt>(sCaseK);
-        }
+    bool VisitStmt(clang::Stmt *stmt) {
+      ASTContext &Ctx = CI.getASTContext();
+      std::vector<std::tuple<ASTNodeKind,const Stmt*>>  parentVec;
+      collectParentS<Stmt>(stmt,parentVec);
+      size_t parentSize=parentVec.size();
+    }
 
 
-        SourceRange BE = SourceRange(beginLoc, endLoc);
-        RangeHasMacroAstVst rv(CI,BE);
-//        std::string rvAdrr=fmt::format("{:x}",reinterpret_cast<uintptr_t>(&rv));
-//        std::cout<< rvAdrr <<":开始case" << k <<  std::endl;
-//        Util::printSourceRangeSimple(CI,"zzz","",SourceRange(beginLoc,endLoc),true);
-//        Util::printStmt(CI.getASTContext(),CI,"subS","",subStmt, true);
-        rv.TraverseStmt(swtStmt);
-//        std::cout<< rvAdrr << ":结束case" << k << ",hasMacro:" << rv.hasMacro <<  "\n\n";
+    bool VisitExpr(clang::Expr *expr) {
 
-        if(
-    //如果此case内有宏，则不处理
-    rv.hasMacro ||
-    //如果此case内无子语句，则不处理
-    rv.caseKSubStmtCnt==0 ||
-    //如果此case有子语句且是变量声明语句，则不处理。
-    //   理由是，caseK中声明的变量可能在caseJ中使用，若caseK被花括号包裹，则caseJ无法使用该变量。
-    rv.VarDeclDirectlyInCaseKCnt > 0 ||
-    //预处理回调已经收集了#include、#define ，这里判断case起止范围内 有无#i、#d，若有 则不处理该case
-     CollectIncMacro_PPCb::hasInclusionDirective(SM, BE) || CollectIncMacro_PPCb::hasMacroDefined(SM, BE)
-        ){
-//          Util::printSourceRangeSimple(CI,fmt::format("忽略case{}",k),"",BE,true);
-          continue;
-        }
+    }
 
-        //否则处理此case
-        Util::printSourceRangeSimple(CI,fmt::format("处理case{}",k),"",BE,true);
-      }
+    bool VisitVarDecl(VarDecl* varDecl){
+      ASTContext &ctx = CI.getASTContext();
+      auto parents=ctx.getParents(*varDecl);
 
-      return true;
+
     }
 };
 
