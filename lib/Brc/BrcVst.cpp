@@ -38,9 +38,9 @@ bool BrcVst::VisitStmt(clang::Stmt *stmt) {
 //      parentI表示第i个父亲节点
       const Stmt* parentI=std::get<2>(parentVec[i]);
       if(parentI){
-        Util::printStmt(ctx,CI,fmt::format("发现父数大于1的节点_第{}个父亲，是语句",i),"",parentI,false);
+        Util::printStmt(ctx,CI,fmt::format("发现父数大于1的节点_第{}个父亲，是语句",i),"",parentI,true);
       }else{
-        Util::printSourceRangeSimple(CI,fmt::format("发现父数大于1的节点_第{}个父亲，非语句",i),"",parentISourceRange, false);
+        Util::printSourceRangeSimple(CI,fmt::format("发现父数大于1的节点_第{}个父亲，非语句",i),"",parentISourceRange, true);
       }
     }
   }
