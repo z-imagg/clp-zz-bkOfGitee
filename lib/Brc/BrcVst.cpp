@@ -29,7 +29,7 @@ bool BrcVst::VisitStmt(clang::Stmt *stmt) {
   Util::collectParentS<Stmt>(parents,parentVec);
   size_t parentSize=parentVec.size();
   if(parentSize>1){
-    Util::printStmt(ctx,CI,"发现父数大于1的节点","本语句",stmt,true);
+    Util::printStmt(ctx,CI,"发现父数大于1的节点","本语句",stmt,false);
     for(int i =0; i < parentSize; i++){
 //      parentINodeKind表示第i个父亲节点的ASTNodeKind
       ASTNodeKind parentINodeKind=std::get<0>(parentVec[i]);
@@ -38,7 +38,7 @@ bool BrcVst::VisitStmt(clang::Stmt *stmt) {
 //      parentI表示第i个父亲节点
       const Stmt* parentI=std::get<2>(parentVec[i]);
       if(parentI){
-        Util::printStmt(ctx,CI,"发现父数大于1的节点",fmt::format("其父亲{}:",i),parentI,true);
+        Util::printStmt(ctx,CI,"发现父数大于1的节点",fmt::format("其父亲{}:",i),parentI,false);
       }else{
         const std::string &parentISourceRangeText = parentISourceRange.printToString(SM);
         std::string parentINodeKindStr=parentINodeKind.asStringRef().str();
