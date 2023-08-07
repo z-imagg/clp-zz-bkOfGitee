@@ -84,6 +84,9 @@ public:
     rv.hasMacro ||
     //如果此case内无子语句，则不处理
     rv.caseKSubStmtCnt==0 ||
+    //如果此case有子语句且是变量声明语句，则不处理。
+    //   理由是，caseK中声明的变量可能在caseJ中使用，若caseK被花括号包裹，则caseJ无法使用该变量。
+    rv.caseKVarDeclStmtCnt>0 ||
     //预处理回调已经收集了#include、#define ，这里判断case起止范围内 有无#i、#d，若有 则不处理该case
      CollectIncMacro_PPCb::hasInclusionDirective(SM, BE) || CollectIncMacro_PPCb::hasMacroDefined(SM, BE)
         ){

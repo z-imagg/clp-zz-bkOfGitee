@@ -30,13 +30,16 @@ public:
     bool hasMacro;
     //caseK的子语句个数
     int caseKSubStmtCnt;
+    //caseK的变量声明语句个数
+    int caseKVarDeclStmtCnt;
 
     explicit RangeHasMacroAstVst(CompilerInstance &_CI , SourceRange _sourceRange )
             :
             CI(_CI),
             caseKSrcRange(_sourceRange),
             hasMacro(false),
-            caseKSubStmtCnt(0)
+            caseKSubStmtCnt(0),
+            caseKVarDeclStmtCnt(0)
     {
 
     }

@@ -6,7 +6,7 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
 
   SourceManager &SM = CI.getSourceManager();
 
-  //region 若 当前stmt 是 caseK的子语句， 则累加子语句个数， 否则直接返回。
+  //region 若 当前stmt 是 caseK的子语句， 则累加子语句个数， 否则直接返回。若是子语句且是变量声明语句，则累加变量声明语句个数。
   // 通过 起至范围 包含，判定  当前语句stmt 是否 caseK的子语句
   // 如果遍历到的语句stmt的起至范围 不完全 含在 caseK起至范围内 ， 即不是 caseK的子语句 ，则 不处理，直接返回。
   // 这种情况可能是拿到了一个更大的非终结符号。
@@ -20,11 +20,17 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     //    否则只记录了第一个 在caseK范围内的语句,后续的语句都没记录，显然计数不对。
     //若 当前stmt 是 caseK的子语句， 则累加子语句个数
     caseKSubStmtCnt++;
+
+    //若当前语句是变量声明语句，则累加变量声明语句个数
+    if(stmt->getStmtClass()==Stmt::StmtClass::DeclStmtClass){
+      caseKVarDeclStmtCnt++;
+    }
+
   }
   //endregion
 
 
-//  Util::printStmt(CI.getASTContext(),CI,"caseK的子语句","",stmt,true);
+  Util::printStmt(CI.getASTContext(),CI,"caseK的子语句","",stmt,true);
 
   //到此处， 语句stmt 一定是 caseK的子语句
 
