@@ -37,7 +37,7 @@ public:
       }
       for(int q=0; q<45; q++)
         L--;
-      double doubleMe;//doubleMe的parent0NodeKind:CompoundStmt，不知道啥意思。 即使没有上面的for(...q...)结果也一样.
+      double doubleMe;//doubleMe的parent0NodeKind:CompoundStmt， doubleMe的parent0的parent0是switch, 很明显了：直接在'case'下声明的变量属于switch，不属于任何case。而直接在'case{'下声明的变量才属于case
       PI=3.14;
       return (char*)0;
       case 5:{
