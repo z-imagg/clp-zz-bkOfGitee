@@ -29,7 +29,7 @@ bool BrcVst::VisitStmt(clang::Stmt *stmt) {
   Util::collectParentS<Stmt>(parents,parentVec);
   size_t parentSize=parentVec.size();
   if(parentSize>1){
-    Util::printStmt(ctx,CI,"发现父数大于1的节点","本语句",stmt,false);
+    Util::printStmt(ctx,CI,"发现父数大于1的节点_本语句","",stmt,true);
     for(int i =0; i < parentSize; i++){
 //      parentINodeKind表示第i个父亲节点的ASTNodeKind
       ASTNodeKind parentINodeKind=std::get<0>(parentVec[i]);
@@ -38,12 +38,9 @@ bool BrcVst::VisitStmt(clang::Stmt *stmt) {
 //      parentI表示第i个父亲节点
       const Stmt* parentI=std::get<2>(parentVec[i]);
       if(parentI){
-        Util::printStmt(ctx,CI,"发现父数大于1的节点",fmt::format("其父亲{}:",i),parentI,false);
+        Util::printStmt(ctx,CI,fmt::format("发现父数大于1的节点_第{}个父亲，是语句",i),"",parentI,false);
       }else{
-        const std::string &parentISourceRangeText = parentISourceRange.printToString(SM);
-        std::string parentINodeKindStr=parentINodeKind.asStringRef().str();
-        std::string errMsg=fmt::format("第{}个父亲节点 ,位置范围 {},  并不是 Stmt类型，其ASTNodeKind是{}, 解决:把类型Stmt改为{}?\n",i,parentISourceRangeText,parentINodeKindStr,parentINodeKindStr);
-        std::cout<<errMsg;
+        Util::printSourceRangeSimple(CI,fmt::format("发现父数大于1的节点_第{}个父亲，非语句",i),"",parentISourceRange, false);
       }
     }
   }
