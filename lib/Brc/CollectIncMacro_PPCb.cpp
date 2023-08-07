@@ -34,7 +34,7 @@ using namespace clang;
 
       //region 收集 #include指令 位置
       InclusionDirectiveLocSet.insert(LocId::buildFor(filePath,HashLoc,SM));
-      std::cout << "Include指令:" << FileName.str() << std::endl;//开发打印日志
+//      std::cout << "Include指令:" << FileName.str() << std::endl;//开发打印日志
       //endregion
     }
 
