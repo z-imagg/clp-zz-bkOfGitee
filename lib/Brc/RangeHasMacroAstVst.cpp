@@ -15,12 +15,14 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   SourceManager &SM = CI.getSourceManager();
   ASTContext &Ctx = CI.getASTContext();
 
+
   //region 若 当前stmt 是 caseK的子语句， 则累加子语句个数， 否则直接返回。若是子语句且是变量声明语句，则累加变量声明语句个数。
   // 通过 起至范围 包含，判定  当前语句stmt 是否 caseK的子语句
   // 如果遍历到的语句stmt的起至范围 不完全 含在 caseK起至范围内 ， 即不是 caseK的子语句 ，则 不处理，直接返回。
   // 这种情况可能是拿到了一个更大的非终结符号。
   //注意: SourceRange::fullyContains 结果是错误的, 才有自制方法Util::fullContains
-  bool inCaseKRange =  Util::fullContains(SM, caseKSrcRange, stmt->getSourceRange());
+
+  bool inCaseKRange =  Util::fullContains(SM, caseKSrcRange, stmtR);
   if(inCaseKRange) {
     //若 当前stmt 是 caseK的子语句
     //此if块内代码，是针对caseK中每个子语句都会执行的。
@@ -30,21 +32,20 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
 
     //若当前语句是直接写在'case'内的变量声明   ，则累其语句个数
     if (stmt->getStmtClass() == Stmt::StmtClass::DeclStmtClass) {
-      const Stmt* parentStmt;
-      Stmt::StmtClass parentStmtCls;
-      const Stmt* pParentStmt;
-      Stmt::StmtClass pParentStmtCls;
-      bool only1P=Util::only1ParentStmtClass(Ctx,stmt,parentStmt,parentStmtCls);
+      DynTypedNode parent;  ASTNodeKind parentNK;
+      DynTypedNode pParent;  ASTNodeKind pParentNK;
+      bool only1P= Util::only1ParentNodeKind(CI, Ctx, stmt, parent, parentNK);
+      bool parentNKIsCompound=ASTNodeKind::getFromNodeKind<CompoundStmt>().isSame(parentNK);
       bool belongSwitchDirectlyInCaseK=
           //直接写在'case'内, 但是其父亲是switch块的
           only1P
-           && parentStmtCls==Stmt::StmtClass::CompoundStmtClass
-           && Util::only1ParentStmtClass(Ctx,parentStmt,pParentStmt,pParentStmtCls)
-           && pParentStmtCls==Stmt::StmtClass::SwitchStmtClass
+          && parentNKIsCompound//父是'switch {}'中的 '{}'
+           && Util::only1ParentNodeKind(CI, Ctx, parent.get<Stmt>(), pParent, pParentNK)
+          && ASTNodeKind::getFromNodeKind<SwitchStmt>().isSame(pParentNK)    //父父是 'switch'
            ;
       bool normalDirectlyInCase=
           //直接写在'case'内，其父亲是case语句的
-          only1P && parentStmtCls == Stmt::StmtClass::CaseStmtClass;
+          only1P && parentNKIsCompound;
       if(
           //直接写在'case'内, 但是其父亲是switch块的
           belongSwitchDirectlyInCaseK
