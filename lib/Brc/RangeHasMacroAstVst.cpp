@@ -12,12 +12,10 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   // 这种情况可能是拿到了一个更大的非终结符号。
   //注意: SourceRange::fullyContains 结果是错误的, 才有自制方法Util::fullContains
   bool inCaseKRange =  Util::fullContains(SM, caseKSrcRange, stmt->getSourceRange());
-  if(!inCaseKRange){
-    //若 当前stmt 不是 caseK的子语句， 则直接返回。
-    return true;
-  }else{
-    //注意此计数器累加得放在此else中，计数才是正确的。
-    //    否则只记录了第一个 在caseK范围内的语句,后续的语句都没记录，显然计数不对。
+  if(inCaseKRange){
+    //若 当前stmt 是 caseK的子语句
+    //此if块内代码，是针对caseK中每个子语句都会执行的。
+
     //若 当前stmt 是 caseK的子语句， 则累加子语句个数
     caseKSubStmtCnt++;
 
@@ -25,7 +23,9 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     if(stmt->getStmtClass()==Stmt::StmtClass::DeclStmtClass){
       caseKVarDeclStmtCnt++;
     }
-
+  }else{
+    //若 当前stmt 不是 caseK的子语句， 则直接返回。
+    return true;
   }
   //endregion
 
