@@ -399,11 +399,21 @@ SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结�
    */
 
 
-  //region  将递归链条正确的接好:  对 当前节点ifStmt的下一层节点child:{then,else}  调用顶层方法TraverseStmt(child)
+  //region  将递归链条正确的粘接好:  对 当前节点switchStmt的下一层节点child:{body}  调用顶层方法TraverseStmt(child)
   for(int k=0; k < caseCnt; k++) {
-    SwitchCase *scK = caseVec[k];
-    TraverseStmt(scK);
+    SwitchCase *caseK = caseVec[k];
+// 由于 case的子语句 是伪命题，
+//  即 case的子语句 理论上 包括两部分 ：
+//    部分1: caseK.getSubStmt() 、
+//    部分2: 书写在caseK下但直接属于switch的语句
+// 导致 遍历caseK会漏掉 部分2，
+//    TraverseStmt(caseK);
+// 所以 为了不遗漏，得要遍历 switch体,
+//   注意 不要遍历switch, 否则 可能死循环，详细原因如下：
+//     当前方法 即TraverseSwitchStmt(switchJ)  , 内 再出现TraverseSwitchStmt(switchJ) ， 显然是无条件环 即 死循环。
   }
+  //遍历 switch体
+  TraverseStmt(switchStmt->getBody());
   //endregion
 
 
