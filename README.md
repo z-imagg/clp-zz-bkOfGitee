@@ -92,3 +92,58 @@ sum=66,diff=24,div=2,mod=3
 > 而该二进制文件 hello.app 正常运行
 >
 > 由此说明 ，花括号加的位置基本正确。
+
+
+#统计
+```bash
+find /pubx/llvm-project/ -not -path '*/.git/*' -type f  \( -name "*.cpp" -or -name "*.c"  \)   | xargs -I% grep -Hn    BrcXxx    % > /pubx/BrcXxx.log
+
+#把上一条bash命令抽成bash函数
+findBrcCommentThenSave() {
+  set -x #bash启用显示执行的命令
+  keyword=$1
+  find /pubx/llvm-project/ -not -path '*/.git/*' -type f \( -name "*.cpp" -or -name "*.c" \) | xargs -I% grep -Hn "$keyword" % |tee  /pubx/"${keyword}.log"
+  set +x #bash禁止显示执行的命令
+}
+```
+
+```bash
+findBrcCommentThenSave BrcThen
+findBrcCommentThenSave BrcSw
+findBrcCommentThenSave BrcElse
+findBrcCommentThenSave BrcFor
+findBrcCommentThenSave BrcForRange
+findBrcCommentThenSave BrcWhl
+findBrcCommentThenSave BrcSw
+```
+
+> 各种语句分别加了多少花括号
+```bash
+ls -S /pubx/Brc* | xargs -I% sh -c  'wc -l %; ' 
+
+'''
+93201 /pubx/BrcThen.log
+29832 /pubx/BrcSw.log
+5539 /pubx/BrcElse.log
+3603 /pubx/BrcFor.log
+2187 /pubx/BrcForRange.log
+663 /pubx/BrcWhl.log
+'''
+```
+
+> 各种语句加了花括号的，有多少含有return
+>> 这些单语句return，由于没有被花括号包裹，才没有被t_clock_tick插入栈变量释放语句。
+>> 而tick插件栈变量分配、释放不平衡，具体为  栈变量共24万、最终残留2万没释放。  此不平衡是 由于 这些大约5万个单return语句没释放栈变量 导致的吗？
+>> 如下所示，被BrcPlugin插入花括号的语句中 大约5万个含有return. 
+```bash
+ls -S /pubx/Brc* | xargs -I% sh -c  'echo -n "%    "; grep return % |wc -l '
+
+'''
+/pubx/BrcThen.log    50438
+/pubx/BrcSw.log    2681
+/pubx/BrcElse.log    815
+/pubx/BrcFor.log    6
+/pubx/BrcForRange.log    4
+/pubx/BrcWhl.log    2
+'''
+```
