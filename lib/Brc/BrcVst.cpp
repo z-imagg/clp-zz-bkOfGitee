@@ -54,11 +54,14 @@ void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const 
   //endregion
 
   //region 插入左右花括号
+
+  //构造人类可读开始位置、结束位置、插入者 注释文本
+  std::string hmTxtCmnt_whoInsrt_BE;
+  Util::BE_Loc_HumanText(SM, B, E, whoInserted, hmTxtCmnt_whoInsrt_BE);
+
   mRewriter_ptr->InsertTextAfterToken(B,"{");
 
-  std::string comment;
-  Util::wrapByComment(whoInserted,comment);
-  std::string RBraceStr("}"+comment);
+  std::string RBraceStr("}"+hmTxtCmnt_whoInsrt_BE);
 
   //记录已插入左花括号的节点ID们以防重： 即使重复遍历了 但不会重复插入
   LBraceLocIdSet.insert(LBraceLocId);
@@ -76,10 +79,6 @@ void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const 
 void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   SourceLocation beginLoc = stmt->getBeginLoc();
   SourceLocation endLoc = stmt->getEndLoc();
-
-  const PresumedLoc &beginLoc_pr = SM.getPresumedLoc(beginLoc);
-  std::string beginLoc_pr_str;
-  Util::PresumedLocToString(beginLoc_pr,beginLoc_pr_str);
 
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
 
@@ -115,20 +114,20 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
 
   //region 插入左右花括号
 
+  //找结尾分号
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
-  const PresumedLoc &endSemicolonLoc_pr = SM.getPresumedLoc(endSemicolonLoc);
-  std::string endSemicolonLoc_pr_str;
-  Util::PresumedLocToString(endSemicolonLoc_pr,endSemicolonLoc_pr_str);
-  std::string whoInserted_BE_Loc=fmt::format("{}，开始位置【{}】，结束位置【{}】",whoInserted,beginLoc_pr_str,endSemicolonLoc_pr_str);
+
+  //构造人类可读开始位置、结束位置、插入者 注释文本
+  std::string hmTxtCmnt_whoInsrt_BE;
+  Util::BE_Loc_HumanText(SM, beginLoc, endSemicolonLoc, whoInserted, hmTxtCmnt_whoInsrt_BE);
+
   if(endIsSemicolon){
     //只有找到分号位置，才可以插入左右花括号。
     //   不能造成插入了左花括号，却没找到分号，然后没法插入右花括号，也没法撤销左花括号，而陷入语法错误。
     mRewriter_ptr->InsertTextBefore(beginLoc,"{");
 
-    std::string comment;
-    Util::wrapByComment(whoInserted_BE_Loc,comment);
-    std::string RBraceStr("}"+comment);
+    std::string RBraceStr("}"+hmTxtCmnt_whoInsrt_BE);
 
     mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,RBraceStr);
 
