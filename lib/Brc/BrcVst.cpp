@@ -76,7 +76,11 @@ void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const 
 void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   SourceLocation beginLoc = stmt->getBeginLoc();
   SourceLocation endLoc = stmt->getEndLoc();
-  
+
+  const PresumedLoc &beginLoc_pr = SM.getPresumedLoc(beginLoc);
+  std::string beginLoc_pr_str;
+  Util::PresumedLocToString(beginLoc_pr,beginLoc_pr_str);
+
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
 
   if(
@@ -113,13 +117,17 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
 
   bool endIsSemicolon=false;
   SourceLocation endSemicolonLoc = Util::getStmtEndSemicolonLocation(stmt,SM,endIsSemicolon);
+  const PresumedLoc &endSemicolonLoc_pr = SM.getPresumedLoc(endSemicolonLoc);
+  std::string endSemicolonLoc_pr_str;
+  Util::PresumedLocToString(endSemicolonLoc_pr,endSemicolonLoc_pr_str);
+  std::string whoInserted_BE_Loc=fmt::format("{}，开始位置【{}】，结束位置【{}】",whoInserted,beginLoc_pr_str,endSemicolonLoc_pr_str);
   if(endIsSemicolon){
     //只有找到分号位置，才可以插入左右花括号。
     //   不能造成插入了左花括号，却没找到分号，然后没法插入右花括号，也没法撤销左花括号，而陷入语法错误。
-    mRewriter_ptr->InsertTextBefore(stmt->getBeginLoc(),"{");
+    mRewriter_ptr->InsertTextBefore(beginLoc,"{");
 
     std::string comment;
-    Util::wrapByComment(whoInserted,comment);
+    Util::wrapByComment(whoInserted_BE_Loc,comment);
     std::string RBraceStr("}"+comment);
 
     mRewriter_ptr->InsertTextAfterToken(endSemicolonLoc,RBraceStr);
