@@ -42,8 +42,10 @@ public:
 
     virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
 
+    //forEach和for很相似
     virtual bool TraverseForStmt(ForStmt *forStmt);
-
+    virtual bool TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt);
+    
     virtual bool TraverseSwitchStmt(SwitchStmt *switchStmt);
 
 public:

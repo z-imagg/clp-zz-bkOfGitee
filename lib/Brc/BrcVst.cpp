@@ -224,6 +224,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   return true;
 }
 
+//forEach和for很相似
 bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 若NULL，直接返回
   if(!forStmt){
@@ -262,6 +263,44 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   return false;
 }
 
+//forEach和for很相似
+bool BrcVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
+  //region 若NULL，直接返回
+  if(!forRangeStmt){
+    return false;
+  }
+  //endregion
+
+  //region 跳过非MainFile
+  if( !Util::LocFileIDEqMainFileID(SM, forRangeStmt->getBeginLoc()) ){
+//    Util::printStmt(CI,"查看","暂时不对间接文件插入时钟语句",stmt, true); //开发用打印
+    return false;
+  }
+  //endregion
+
+  //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
+  Stmt *bodyStmt = forRangeStmt->getBody();
+  if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcForRange");
+  }
+  //endregion
+
+  //region  将递归链条正确的接好:  对 当前节点forStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  if(bodyStmt){
+    Stmt::StmtClass bodyStmtClass = bodyStmt->getStmtClass();
+//    if(bodyStmtClass==Stmt::StmtClass::CompoundStmtClass){
+//是否向下层遍历 与 本节点forStmt的直接子结点 是否为 块语句 无关，因为 forStmt的深层子结点 可能是块语句
+//	即使forStmt的直接子节点不是块语句 但不影响 forStmt的深层子结点 可能是块语句
+    TraverseStmt(bodyStmt);
+//    }
+  }
+  //endregion
+
+  //继续遍历剩余源码
+  //  TraverseXxxStmt末尾返回true  表示继续遍历剩余源码
+  //  TraverseXxxStmt末尾返回false 表示从此结束遍历，遍历剩余不再遍历
+  return false;
+}
 
 bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   
