@@ -64,7 +64,7 @@ cmake -S $REPO_HOME -B $BUILD_HOME  -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_FLA
 ( cd $BUILD_HOME && make -j8 ;) && \
 ls -lh $BUILD_HOME/lib/lib*.so ;}
 
-$BUILD_HOME/bin/VarAlone $REPO_HOME/funcIdBase/test_main.cpp  && echo "TEST_OK"
+$BUILD_HOME/bin/VarAlone $REPO_HOME/test_in/test_main.cpp  && echo "TEST_OK"
 
 ## 构建Release版本且有带局部变量名字的调试信息 以定位问题
 #> GCC  调试信息不同级别选项 ：
