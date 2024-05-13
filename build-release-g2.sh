@@ -1,4 +1,4 @@
-SRC_HOME=/pubx/clang-brc
+SRC_HOME=/pubx/clang-var
 BUILD_HOME=$SRC_HOME/build/
 mkdir -p $BUILD_HOME
 rm -fr $BUILD_HOME/*
@@ -6,7 +6,7 @@ cd $BUILD_HOME
 
 #构建的Release版本 :
 # LIB_Var_CXX_FLAGS="  "
-# -rwxrwxr-x 1 zz zz 874K  7月 24 13:13 /pubx/clang-brc/build/lib/libVarPlugin.so
+# -rwxrwxr-x 1 zz zz 874K  7月 24 13:13 /pubx/clang-var/build/lib/libVarPlugin.so
 
 #构建的Release版本,带调试信息(变量名称和行号),  当出现问题方便排查:
 #LIB_Var_CXX_FLAGS=" -fno-omit-frame-pointer -Wall   -O0    -g1"
@@ -14,7 +14,7 @@ cd $BUILD_HOME
 
 #构建的Release版本,带调试信息(变量名称和行号、局部变量),  当出现问题方便排查:
  LIB_Var_CXX_FLAGS=" -fno-omit-frame-pointer -Wall   -O0    -g2"
-# -rwxrwxr-x 1 zz zz 27M  7月 24 15:03 /pubx/clang-brc/build/lib/libVarPlugin.so
+# -rwxrwxr-x 1 zz zz 27M  7月 24 15:03 /pubx/clang-var/build/lib/libVarPlugin.so
 
 #-S .. -B .
 cmake -DCMAKE_BUILD_TYPE=Debug   -DCMAKE_CXX_FLAGS="$LIB_Var_CXX_FLAGS"   -DCMAKE_C_FLAGS="$LIB_Var_CXX_FLAGS" -S $SRC_HOME  -B $BUILD_HOME

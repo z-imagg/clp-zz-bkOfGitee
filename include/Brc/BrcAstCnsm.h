@@ -36,8 +36,8 @@ public:
             CI(_CI),
             Ctx(*_astContext),
             SM(_SM),
-            brcOk(false),
-            brcVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
+            varOk(false),
+            varVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
             {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
@@ -48,8 +48,8 @@ public:
     void HandleTranslationUnit(ASTContext &Ctx) override;
 
     //region 判断是否已经处理过了
-    static bool isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,    bool& _brcOk, std::vector<Decl*> declVec);
-    static void __visitRawComment(CompilerInstance& CI,SourceManager&SM,   const RawComment *C, bool & _brcOk) ;
+    static bool isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,    bool& _varOk, std::vector<Decl*> declVec);
+    static void __visitRawComment(CompilerInstance& CI,SourceManager&SM,   const RawComment *C, bool & _varOk) ;
     //endregion
 
 public:
@@ -63,13 +63,13 @@ public:
 
     //region 判断是否已经处理过了
     //花括号是否已插入
-    bool brcOk;
+    bool varOk;
     //特殊注释 标记 是否已插入花括号
     static std::string VarOkFlagText;
     //endregion
 
     //region 进行处理：插入花括号
-    VarVst brcVst;
+    VarVst varVst;
     //endregion
 };
 
