@@ -59,7 +59,7 @@ LIB_Plg_CXX_FLAGS=" -fno-omit-frame-pointer -Wall   -O0    -g1"
 # LIB_Plg_CXX_FLAGS=" -fno-omit-frame-pointer -Wall   -O0    -g2"
 # -rwxrwxr-x 1 zz zz 27M  7月 24 15:03 /bal/clang-add-funcIdAsm/build/lib/libPlg.so
 
-cmake -S $REPO_HOME -B $BUILD_HOME  -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_FLAGS="$LIB_Plg_CXX_FLAGS"   -DCMAKE_C_FLAGS="$LIB_Plg_CXX_FLAGS"  ..  && \
+cmake -S $REPO_HOME -B $BUILD_HOME  -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_FLAGS="$LIB_Plg_CXX_FLAGS"   -DCMAKE_C_FLAGS="$LIB_Plg_CXX_FLAGS"    && \
 #-DCMAKE_VERBOSE_MAKEFILE=True
 ( cd $BUILD_HOME && make -j8 ;) && \
 ls -lh $BUILD_HOME/lib/lib*.so ;}
