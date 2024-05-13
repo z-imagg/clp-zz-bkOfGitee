@@ -13,8 +13,8 @@
 #include <iostream>
 
 #include "base/Util.h"
-#include "Brc/RangeHasMacroAstVst.h"
-#include "Brc/CollectIncMacro_PPCb.h"
+#include "Var/RangeHasMacroAstVst.h"
+#include "Var/CollectIncMacro_PPCb.h"
 
 
 using namespace clang;
@@ -132,7 +132,7 @@ int main() {
 //  PP.EnterSourceFile()
 
   //region 添加输入源码文件
-  FrontendInputFile srcFile = clang::FrontendInputFile("/pubx/clang-brc/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX));
+  FrontendInputFile srcFile = clang::FrontendInputFile("/pubx/clang-var/test_in/test_main.cpp", clang::InputKind(clang::Language::CXX));
   CI.getFrontendOpts().Inputs.push_back(srcFile);
   //endregion
 
