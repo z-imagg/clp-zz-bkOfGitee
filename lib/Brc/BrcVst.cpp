@@ -428,14 +428,14 @@ bool PlgVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
 
   /**输出
-case 0:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:23:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:30:7
-case 1:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:30:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:34:7
-case 2:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:34:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:38:7
-case 3:,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:38:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:40:7
-case 4:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:40:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:47:7
-case 6:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:47:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:52:7
-case 7:,是否块:1,case开始: /pubx/clang-brc/test_in/test_main.cpp:52:14, case结束: /pubx/clang-brc/test_in/test_main.cpp:56:7
-default :,是否块:0,case开始: /pubx/clang-brc/test_in/test_main.cpp:56:15, case结束: /pubx/clang-brc/test_in/test_main.cpp:59:5
+case 0:,是否块:1,case开始: /pubx/clang-plg/test_in/test_main.cpp:23:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:30:7
+case 1:,是否块:0,case开始: /pubx/clang-plg/test_in/test_main.cpp:30:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:34:7
+case 2:,是否块:0,case开始: /pubx/clang-plg/test_in/test_main.cpp:34:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:38:7
+case 3:,是否块:0,case开始: /pubx/clang-plg/test_in/test_main.cpp:38:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:40:7
+case 4:,是否块:1,case开始: /pubx/clang-plg/test_in/test_main.cpp:40:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:47:7
+case 6:,是否块:1,case开始: /pubx/clang-plg/test_in/test_main.cpp:47:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:52:7
+case 7:,是否块:1,case开始: /pubx/clang-plg/test_in/test_main.cpp:52:14, case结束: /pubx/clang-plg/test_in/test_main.cpp:56:7
+default :,是否块:0,case开始: /pubx/clang-plg/test_in/test_main.cpp:56:15, case结束: /pubx/clang-plg/test_in/test_main.cpp:59:5
 
 
 case语句列表 按 开始位置 升序 排序

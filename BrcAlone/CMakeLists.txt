@@ -1,10 +1,10 @@
 
 
 MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-#CMAKE_SOURCE_DIR: /pubx/clang-brc/
+#CMAKE_SOURCE_DIR: /pubx/clang-plg/
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-#CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-brc/tools
+#CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-plg/tools
 
 set(PlgAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ActMain.cpp"

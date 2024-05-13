@@ -49,7 +49,7 @@ sudo docker exec -it ubuntu2204_clang15Compile bash
 ```bash
 cd /pubx/
 
-git clone https://gitcode.net/pubz/llvm-project/-/commits/brc-dev-no_tick
+git clone https://gitcode.net/pubz/llvm-project/-/commits/plg-dev-no_tick
 #即 https://gitcode.net/pubz/llvm-project/-/commit/bee38a325d0957a28b4d06cb4be3c251d143cdf0
 #克隆仓库llvm-project后目录结构如下: /pubx/llvm-project/.git/config
 ```
@@ -57,15 +57,15 @@ git clone https://gitcode.net/pubz/llvm-project/-/commits/brc-dev-no_tick
 - 步骤1: 对每个被直接编译的源文件中单语句加花括号
 >  对llvm-project的每个源文件的编译过程应用插件libPlgPlugin.so 以 对 该源文件中单语句加花括号
 ```bash
-source /pubx/llvm-project/doc_clang15_build/brc_build1_plugin.sh
+source /pubx/llvm-project/doc_clang15_build/plg_build1_plugin.sh
 ```
-> [brc_build1_plugin.sh](https://gitcode.net/pubz/llvm-project/-/blob/brc-dev-no_tick/doc_clang15_build/brc_build1_plugin.sh)
+> [plg_build1_plugin.sh](https://gitcode.net/pubz/llvm-project/-/blob/plg-dev-no_tick/doc_clang15_build/plg_build1_plugin.sh)
 
 - 步骤2: 对加了花括号后的llvm-project再次做正常的普通编译
 ```bash
-source /pubx/llvm-project/doc_clang15_build/brc_build2_directly.sh
+source /pubx/llvm-project/doc_clang15_build/plg_build2_directly.sh
 ```
-> [brc_build2_directly.sh](https://gitcode.net/pubz/llvm-project/-/blob/brc-dev-no_tick/doc_clang15_build/brc_build2_directly.sh)
+> [plg_build2_directly.sh](https://gitcode.net/pubz/llvm-project/-/blob/plg-dev-no_tick/doc_clang15_build/plg_build2_directly.sh)
 
 - 步骤3: 验证
 ```cpp

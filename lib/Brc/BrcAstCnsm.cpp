@@ -13,7 +13,7 @@ reinterpret_cast<uintptr_t> (&CI ),
 reinterpret_cast<uintptr_t> (&(this->Ctx) ),
 reinterpret_cast<uintptr_t> (&Ctx ),
 reinterpret_cast<uintptr_t> (&SM ),
-reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
+reinterpret_cast<uintptr_t> ( (plgVst.mRewriter_ptr.get()) ) ) <<std::endl;
 //  ASTConsumer::HandleTranslationUnit(Ctx);
 
    TranslationUnitDecl *translationUnitDecl = Ctx.getTranslationUnitDecl();
@@ -57,7 +57,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //endregion
 
    //region 1.若本文件已处理，则直接返回。
-   if(PlgAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
+   if(PlgAstCnsm::isProcessed(CI,SM,Ctx,plgOk,declVec)){
      return ;
    }
    //endregion
@@ -71,20 +71,20 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
        continue;
      }
      //只处理MainFile中的声明
-     this->brcVst.TraverseDecl(D);
+     this->plgVst.TraverseDecl(D);
    }
    //endregion
 
    //region 3. 插入 已处理 注释标记 到主文件第一个声明前
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才插入 已处理 注释标记
-   if( !(brcVst.LBraceLocIdSet.empty()) ){
+   if( !(plgVst.LBraceLocIdSet.empty()) ){
    bool insertResult;
    //插入的注释语句不要带换行,这样不破坏原行号
    //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
-   const std::string brcOkFlagComment = fmt::format("/**{}*/", PlgOkFlagText);
+   const std::string plgOkFlagComment = fmt::format("/**{}*/", PlgOkFlagText);
    Decl* firstDeclInMainFile=Util::firstDeclInMainFile(SM,declVec);
    if(firstDeclInMainFile){
-     Util::insertCommentBeforeLoc(brcOkFlagComment, firstDeclInMainFile->getBeginLoc(),  brcVst.mRewriter_ptr, insertResult);
+     Util::insertCommentBeforeLoc(plgOkFlagComment, firstDeclInMainFile->getBeginLoc(),  plgVst.mRewriter_ptr, insertResult);
    }
    }
 
@@ -93,8 +93,8 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
 
    //region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
-   if( !(brcVst.LBraceLocIdSet.empty()) ){
-   brcVst.mRewriter_ptr->overwriteChangedFiles();
+   if( !(plgVst.LBraceLocIdSet.empty()) ){
+   plgVst.mRewriter_ptr->overwriteChangedFiles();
    DiagnosticsEngine &Diags = CI.getDiagnostics();
    std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    }
@@ -102,7 +102,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
  }
 
 //region 判断是否已经处理过了
-bool PlgAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _brcOk, std::vector<Decl*> declVec){
+bool PlgAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _plgOk, std::vector<Decl*> declVec){
   unsigned long declCnt = declVec.size();
    for(int i=0; i<declCnt; i++){
      Decl* D=declVec[i];
@@ -115,30 +115,30 @@ bool PlgAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
 //     Util::printDecl(Ctx,CI,"查看声明","",D,true);
      RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
      //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
-     PlgAstCnsm::__visitRawComment(CI,SM,  rc, _brcOk);
-     if(_brcOk){
+     PlgAstCnsm::__visitRawComment(CI,SM,  rc, _plgOk);
+     if(_plgOk){
        std::cout<<"已有标记(已插入花括号),不再处理"<<std::endl;
        return true;
      }
    }
    return false;
 }
-void PlgAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const RawComment *C, bool & _brcOk) {
+void PlgAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const RawComment *C, bool & _plgOk) {
   if(!C){
     return;
   }
   const SourceRange &sourceRange = C->getSourceRange();
 //  Util::printSourceRangeSimple(CI,"查看RawComment","",caseKSrcRange, true);
 
-  if(_brcOk){
+  if(_plgOk){
     return;
   }
 
   LangOptions &langOpts = CI.getLangOpts();
   std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
-//      brcOk= (sourceText==PlgOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
+//      plgOk= (sourceText==PlgOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
   std::string::size_type index = sourceText.find(PlgOkFlagText);
-  _brcOk= (index != std::string::npos);
+  _plgOk= (index != std::string::npos);
 
 }
 
