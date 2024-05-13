@@ -6,27 +6,27 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 #CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-brc/tools
 
-set(BrcAlone_SOURCES
+set(PlgAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ActMain.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../BrcAlone/BrcMain.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../PlgAlone/PlgMain.cpp"
 
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/RangeHasMacroAstVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/CollectIncMacro_PPCb.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/PlgVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/RangeHasMacroAstVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/CollectIncMacro_PPCb.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/PlgAstCnsm.cpp"
 )
 
     # Create a library corresponding to 'plugin'
     add_executable(
-        BrcAlone
-      ${BrcAlone_SOURCES}
+        PlgAlone
+      ${PlgAlone_SOURCES}
       )
 
     # Configure include directories for 'tool'
     target_include_directories(
-    BrcAlone
+    PlgAlone
       PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/include"
@@ -35,7 +35,7 @@ set(BrcAlone_SOURCES
 
     # Link in the required libraries
     target_link_libraries(
-    BrcAlone
+    PlgAlone
       "clangTooling"
    "${LIBFMT_STATIC}"  #/pubx/fmt/build/libfmt.a
     )

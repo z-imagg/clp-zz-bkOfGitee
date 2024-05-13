@@ -1,5 +1,5 @@
-#ifndef BrcVst_H
-#define BrcVst_H
+#ifndef PlgVst_H
+#define PlgVst_H
 
 
 #include <clang/Rewrite/Core/Rewriter.h>
@@ -18,12 +18,12 @@ using namespace clang;
 /**
  * 插入花括号Visitor
  */
-class BrcVst
-        : public RecursiveASTVisitor<BrcVst> {
+class PlgVst
+        : public RecursiveASTVisitor<PlgVst> {
 public:
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit BrcVst(CompilerInstance &CI, const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, SourceManager& SM, LangOptions &_langOptions)
+    explicit PlgVst(CompilerInstance &CI, const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, SourceManager& SM, LangOptions &_langOptions)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     : mRewriter_ptr(rewriter_ptr),
     Ctx(Ctx),

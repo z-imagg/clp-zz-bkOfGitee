@@ -2,31 +2,31 @@
 # ======================================================
 
 
-set(Brc_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstAct.cpp"
+set(Plg_SOURCES
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/PlgAstAct.cpp"
 
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/RangeHasMacroAstVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/CollectIncMacro_PPCb.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Brc/BrcAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/PlgVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/RangeHasMacroAstVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/CollectIncMacro_PPCb.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Plg/PlgAstCnsm.cpp"
 )
 
 
     # Create a library corresponding to 'plugin'
     add_library(
-            BrcPlugin
+            PlgPlugin
       SHARED
-      ${Brc_SOURCES}
+      ${Plg_SOURCES}
       )
 
-target_link_libraries(BrcPlugin
+target_link_libraries(PlgPlugin
         "${LIBFMT_STATIC}"   #/pubx/fmt/build/libfmt.a
         )
 
     # Configure include directories for 'plugin'
-    target_include_directories(BrcPlugin
+    target_include_directories(PlgPlugin
       PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/include"
