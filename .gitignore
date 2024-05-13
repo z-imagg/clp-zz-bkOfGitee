@@ -32,8 +32,7 @@
 *.app
 
 .idea
-*build*
-!build-*.sh
+build
 *.swp
 
 analyze_t_clock_tick/tick_data_home
@@ -41,3 +40,9 @@ analyze_t_clock_tick/tick_data_home
 .vscode/
 
 analyze_t_clock_tick/.ipynb_checkpoints/
+
+
+include/cpp_httplib
+
+include/nlohmann
+cmake-build-debug/

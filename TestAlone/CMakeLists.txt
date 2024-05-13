@@ -26,6 +26,7 @@ set(TestAlone_SOURCES
     TestAlone
       PRIVATE
     "${LIBFMT_INCLUDE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include"  # == /fridaAnlzAp/clang-var/include
     "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/include/"
     )
 

@@ -1,103 +1,63 @@
+#参考: http://giteaz:3000/anzc/clang-varBE/src/commit/cd31e1039a63444e42d78f2bf9b59eee3be45a95/CMakeLists.txt
+
 cmake_minimum_required(VERSION 3.13.4)
 
-set(LIBFMT_DIR "/pubx/fmt/")
-#set(LIBFMT_STATIC /pubx/fmt/include)
-set(LIBFMT_INCLUDE "${LIBFMT_DIR}/include/")
-#set(LIBFMT_STATIC /pubx/fmt/build/libfmt.a)
-set(LIBFMT_STATIC "${LIBFMT_DIR}/build/libfmt.a")
-
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include")
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/base_home/include/")
-
-if (NOT EXISTS "${LIBFMT_STATIC}")
-  MESSAGE(FATAL_ERROR "libfmt静态库${LIBFMT_STATIC} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
-endif()
-
-if (NOT EXISTS "${LIBFMT_INCLUDE}")
-  MESSAGE(FATAL_ERROR "libfmt头文件目录${LIBFMT_INCLUDE} 不存在，请参照 build-libfmt.sh 构建libfmt静态库")
-endif()
-
-#===============================================================================
-# 0. GET CLANG INSTALLATION DIR
-#修改默认编译器
-set(CT_Clang_INSTALL_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
+#Makefile繁琐模式
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CURSES_LIBRARY "/lib64/libncurses.so.6")
-set(CURSES_INCLUDE_PATH "/usr/include/")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
-#编译器还是使用自带的gcc, 否则 调试时 没有 libstdc++  的调试信息，导致std::string在gdb中不显示，参考：https://stackoverflow.com/questions/58356385/python-exception-class-gdb-error-there-is-no-member-named-m-dataplus-whe/58356946#58356946
-#   gdb显示std::string时报错: There is no member named _M_dataplus。 因此gdb不显示std::string的值.
-#set(CMAKE_C_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang")
-#set(CMAKE_CXX_COMPILER "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang++")
-set(LLVM_DIR "/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4")
-#set(xxx "")
 
-project(clang-var)
-#project放到默认编译器定义之后，否则cmake会死循环
+#项目名称
+project(clangPlugin-FuncStartInsertAsm)
 
+#确保project在find_package之前,
+#  否则 有警告："ADD_LIBRARY called with SHARED option but the target platform does not".
+#    备注：ClAsCxx.cmake内有find_package。
+include("${CMAKE_CURRENT_SOURCE_DIR}/ClAsCxx.cmake")
 
-set(CT_LLVM_INCLUDE_DIR "${CT_Clang_INSTALL_DIR}/include/llvm")
+#添加依赖 libfmt
+include("${CMAKE_CURRENT_SOURCE_DIR}/libfmt.cmake")
 
-set(CT_LLVM_CMAKE_FILE "${CT_Clang_INSTALL_DIR}/lib/cmake/clang/ClangConfig.cmake")
+#添加依赖 libncurses
+include("${CMAKE_CURRENT_SOURCE_DIR}/libncurses.cmake")
 
-# http://llvm.org/docs/CMake.html#embedding-llvm-in-your-project
-list(APPEND CMAKE_PREFIX_PATH "${CT_Clang_INSTALL_DIR}/lib/cmake/clang/")
-
-find_package(Clang REQUIRED CONFIG)
-
-# Sanity check. As Clang does not expose e.g. `CLANG_VERSION_MAJOR` through
-# AddClang.cmake, we have to use LLVM_VERSION_MAJOR instead.
-# TODO: Revisit when next version is released.
-if(NOT "15" VERSION_EQUAL "${LLVM_VERSION_MAJOR}")
-  message(FATAL_ERROR "Found LLVM ${LLVM_VERSION_MAJOR}, but need LLVM 15")
+# 拒绝非15版本的LLVM
+if(NOT LLVM_VERSION_MAJOR STREQUAL "15" )
+  message(FATAL_ERROR "LLVM版本必须是15,但找到的LLVM版本是${LLVM_VERSION_MAJOR}")
 endif()
 
-message(STATUS "Found Clang ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using ClangConfig.cmake in: ${CT_Clang_INSTALL_DIR}")
-
-message("CLANG STATUS:
-  Includes (clang)    ${CLANG_INCLUDE_DIRS}
-  Includes (llvm)     ${LLVM_INCLUDE_DIRS}"
-)
-
-# Set the LLVM and Clang header and library paths
-include_directories(SYSTEM "${LLVM_INCLUDE_DIRS};${CLANG_INCLUDE_DIRS}")
-
-#===============================================================================
-# 3. CLANG-var BUILD CONFIGURATION
-#===============================================================================
-# Use the same C++ standard as LLVM does
+#使用c++17
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
+#只加上一行 编译命令中 无"-std=..."
+#加上以下两行 编译命令中 才会出现"-std=gnu++17"
+set(CMAKE_CXX_EXTENSIONS ON)
+add_compile_options(-std=gnu++17)
+#Util.cpp需要c++17,否则其编译会报错:error: no member named 'filesystem' in namespace 'std'
 
-# Build type
+#打印clang的繁琐日志 供调试
+#add_compile_options(-v)
+
+
+#默认构建调试版本
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE
-      STRING "Build type (default Debug):" FORCE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "描述CMAKE_BUILD_TYPE" FORCE)
 endif()
 
-# Compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall\
-    -fdiagnostics-color=always")
+#向CXX_FLAGS添加-Wall ： 启用所有常规警告
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+#向CXX_FLAGS添加-fdiagnostics-color=always ：启用编译器输出中的彩色标记，以提高可读性
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
+#向CXX_FLAGS添加选项-fno-rtti：clang插件貌似必须无rtti 否则编译报错
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+#clang的内敛函数默认可见
+# gcc 内敛函数设置为可见 -fvisibility-inlines-visible, 但 clang的内敛函数默认可见 故而 无需设置
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-visible")  #此行是针对gcc的 , clang无选项 -fvisibility-inlines-visible
 
-# LLVM/Clang is normally built without RTTI. Be consistent with that.
-if(NOT LLVM_ENABLE_RTTI)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-endif()
-
-# -fvisibility-inlines-hidden is set when building LLVM and on Darwin warnings
-# are triggered if llvm-tutor is built without this flag (though otherwise it
-# builds fine). For consistency, add it here too.
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-fvisibility-inlines-hidden"
-  SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG)
-if(${SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG} EQUAL "1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
-endif()
-
-# Set the build directories
+# 编译输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
+# 添加子模块
 add_subdirectory(VarPlugin)
 add_subdirectory(VarAlone)
 add_subdirectory(TestAlone)
