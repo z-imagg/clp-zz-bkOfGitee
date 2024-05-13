@@ -55,7 +55,7 @@ git clone https://gitcode.net/pubz/llvm-project/-/commits/brc-dev-no_tick
 ```
 
 - 步骤1: 对每个被直接编译的源文件中单语句加花括号
->  对llvm-project的每个源文件的编译过程应用插件libBrcPlugin.so 以 对 该源文件中单语句加花括号
+>  对llvm-project的每个源文件的编译过程应用插件libPlgPlugin.so 以 对 该源文件中单语句加花括号
 ```bash
 source /pubx/llvm-project/doc_clang15_build/brc_build1_plugin.sh
 ```
@@ -96,10 +96,10 @@ sum=66,diff=24,div=2,mod=3
 
 #统计
 ```bash
-find /pubx/llvm-project/ -not -path '*/.git/*' -type f  \( -name "*.cpp" -or -name "*.c"  \)   | xargs -I% grep -Hn    BrcXxx    % > /pubx/BrcXxx.log
+find /pubx/llvm-project/ -not -path '*/.git/*' -type f  \( -name "*.cpp" -or -name "*.c"  \)   | xargs -I% grep -Hn    PlgXxx    % > /pubx/PlgXxx.log
 
 #把上一条bash命令抽成bash函数
-findBrcCommentThenSave() {
+findPlgCommentThenSave() {
   set -x #bash启用显示执行的命令
   keyword=$1
   find /pubx/llvm-project/ -not -path '*/.git/*' -type f \( -name "*.cpp" -or -name "*.c" \) | xargs -I% grep -Hn "$keyword" % |tee  /pubx/"${keyword}.log"
@@ -108,42 +108,42 @@ findBrcCommentThenSave() {
 ```
 
 ```bash
-findBrcCommentThenSave BrcThen
-findBrcCommentThenSave BrcSw
-findBrcCommentThenSave BrcElse
-findBrcCommentThenSave BrcFor
-findBrcCommentThenSave BrcForRange
-findBrcCommentThenSave BrcWhl
-findBrcCommentThenSave BrcSw
+findPlgCommentThenSave PlgThen
+findPlgCommentThenSave PlgSw
+findPlgCommentThenSave PlgElse
+findPlgCommentThenSave PlgFor
+findPlgCommentThenSave PlgForRange
+findPlgCommentThenSave PlgWhl
+findPlgCommentThenSave PlgSw
 ```
 
 > 各种语句分别加了多少花括号
 ```bash
-ls -S /pubx/Brc* | xargs -I% sh -c  'wc -l %; ' 
+ls -S /pubx/Plg* | xargs -I% sh -c  'wc -l %; ' 
 
 '''
-93201 /pubx/BrcThen.log
-29832 /pubx/BrcSw.log
-5539 /pubx/BrcElse.log
-3603 /pubx/BrcFor.log
-2187 /pubx/BrcForRange.log
-663 /pubx/BrcWhl.log
+93201 /pubx/PlgThen.log
+29832 /pubx/PlgSw.log
+5539 /pubx/PlgElse.log
+3603 /pubx/PlgFor.log
+2187 /pubx/PlgForRange.log
+663 /pubx/PlgWhl.log
 '''
 ```
 
 > 各种语句加了花括号的，有多少含有return
 >> 这些单语句return，由于没有被花括号包裹，才没有被t_clock_tick插入栈变量释放语句。
 >> 而tick插件栈变量分配、释放不平衡，具体为  栈变量共24万、最终残留2万没释放。  此不平衡是 由于 这些大约5万个单return语句没释放栈变量 导致的吗？
->> 如下所示，被BrcPlugin插入花括号的语句中 大约5万个含有return. 
+>> 如下所示，被PlgPlugin插入花括号的语句中 大约5万个含有return. 
 ```bash
-ls -S /pubx/Brc* | xargs -I% sh -c  'echo -n "%    "; grep return % |wc -l '
+ls -S /pubx/Plg* | xargs -I% sh -c  'echo -n "%    "; grep return % |wc -l '
 
 '''
-/pubx/BrcThen.log    50438
-/pubx/BrcSw.log    2681
-/pubx/BrcElse.log    815
-/pubx/BrcFor.log    6
-/pubx/BrcForRange.log    4
-/pubx/BrcWhl.log    2
+/pubx/PlgThen.log    50438
+/pubx/PlgSw.log    2681
+/pubx/PlgElse.log    815
+/pubx/PlgFor.log    6
+/pubx/PlgForRange.log    4
+/pubx/PlgWhl.log    2
 '''
 ```
