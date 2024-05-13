@@ -1,12 +1,12 @@
-#include "Brc/BrcVst.h"
+#include "Var/VarVst.h"
 
 #include "clang/AST/AST.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
-#include "Brc/RangeHasMacroAstVst.h"
-#include "Brc/CollectIncMacro_PPCb.h"
+#include "Var/RangeHasMacroAstVst.h"
+#include "Var/CollectIncMacro_PPCb.h"
 
 using namespace clang;
 
@@ -20,7 +20,7 @@ using namespace clang;
 
 
 
-void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
+void VarVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted ){
 
   //region 如果被包裹语句 处在宏中 则不处理 直接返回。
   if(
@@ -76,7 +76,7 @@ void BrcVst::letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const 
  * @param whoInserted
  * @return
  */
-void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
+void VarVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
   SourceLocation beginLoc = stmt->getBeginLoc();
   SourceLocation endLoc = stmt->getEndLoc();
 
@@ -140,7 +140,7 @@ void BrcVst::letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted){
 
 
 
-bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
+bool VarVst::TraverseIfStmt(IfStmt *ifStmt){
   //region 若NULL，直接返回
   if(!ifStmt){
     return false;
@@ -158,12 +158,12 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
 
   Stmt *thenStmt = ifStmt->getThen();
   if(thenStmt && !Util::isAloneContainerStmt(thenStmt) )  {
-    letLRBraceWrapStmtBfAfTk(thenStmt, "BrcThen");
+    letLRBraceWrapStmtBfAfTk(thenStmt, "VarThen");
   }
 
   Stmt *elseStmt = ifStmt->getElse();
   if(elseStmt && !Util::isAloneContainerStmt(elseStmt) ) {
-    letLRBraceWrapStmtBfAfTk(elseStmt, "BrcElse");
+    letLRBraceWrapStmtBfAfTk(elseStmt, "VarElse");
   }
 //endregion 自定义处理 完毕
 
@@ -184,7 +184,7 @@ bool BrcVst::TraverseIfStmt(IfStmt *ifStmt){
   //  TraverseXxxStmt末尾返回false 表示从此结束遍历，遍历剩余不再遍历
   return true;
 }
-bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
+bool VarVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 若NULL，直接返回
   if(!whileStmt){
     return false;
@@ -201,7 +201,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
   //region 自定义处理: while的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = whileStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcWhl");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "VarWhl");
   }
 
   //endregion 自定义处理 完毕
@@ -224,7 +224,7 @@ bool BrcVst::TraverseWhileStmt(WhileStmt *whileStmt){
 }
 
 //forEach和for很相似
-bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
+bool VarVst::TraverseForStmt(ForStmt *forStmt) {
   //region 若NULL，直接返回
   if(!forStmt){
     return false;
@@ -241,7 +241,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcFor");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "VarFor");
   }
   //endregion
 
@@ -263,7 +263,7 @@ bool BrcVst::TraverseForStmt(ForStmt *forStmt) {
 }
 
 //forEach和for很相似
-bool BrcVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
+bool VarVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
   //region 若NULL，直接返回
   if(!forRangeStmt){
     return false;
@@ -280,7 +280,7 @@ bool BrcVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
   //region 自定义处理: for的循环体语句 若非块语句 则用花括号包裹
   Stmt *bodyStmt = forRangeStmt->getBody();
   if(bodyStmt && !Util::isAloneContainerStmt(bodyStmt) )  {
-    letLRBraceWrapStmtBfAfTk(bodyStmt, "BrcForRange");
+    letLRBraceWrapStmtBfAfTk(bodyStmt, "VarForRange");
   }
   //endregion
 
@@ -301,7 +301,7 @@ bool BrcVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
   return false;
 }
 
-bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
+bool VarVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
   
   //region 跳过非MainFile
   if( !Util::LocFileIDEqMainFileID(SM, switchStmt->getBeginLoc()) ){
@@ -419,7 +419,7 @@ bool BrcVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
       //region 否则  处理 此case
       // 否则 此case内 无宏、且有语句，则处理
-      letLRBraceWrapRangeAftBf(beginLoc, endLoc, "BrcSw");
+      letLRBraceWrapRangeAftBf(beginLoc, endLoc, "VarSw");
 
       //endregion
 

@@ -1,13 +1,13 @@
-#include "Brc/BrcAstCnsm.h"
+#include "Var/VarAstCnsm.h"
 
 
 
-bool BrcAstCnsm::mainFileProcessed=false;
+bool VarAstCnsm::mainFileProcessed=false;
 
 
-std::string BrcAstCnsm::BrcOkFlagText="__BrcOkFlagText";
+std::string VarAstCnsm::VarOkFlagText="__VarOkFlagText";
 
- void BrcAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
+ void VarAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
    std::cout<< fmt::format("HandleTranslationUnit打印各重要对象地址: CI:{:x},this->Ctx:{:x},Ctx:{:x},SM:{:x},mRewriter_ptr:{:x}",
 reinterpret_cast<uintptr_t> (&CI ),
 reinterpret_cast<uintptr_t> (&(this->Ctx) ),
@@ -57,7 +57,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //endregion
 
    //region 1.若本文件已处理，则直接返回。
-   if(BrcAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
+   if(VarAstCnsm::isProcessed(CI,SM,Ctx,brcOk,declVec)){
      return ;
    }
    //endregion
@@ -81,7 +81,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
    bool insertResult;
    //插入的注释语句不要带换行,这样不破坏原行号
    //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
-   const std::string brcOkFlagComment = fmt::format("/**{}*/", BrcOkFlagText);
+   const std::string brcOkFlagComment = fmt::format("/**{}*/", VarOkFlagText);
    Decl* firstDeclInMainFile=Util::firstDeclInMainFile(SM,declVec);
    if(firstDeclInMainFile){
      Util::insertCommentBeforeLoc(brcOkFlagComment, firstDeclInMainFile->getBeginLoc(),  brcVst.mRewriter_ptr, insertResult);
@@ -102,7 +102,7 @@ reinterpret_cast<uintptr_t> ( (brcVst.mRewriter_ptr.get()) ) ) <<std::endl;
  }
 
 //region 判断是否已经处理过了
-bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _brcOk, std::vector<Decl*> declVec){
+bool VarAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _brcOk, std::vector<Decl*> declVec){
   unsigned long declCnt = declVec.size();
    for(int i=0; i<declCnt; i++){
      Decl* D=declVec[i];
@@ -115,7 +115,7 @@ bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
 //     Util::printDecl(Ctx,CI,"查看声明","",D,true);
      RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
      //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
-     BrcAstCnsm::__visitRawComment(CI,SM,  rc, _brcOk);
+     VarAstCnsm::__visitRawComment(CI,SM,  rc, _brcOk);
      if(_brcOk){
        std::cout<<"已有标记(已插入花括号),不再处理"<<std::endl;
        return true;
@@ -123,7 +123,7 @@ bool BrcAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& 
    }
    return false;
 }
-void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const RawComment *C, bool & _brcOk) {
+void VarAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const RawComment *C, bool & _brcOk) {
   if(!C){
     return;
   }
@@ -136,8 +136,8 @@ void BrcAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const 
 
   LangOptions &langOpts = CI.getLangOpts();
   std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
-//      brcOk= (sourceText==BrcOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
-  std::string::size_type index = sourceText.find(BrcOkFlagText);
+//      brcOk= (sourceText==VarOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
+  std::string::size_type index = sourceText.find(VarOkFlagText);
   _brcOk= (index != std::string::npos);
 
 }

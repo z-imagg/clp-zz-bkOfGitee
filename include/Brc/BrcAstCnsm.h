@@ -1,5 +1,5 @@
-#ifndef BrcAstCnsm_H
-#define BrcAstCnsm_H
+#ifndef VarAstCnsm_H
+#define VarAstCnsm_H
 
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <iostream>
@@ -15,7 +15,7 @@
 
 #include <fmt/core.h>
 
-#include "Brc/BrcVst.h"
+#include "Var/VarVst.h"
 #include "base/Util.h"
 
 using namespace llvm;
@@ -26,10 +26,10 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 
 
-class BrcAstCnsm : public ASTConsumer {
+class VarAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit BrcAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
+    explicit VarAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
                         SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
@@ -55,8 +55,8 @@ public:
 public:
     CompilerInstance &CI;
     ASTContext & Ctx;
-//    BrcVst insertVst;
-//    FndBrcFlagCmtHdl findTCCallROVisitor;
+//    VarVst insertVst;
+//    FndVarFlagCmtHdl findTCCallROVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
     static bool mainFileProcessed;
@@ -65,11 +65,11 @@ public:
     //花括号是否已插入
     bool brcOk;
     //特殊注释 标记 是否已插入花括号
-    static std::string BrcOkFlagText;
+    static std::string VarOkFlagText;
     //endregion
 
     //region 进行处理：插入花括号
-    BrcVst brcVst;
+    VarVst brcVst;
     //endregion
 };
 
