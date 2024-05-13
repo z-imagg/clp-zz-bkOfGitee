@@ -45,3 +45,4 @@ analyze_t_clock_tick/.ipynb_checkpoints/
 include/cpp_httplib
 
 include/nlohmann
+cmake-build-debug/
