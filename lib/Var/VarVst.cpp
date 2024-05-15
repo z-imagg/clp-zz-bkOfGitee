@@ -41,11 +41,13 @@ void printDeclStmtTree(DeclStmt *declStmt, int depth) {
         std::cout<<msg;
     }
 
+//    Stmt *body = decl->getBody();
     // 打印当前节点的子节点
     for (auto *child : declStmt->children()) {
         if (auto *childDeclStmt = llvm::dyn_cast<DeclStmt>(child)) {
             printDeclStmtTree(childDeclStmt, depth + 1);
         } else {
+
             // 如果子节点不是 DeclStmt，则打印其名称
             Stmt::StmtClass childStmtClass = child->getStmtClass();
             std::string  msg=fmt::format("depth={}, StmtClass={}, StmtClassName={}\n",depth+1,(int)childStmtClass,child->getStmtClassName());
@@ -56,31 +58,36 @@ void printDeclStmtTree(DeclStmt *declStmt, int depth) {
 }
 
 bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
-    printDeclStmtTree(declStmt,0);
+//    printDeclStmtTree(declStmt,0);
     Stmt::StmtClass stmtClass = declStmt->getStmtClass();
     const char *stmtClassName = declStmt->getStmtClassName();
 
-//    const Stmt::child_range &child = declStmt->children();
-//    std::vector<const Stmt*> childLs(child.begin(), child.end());
-//    const Stmt *&child0 = childLs.at(0);
-
-//    const DeclStmt::decl_range &decls = declStmt->decls();
-//    std::vector<const Decl*> declLs(decls.begin(), decls.end());
-//    const Decl *&decl_0 = declLs.at(0);
-    
     bool isSingleDecl = declStmt->isSingleDecl();
     Decl *p_singleDecl = declStmt->getSingleDecl();
     Decl &singleDecl = *p_singleDecl;
+    Stmt *body = singleDecl.getBody();
+    AttrVec &attrVec = singleDecl.getAttrs();
+    size_t vecCnt = attrVec.size();
 
+    if (ValueDecl *valueDecl = dyn_cast<ValueDecl>(&singleDecl)) {
+        const QualType &qualType = valueDecl->getType();
+        const std::string &typeName = qualType.getAsString();
+        std::string  msg=fmt::format("typeName='{}'\n",typeName);
+        std::cout<<msg;
+        
+        
+    }
     Decl::Kind singleDeclKind = singleDecl.getKind();
 
-    SourceLocation beginLoc,endLoc;
-    beginLoc = declStmt->getBeginLoc();
-    endLoc = declStmt->getEndLoc();
-
+//    SourceLocation beginLoc,endLoc;
+//    beginLoc = declStmt->getBeginLoc();
+//    endLoc = declStmt->getEndLoc();
     //构造人类可读开始位置、结束位置、插入者 注释文本
-    std::string hmTxtCmnt_whoInsrt_BE;
-    Util::BE_Loc_HumanText(SM, beginLoc, endLoc, "test_VisitDeclStmt", hmTxtCmnt_whoInsrt_BE);
-    std::cout<<hmTxtCmnt_whoInsrt_BE<<"\n";
+//    std::string hmTxtCmnt_whoInsrt_BE;
+//    Util::BE_Loc_HumanText(SM, beginLoc, endLoc, "test_VisitDeclStmt", hmTxtCmnt_whoInsrt_BE);
+//    std::cout<<hmTxtCmnt_whoInsrt_BE<<"\n";
+
+//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
+    Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
     return true;
 }
