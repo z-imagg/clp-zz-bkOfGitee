@@ -57,7 +57,7 @@ bool VarVst::TraverseForStmt(ForStmt *forStmt) {
   //继续遍历剩余源码
   //  TraverseXxxStmt末尾返回true  表示继续遍历剩余源码
   //  TraverseXxxStmt末尾返回false 表示从此结束遍历，遍历剩余不再遍历
-  return false;
+  return true;
 }
 
 //forEach和for很相似
@@ -66,7 +66,7 @@ bool VarVst::TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt) {
   //继续遍历剩余源码
   //  TraverseXxxStmt末尾返回true  表示继续遍历剩余源码
   //  TraverseXxxStmt末尾返回false 表示从此结束遍历，遍历剩余不再遍历
-  return false;
+  return true;
 }
 
 bool VarVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
