@@ -1,5 +1,9 @@
 #define CASE_SAME(x) case x:
+#define INT_T int
+typedef double DOUBLE_typedef;
+
 class UserEntity{};
+class ScoreRelation{};
 class MyClass {
 public:
     static int ZERO;
@@ -7,6 +11,9 @@ public:
 
   char* switchDemo(int cnt, short chr){
   UserEntity admin;
+  ScoreRelation scoreRlatn;
+  INT_T num_int;
+  DOUBLE_typedef num_double;
     double sum=1.*cnt*chr;
     float PI;
     start: char L;

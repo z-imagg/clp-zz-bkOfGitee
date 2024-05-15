@@ -58,6 +58,7 @@ void printDeclStmtTree(DeclStmt *declStmt, int depth) {
 }
 
 bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
+    std::cout<<"\n";
 //    printDeclStmtTree(declStmt,0);
     Stmt::StmtClass stmtClass = declStmt->getStmtClass();
     const char *stmtClassName = declStmt->getStmtClassName();
@@ -71,8 +72,15 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     if (ValueDecl *valueDecl = dyn_cast<ValueDecl>(&singleDecl)) {
         const QualType &qualType = valueDecl->getType();
+        clang::Type::TypeClass typeClass = qualType->getTypeClass();
+        int isObjectType = qualType->isObjectType();
+//        bool isTrivialType = qualType.isTrivialType(*Ctx);
+        int isBuiltinType = qualType->isBuiltinType();
+        int isClassType = qualType->isClassType();
+//        int isStructuralType = qualType->isStructuralType();
+        int isFloatingType = qualType->isFloatingType();
         const std::string &typeName = qualType.getAsString();
-        std::string  msg=fmt::format("typeName='{}'\n",typeName);
+        std::string  msg=fmt::format("typeName='{}',typeClass={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n",typeName,(int)typeClass,isObjectType,isBuiltinType,isClassType,isFloatingType);
         std::cout<<msg;
         
         
