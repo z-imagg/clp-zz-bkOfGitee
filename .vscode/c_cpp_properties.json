@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/fridaAnlzAp/clang-var/include/",
+                "/fridaAnlzAp/clang-var/base_home/include",
+                "/app/fmtlib-fmt/include/",
+                "/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/x86_64-linux-gnu-gcc-11",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "go2sh.cmake-integration"
+        }
+    ],
+    "version": 4
+}
+
+/*
+LLVM_INCLUDE_DIRS=【/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include】
+LIBFMT_INCLUDE:/app/fmtlib-fmt//include/
+*/
