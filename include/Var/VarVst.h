@@ -35,18 +35,37 @@ public:
 
 
 
-    void letLRBraceWrapRangeAftBf(SourceLocation B, SourceLocation E, const char* whoInserted="");
-    void letLRBraceWrapStmtBfAfTk(Stmt *stmt, const char* whoInserted="");
 
-    virtual bool TraverseIfStmt(IfStmt *ifStmt);
+//    virtual bool VisitDeclStmt(DeclStmt* declStmt);
+    virtual bool TraverseDeclStmt(DeclStmt* declStmt);
+    /**
+'#define STMT'下1行有'bool Traverse##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
 
-    virtual bool TraverseWhileStmt(WhileStmt *whileStmt);
+python /app/bash-simplify/pyFileReFindAllDotAsAll.py  '#define STMT(?:.*\n){1}  bool Traverse##CLASS(?:.*\n)#include "clang/AST/StmtNodes.inc"\n'  "$RecursiveASTVisitor_H"
 
-    //forEach和for很相似
-    virtual bool TraverseForStmt(ForStmt *forStmt);
-    virtual bool TraverseCXXForRangeStmt(CXXForRangeStmt *forRangeStmt);
-    
-    virtual bool TraverseSwitchStmt(SwitchStmt *switchStmt);
+文件/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h 匹配行号 行372～行375
+ #define STMT(CLASS, PARENT) \
+  bool Traverse##CLASS(CLASS *S, DataRecursionQueue *Queue = nullptr);
+#include "clang/AST/StmtNodes.inc"
+
+
+'#define STMT'下6行有'bool Visit##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
+
+python /app/bash-simplify/pyFileReFindAllDotAsAll.py  '#define STMT(?:.*\n){6}  bool Visit##CLASS(?:.*\n){1}#include "clang/AST/StmtNodes.inc"\n'   "$RecursiveASTVisitor_H"
+
+文件/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h 匹配行号 行380～行388
+ #define STMT(CLASS, PARENT)                                                    \
+  bool WalkUpFrom##CLASS(CLASS *S) {                                           \
+    TRY_TO(WalkUpFrom##PARENT(S));                                             \
+    TRY_TO(Visit##CLASS(S));                                                   \
+    return true;                                                               \
+  }                                                                            \
+  bool Visit##CLASS(CLASS *S) { return true; }
+#include "clang/AST/StmtNodes.inc"
+*/
+
+
+
 
 public:
     const std::shared_ptr<Rewriter> mRewriter_ptr;

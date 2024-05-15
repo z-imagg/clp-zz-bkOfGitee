@@ -37,7 +37,7 @@ build
 
 analyze_t_clock_tick/tick_data_home
 
-.vscode/
+# .vscode/
 
 analyze_t_clock_tick/.ipynb_checkpoints/
 

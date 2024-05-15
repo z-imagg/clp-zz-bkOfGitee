@@ -1,10 +1,19 @@
 #define CASE_SAME(x) case x:
+#define INT_T int
+typedef double DOUBLE_typedef;
+
+class UserEntity{};
+class ScoreRelation{};
 class MyClass {
 public:
     static int ZERO;
 public:
 
   char* switchDemo(int cnt, short chr){
+  UserEntity admin;
+  ScoreRelation scoreRlatn;
+  INT_T num_int;
+  DOUBLE_typedef num_double;
     double sum=1.*cnt*chr;
     float PI;
     start: char L;
@@ -58,6 +67,18 @@ public:
 
 int MyClass::ZERO=0;
 
+struct Point{
+    float x;
+    double y;
+};
 int main(int argc, char** argv){
+    MyClass varMyClass;
+    static Point pnt1;
+    struct Point pnt2;
+    {
+        struct Point * ptr1=&pnt1;
+        struct Point * ptr2=&pnt2;
+    }
+
   return 0;
 }
