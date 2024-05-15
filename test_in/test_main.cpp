@@ -58,6 +58,18 @@ public:
 
 int MyClass::ZERO=0;
 
+struct Point{
+    float x;
+    double y;
+};
 int main(int argc, char** argv){
+    MyClass varMyClass;
+    static Point pnt1;
+    struct Point pnt2;
+    {
+        struct Point * ptr1=&pnt1;
+        struct Point * ptr2=&pnt2;
+    }
+
   return 0;
 }
