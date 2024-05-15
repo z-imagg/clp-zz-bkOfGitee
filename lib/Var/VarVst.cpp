@@ -471,3 +471,17 @@ SwitchCase::getEndLoc 表达的 case结尾位置 基本都不对， case1的结�
 
 
 
+bool VarVst::VisitDeclStmt(DeclStmt* declStmt){
+
+
+
+    SourceLocation beginLoc,endLoc;
+    beginLoc = declStmt->getBeginLoc();
+    endLoc = declStmt->getEndLoc();
+
+    //构造人类可读开始位置、结束位置、插入者 注释文本
+    std::string hmTxtCmnt_whoInsrt_BE;
+    Util::BE_Loc_HumanText(SM, beginLoc, endLoc, "test_VisitDeclStmt", hmTxtCmnt_whoInsrt_BE);
+    std::cout<<hmTxtCmnt_whoInsrt_BE;
+    return true;
+}
