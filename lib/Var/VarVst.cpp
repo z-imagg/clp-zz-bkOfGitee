@@ -76,15 +76,29 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
         const clang::Type *typePtr = qualType.getTypePtr();
         const char *typeClassName = typePtr->getTypeClassName();
         //比如  ' qualType.getTypePtr()->getTypeClassName()== "Builtin" 或 基本类型的"Typedef" ' 即  'clang::Type::Builtin == qualType->getTypeClass()'
-        bool typeClassEqlBuiltin = clang::Type::Builtin == typeClass;
-        int isObjectType = qualType->isObjectType();
+        bool typeClassEqBuiltin = clang::Type::Builtin == typeClass;
+        bool isBuiltinType = qualType->isBuiltinType();
+        if(typeClassEqBuiltin){
+            //断言 typeClassEqBuiltin==isBuiltinType
+            assert(isBuiltinType);
+            return true;
+        }
+
+
+        bool typeClassEqRecord = clang::Type::Record == typeClass;
+        bool isObjectType = qualType->isObjectType();
+        if(typeClassEqRecord){
+            //断言 typeClassEqRecord==isObjectType
+            assert(isObjectType);
+            //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
+        }
+
 //        bool isTrivialType = qualType.isTrivialType(*Ctx);
-        int isBuiltinType = qualType->isBuiltinType();
         int isClassType = qualType->isClassType();
 //        int isStructuralType = qualType->isStructuralType();
         int isFloatingType = qualType->isFloatingType();
         const std::string &typeName = qualType.getAsString();
-        std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqlBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n",typeName,(int)typeClass,typeClassName,typeClassEqlBuiltin,isObjectType,isBuiltinType,isClassType,isFloatingType);
+        std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n", typeName, (int)typeClass, typeClassName, typeClassEqBuiltin, isObjectType, isBuiltinType, isClassType, isFloatingType);
         std::cout<<msg;
         
         
@@ -103,3 +117,5 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
     return true;
 }
+
+//TODO 【块离开时， 执行业务内容】 遍历每个k: 直接在该块内声明的栈区变量k，找到变量k的类型名Tk，向threadLocal记录 释放了一个类型为Tk的变量
