@@ -79,7 +79,7 @@ bool VarVst::TraverseSwitchStmt(SwitchStmt *switchStmt){
 
 
 
-bool VarVst::VisitDeclStmt(DeclStmt* declStmt){
+bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
 
 
