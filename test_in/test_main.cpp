@@ -1,10 +1,12 @@
 #define CASE_SAME(x) case x:
+class UserEntity{};
 class MyClass {
 public:
     static int ZERO;
 public:
 
   char* switchDemo(int cnt, short chr){
+  UserEntity admin;
     double sum=1.*cnt*chr;
     float PI;
     start: char L;
