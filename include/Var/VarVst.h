@@ -79,6 +79,7 @@ public:
     // 该函数默认实现: grep  -A6   'DEF_TRAVERSE_DECL(CXXDestructorDecl'  $RecursiveASTVisitor_H
 //    virtual bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
 
+    virtual bool VisitDeclStmt(DeclStmt* declStmt);
     /**
 '#define STMT'下1行有'bool Traverse##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
 
