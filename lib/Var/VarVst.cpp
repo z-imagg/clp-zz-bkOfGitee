@@ -73,6 +73,10 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     if (ValueDecl *valueDecl = dyn_cast<ValueDecl>(&singleDecl)) {
         const QualType &qualType = valueDecl->getType();
         clang::Type::TypeClass typeClass = qualType->getTypeClass();
+        const clang::Type *typePtr = qualType.getTypePtr();
+        const char *typeClassName = typePtr->getTypeClassName();
+        //比如  ' qualType.getTypePtr()->getTypeClassName()== "Builtin" 或 基本类型的"Typedef" ' 即  'clang::Type::Builtin == qualType->getTypeClass()'
+        bool typeClassEqlBuiltin = clang::Type::Builtin == typeClass;
         int isObjectType = qualType->isObjectType();
 //        bool isTrivialType = qualType.isTrivialType(*Ctx);
         int isBuiltinType = qualType->isBuiltinType();
@@ -80,7 +84,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 //        int isStructuralType = qualType->isStructuralType();
         int isFloatingType = qualType->isFloatingType();
         const std::string &typeName = qualType.getAsString();
-        std::string  msg=fmt::format("typeName='{}',typeClass={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n",typeName,(int)typeClass,isObjectType,isBuiltinType,isClassType,isFloatingType);
+        std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqlBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n",typeName,(int)typeClass,typeClassName,typeClassEqlBuiltin,isObjectType,isBuiltinType,isClassType,isFloatingType);
         std::cout<<msg;
         
         
