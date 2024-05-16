@@ -50,7 +50,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
     
-//    Util::printDecl(*Ctx,CI,"tag1","title1",&p_singleDecl,true);
+//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
     bool isStructType;
@@ -58,25 +58,25 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     QualType qualType;
     int varCnt=0;
 
-    Decl *p_singleDecl;
+    Decl *singleDecl;
     bool result=false;
 
     bool isSingleDecl = declStmt->isSingleDecl();
     if(isSingleDecl){
         varCnt=1;
         //单声明（单变量声明、单函数声明、单x声明）
-        p_singleDecl = declStmt->getSingleDecl();
+        singleDecl = declStmt->getSingleDecl();
     }else{
         //多声明（多变量声明、多函数声明、多x声明）
         const DeclGroupRef &dg = declStmt->getDeclGroup();
 //        varCnt=std::distance(dg.begin(),dg.end());
         //只看第1个声明
-        p_singleDecl=* (dg.begin());
+        singleDecl=* (dg.begin());
     }
 
     // 多声明 result 依赖 第0个声明
     // 单声明 result 依赖 该声明
-    result= this->process_singleDecl(p_singleDecl, isStructType, typeName, qualType);
+    result= this->process_singleDecl(singleDecl, isStructType, typeName, qualType);
     clang::Type::TypeClass  typeClass = qualType->getTypeClass();
 
     if(isSingleDecl){}
@@ -110,10 +110,10 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 }
 
 
-bool VarVst::process_singleDecl(const Decl *p_singleDecl, bool& isStructType, std::string &typeName, QualType &qualType){
+bool VarVst::process_singleDecl(const Decl *singleDecl, bool& isStructType, std::string &typeName, QualType &qualType){
 
 
-    if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(p_singleDecl)) {
+    if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(singleDecl)) {
         qualType = valueDecl->getType();
         clang::Type::TypeClass typeClass = qualType->getTypeClass();
         const clang::Type *typePtr = qualType.getTypePtr();
