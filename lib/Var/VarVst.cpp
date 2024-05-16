@@ -18,11 +18,13 @@
 using namespace llvm;
 using namespace clang;
 
+//TODO  函数左花括号后 插入 'int __varCnt_inFn=0;'
+//【销毁变量通知】 TODO  函数右花括号前 插入 'destroyVar_inFn(__varCnt_inFn);'
 bool VarVst::insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc ){
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
     //region 构造插入语句
     std::string cStr_inserted=fmt::format(
-            "createVar(\"{}\", {})  /* 创建变量通知,  {} */ ;",
+            "createVar(&__varCnt_inFn, \"{}\", {})  /* 创建变量通知,  {} */ ;",
             typeName, varCnt, varDeclLocId.to_string()
     );
     llvm::StringRef strRef(cStr_inserted);
