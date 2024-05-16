@@ -46,3 +46,5 @@ include/cpp_httplib
 
 include/nlohmann
 cmake-build-debug/
+
+*.elf
