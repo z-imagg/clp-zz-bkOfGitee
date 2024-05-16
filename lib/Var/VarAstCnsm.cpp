@@ -7,8 +7,6 @@
 bool VarAstCnsm::mainFileProcessed=false;
 
 
-std::string VarAstCnsm::VarOkFlagText="__VarOkFlagText";
-
  void VarAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
      ///region 在此编译进程内, 跳过已处理的mainFile, 避免重复处理
      //被上层多次调用 本方法HandleTranslationUnit，后续的调用不再进入实际处理
@@ -79,9 +77,6 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
          return;
      }
  }
-   if(VarAstCnsm::isProcessed(CI,SM,Ctx,varOk,declVec)){
-     return ;
-   }
    //endregion
 
    ///region 2. 调用 花括号遍历器 遍历每个声明， 以插入花括号
@@ -121,45 +116,3 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //endregion
  }
 
-//region 判断是否已经处理过了
-bool VarAstCnsm::isProcessed(CompilerInstance& CI,SourceManager&SM, ASTContext& Ctx,  bool& _varOk, std::vector<Decl*> declVec){
-  unsigned long declCnt = declVec.size();
-   for(int i=0; i<declCnt; i++){
-     Decl* D=declVec[i];
-
-     //忽略非主文件中的声明
-     if(!Util::isDeclInMainFile(SM,D)){
-       continue;
-     }
-
-//     Util::printDecl(Ctx,CI,"查看声明","",D,true);
-     RawComment *rc = Ctx.getRawCommentForDeclNoCache(D);
-     //Ctx.getRawCommentForDeclNoCache(D) 获得的注释是完整的
-     VarAstCnsm::__visitRawComment(CI,SM,  rc, _varOk);
-     if(_varOk){
-       std::cout<<"已有标记(已插入花括号),不再处理"<<std::endl;
-       return true;
-     }
-   }
-   return false;
-}
-void VarAstCnsm::__visitRawComment(CompilerInstance& CI,SourceManager&SM, const RawComment *C, bool & _varOk) {
-  if(!C){
-    return;
-  }
-  const SourceRange &sourceRange = C->getSourceRange();
-//  Util::printSourceRangeSimple(CI,"查看RawComment","",caseKSrcRange, true);
-
-  if(_varOk){
-    return;
-  }
-
-  LangOptions &langOpts = CI.getLangOpts();
-  std::string sourceText = Util::getSourceTextBySourceRange(sourceRange, SM, langOpts);
-//      varOk= (sourceText==VarOkFlagText);//由于取出来的可能是多个块注释，导致不能用相等判断，只能用下面的包含判断
-  std::string::size_type index = sourceText.find(VarOkFlagText);
-  _varOk= (index != std::string::npos);
-
-}
-
-//endregion
