@@ -12,6 +12,7 @@ public:
   char* switchDemo(int cnt, short chr){
   int* myIntPtr;//单变量声明
   char x,y,z;//多变量声明
+  int i1,i2,*p_i3;//多变量声明
   UserEntity admin;
   ScoreRelation scoreRlatn;
   INT_T num_int;

@@ -9,6 +9,7 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/Stmt.h"
+#include "clang/AST/Type.h"
 #include "clang/Basic/SourceManager.h"
 #include "base/LocId.h"
 
@@ -38,7 +39,7 @@ public:
 
 //    virtual bool VisitDeclStmt(DeclStmt* decl_k);
     virtual bool TraverseDeclStmt(DeclStmt* decl_k);
-    bool process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName);
+    bool process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName,QualType &qualType);
     /**
 '#define STMT'下1行有'bool Traverse##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
 

@@ -27,26 +27,38 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     bool isStructType;
     std::string typeName;
+    QualType qualType;
 
     bool isSingleDecl = declStmt->isSingleDecl();
     if(isSingleDecl){
         //单声明（单变量声明、单函数声明、单x声明）
         Decl *p_singleDecl = declStmt->getSingleDecl();
-        return this->process_singleDecl(p_singleDecl,isStructType,typeName);
+        bool result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
+        clang::Type::TypeClass  typeClass = qualType->getTypeClass();
+        return result;
     }else{
         //多声明（多变量声明、多函数声明、多x声明）
         //只看第1个声明
         Decl * decl0=* (declStmt->getDeclGroup().begin());
-        this->process_singleDecl(decl0,isStructType,typeName);
+        this->process_singleDecl(decl0,isStructType,typeName,qualType);
+        clang::Type::TypeClass  typeClass = qualType->getTypeClass();
 
         const DeclGroupRef &declGroup = declStmt->getDeclGroup();
         //遍历每一个声明
-        std::for_each(declGroup.begin(),declGroup.end(),[this,isStructType,typeName](const Decl* decl_k){
+        std::for_each(declGroup.begin(),declGroup.end(),[this,isStructType,typeName,typeClass](const Decl* decl_k){
 
             bool isStructType_k;
             std::string typeName_k;
-            this->process_singleDecl(decl_k,isStructType_k,typeName_k);
-            MyAssert(isStructType_k==isStructType && typeName_k==typeName,"[AssertErr]NotFit:isStructType_k==isStructType && typeName_k==typeName" )
+            QualType qualType_k;
+            this->process_singleDecl(decl_k,isStructType_k,typeName_k,qualType_k);
+            const char *typeClassName_k = qualType_k.getTypePtr()->getTypeClassName();
+            clang::Type::TypeClass  typeClass_k = qualType_k->getTypeClass();
+            if(typeClass!=clang::Type::Pointer &&
+            typeClass_k!=clang::Type::Pointer) //等价于 typeClassName_k!="Pointer"
+            {
+                //断言第k个声明和第0个声明的类型一致
+                MyAssert(isStructType_k==isStructType && typeName_k==typeName,"[AssertErr]NotFit:isStructType_k==isStructType && typeName_k==typeName" )
+            }
         });
         return true;
     }
@@ -54,11 +66,11 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 }
 
 
-bool VarVst::process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName){
+bool VarVst::process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName,QualType &qualType){
 
 
     if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(p_singleDecl)) {
-        const QualType &qualType = valueDecl->getType();
+        qualType = valueDecl->getType();
         clang::Type::TypeClass typeClass = qualType->getTypeClass();
         const clang::Type *typePtr = qualType.getTypePtr();
         const char *typeClassName = typePtr->getTypeClassName();
