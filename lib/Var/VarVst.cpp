@@ -25,18 +25,28 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 //    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
+    bool isStructType;
+    std::string typeName;
+
     bool isSingleDecl = declStmt->isSingleDecl();
     if(isSingleDecl){
         //单声明（单变量声明、单函数声明、单x声明）
         Decl *p_singleDecl = declStmt->getSingleDecl();
-        return this->process_singleDecl(p_singleDecl);
+        return this->process_singleDecl(p_singleDecl,isStructType,typeName);
     }else{
         //多声明（多变量声明、多函数声明、多x声明）
-//        Decl * decl=* (declStmt->getDeclGroup().begin());
+        //只看第1个声明
+        Decl * decl0=* (declStmt->getDeclGroup().begin());
+        this->process_singleDecl(decl0,isStructType,typeName);
+
         const DeclGroupRef &declGroup = declStmt->getDeclGroup();
         //遍历每一个声明
-        std::for_each(declGroup.begin(),declGroup.end(),[this](const Decl* declK){
-            this->process_singleDecl(declK);
+        std::for_each(declGroup.begin(),declGroup.end(),[this,isStructType,typeName](const Decl* decl_k){
+
+            bool isStructType_k;
+            std::string typeName_k;
+            this->process_singleDecl(decl_k,isStructType_k,typeName_k);
+            MyAssert(isStructType_k==isStructType && typeName_k==typeName,"[AssertErr]NotFit:isStructType_k==isStructType && typeName_k==typeName" )
         });
         return true;
     }
@@ -44,7 +54,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 }
 
 
-bool VarVst::process_singleDecl(const Decl *p_singleDecl){
+bool VarVst::process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName){
 
 
     if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(p_singleDecl)) {
@@ -58,21 +68,24 @@ bool VarVst::process_singleDecl(const Decl *p_singleDecl){
         bool typeClassEqElaborated = clang::Type::Elaborated == typeClass;
 
         bool isPointerType=qualType->isPointerType();
-        const std::string &typeName = qualType.getAsString();
+        typeName = qualType.getAsString();
 
-        std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n", typeName, (int)typeClass, typeClassName, typeClassEqBuiltin, isObjectType, isBuiltinType, isClassType, isFloatingType);
+        std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},isBuiltinType={}\n", typeName, (int)typeClass, typeClassName, isBuiltinType);
         std::cout<<msg;
 
         if(isBuiltinType){
+            isStructType=false;
             std::cout<<"[跳过]isBuiltinType==true\n";
             return true;
         }
         if(isPointerType){
+            isStructType=false;
             std::cout<<"[跳过]isPointerType==true\n";
             return true;
         }
 
-        MyAssert(typeClassEqRecord||typeClassEqElaborated,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
+        isStructType=(typeClassEqRecord||typeClassEqElaborated);
+        MyAssert(isStructType,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
 
         //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
 
