@@ -2,6 +2,10 @@
 #define INT_T int
 typedef double DOUBLE_typedef;
 
+struct Point{
+    float x;
+    double y;
+};
 class UserEntity{};
 class ScoreRelation{};
 class MyClass {
@@ -27,6 +31,7 @@ public:
       break;
       case 0:
       {
+      struct Point pnt4;
         L=(cnt+chr)%50;
         return &L+1;//case0 结束位置左移1
       }
@@ -70,10 +75,6 @@ public:
 
 int MyClass::ZERO=0;
 
-struct Point{
-    float x;
-    double y;
-};
 int main(int argc, char** argv){
     MyClass varMyClass;
     static Point pnt1;
@@ -81,6 +82,7 @@ int main(int argc, char** argv){
     {
         struct Point * ptr1=&pnt1;
         struct Point * ptr2=&pnt2;
+        struct Point pnt3;
     }
 
   return 0;
