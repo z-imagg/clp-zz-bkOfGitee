@@ -53,7 +53,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 //    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
-    bool isStructType;
+    bool likeStruct;
     std::string typeName;
     QualType qualType;
     int varCnt=0;
@@ -76,7 +76,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     // 多声明 result 依赖 第0个声明
     // 单声明 result 依赖 该声明
-    result= this->process_singleDecl(singleDecl, isStructType, typeName, qualType);
+    result= this->process_singleDecl(singleDecl, likeStruct, typeName, qualType);
     clang::Type::TypeClass  typeClass = qualType->getTypeClass();
 
     if(isSingleDecl){}
@@ -85,7 +85,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
         const DeclGroupRef &dg = declStmt->getDeclGroup();
 
         //遍历每一个声明
-        std::for_each(dg.begin(),dg.end(),[this,isStructType,typeName,typeClass,&varCnt](const Decl* decl_k){
+        std::for_each(dg.begin(),dg.end(),[this,likeStruct,typeName,typeClass,&varCnt](const Decl* decl_k){
             bool isStructType_k;
             std::string typeName_k;
             QualType qualType_k;
@@ -99,7 +99,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     }
 
     //是结构体
-    if(isStructType){
+    if(likeStruct){
         //按照左右花括号，构建位置id，防止重复插入
         LocId declStmtBgnLocId=LocId::buildFor(filePath, declStmtBgnLoc, SM);
         //只有似结构体变量才会产生通知
@@ -110,7 +110,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 }
 
 
-bool VarVst::process_singleDecl(const Decl *singleDecl, bool& isStructType, std::string &typeName, QualType &qualType){
+bool VarVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, std::string &typeName, QualType &qualType){
 
 
     if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(singleDecl)) {
@@ -131,22 +131,22 @@ bool VarVst::process_singleDecl(const Decl *singleDecl, bool& isStructType, std:
 
         if(isBuiltinType){
             //非结构体
-            isStructType=false;
-            std::cout<<"[跳过]isBuiltinType==true;[返回]isStructType==false\n";
+            likeStruct=false;
+            std::cout<<"[跳过]isBuiltinType==true;[返回]likeStruct==false\n";
             return true;
         }
         if(isPointerType){
             //非结构体
-            isStructType=false;
-            std::cout<<"[跳过]isPointerType==true;[返回]isStructType==false\n";
+            likeStruct=false;
+            std::cout<<"[跳过]isPointerType==true;[返回]likeStruct==false\n";
             return true;
         }
 
         //是结构体==是Record或是Elaborated
-        isStructType=(typeClassEqRecord||typeClassEqElaborated);
-        MyAssert(isStructType,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
+        likeStruct=(typeClassEqRecord||typeClassEqElaborated);
+        MyAssert(likeStruct,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
 
-        std::cout<<fmt::format("[返回]isStructType=={}\n",isStructType);
+        std::cout<<fmt::format("[返回]likeStruct=={}\n",likeStruct);
         //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
 
     }
