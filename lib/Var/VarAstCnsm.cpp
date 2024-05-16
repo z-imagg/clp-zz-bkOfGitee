@@ -48,7 +48,7 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //endregion
 
    ///region 若是系统文件 或 tick文件则跳过
-   if(Util::isSysSrcFile(filePath)  || Util::isTickSrcFile(filePath)){
+   if(Util::isSysSrcFile(filePath)  || Util::isRuntimeSrcFile(filePath,"runtime_cpp__vars_fn")){
      return ;
    }
    //endregion
