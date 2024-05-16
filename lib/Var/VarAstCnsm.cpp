@@ -1,4 +1,6 @@
 #include "Var/VarAstCnsm.h"
+#include "Var/CollectIncMacro_PPCb.h"
+#include "Var/Constant.h"
 
 
 
@@ -65,7 +67,18 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
    }
    //endregion
 
+     Constant c;
+
    ///region 1.若本文件已处理，则直接返回。
+ {
+
+     bool hasPragmaMsg = CollectIncMacro_PPCb::pragma_message_set.find(c.NameSpace_funcIdAsmIns) != CollectIncMacro_PPCb::pragma_message_set.end();
+     if(hasPragmaMsg){
+         //若已经有#include "funcIdBase.h"，则标记为已处理，且直接返回，不做任何处理。
+         std::cout << fmt::format("跳过，因为此文件已经被处理, 文件路径:{} 已经包含#pragma消息 {}\n",filePath,c.PrgMsgStmt_funcIdAsmIns) ;
+         return;
+     }
+ }
    if(VarAstCnsm::isProcessed(CI,SM,Ctx,varOk,declVec)){
      return ;
    }
@@ -85,17 +98,10 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
    //endregion
 
    ///region 3. 插入 已处理 注释标记 到主文件第一个声明前
-   //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才插入 已处理 注释标记
-   if( !(varVst.VarDeclLocIdSet.empty()) ){
-   bool insertResult;
-   //插入的注释语句不要带换行,这样不破坏原行号
-   //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
-   const std::string varOkFlagComment = fmt::format("/**{}*/", VarOkFlagText);
-   Decl* firstDeclInMainFile=Util::firstDeclInMainFile(SM,declVec);
-   if(firstDeclInMainFile){
-     Util::insertCommentBeforeLoc(varOkFlagComment, firstDeclInMainFile->getBeginLoc(),  varVst.mRewriter_ptr, insertResult);
-   }
-   }
+     bool insertResult;
+     Util::insertIncludeToFileStart(c.PrgMsgStmt_funcIdAsmIns, mainFileId, SM, varVst.mRewriter_ptr,insertResult);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+     std::string msg=fmt::format("插入'#pragma 消息'到文件{},对mainFileId:{},结果:{}\n",filePath,mainFileId.getHashValue(),insertResult);
+     std::cout<< msg ;
 
 
    //endregion
