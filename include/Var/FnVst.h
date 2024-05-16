@@ -34,7 +34,8 @@ public:
 
     }
 
-    bool insertAfterFnLeftBrace__insertBeforeFnRightBrace( LocId funcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
+    bool insertBefore_X__funcReturn(LocId retBgnLocId, SourceLocation retBgnLoc  );
+    bool insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
     bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);
@@ -56,7 +57,7 @@ public:
             std::string funcName
     );
 
-
+    bool TraverseReturnStmt(ReturnStmt *returnStmt);
 
 
 
@@ -70,6 +71,7 @@ public:
     SourceManager& SM;
 
 
+    std::unordered_set<LocId,LocId> funcReturnLocIdSet;
     std::unordered_set<LocId,LocId> funcEnterLocIdSet;
 };
 

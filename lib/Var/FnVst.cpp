@@ -18,17 +18,35 @@
 using namespace llvm;
 using namespace clang;
 
-bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId funcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
+
+bool FnVst::insertBefore_X__funcReturn(LocId retBgnLocId, SourceLocation retBgnLoc  ){
+    //region 构造插入语句
+    std::string cStr_destroy=fmt::format(
+            "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表, {}*/",
+            retBgnLocId.filePath,
+            retBgnLocId.funcName,
+            retBgnLocId.to_string()
+    );
+    llvm::StringRef strRef_destroy(cStr_destroy);
+    bool insertResult_destroy=mRewriter_ptr->InsertTextBefore(retBgnLoc , strRef_destroy);
+    //endregion
+
+  //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+  funcReturnLocIdSet.insert(retBgnLocId);
+  return insertResult_destroy;
+}
+
+bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
 
 //函数左花括号后 插入 '_VarDeclLs * _vdLs=_init_varLs_inFn("runtime_cpp__vars_fn/test_main__runtime_cpp__vars_fn.cpp","func1",7,14);'
 
     //region 构造插入语句
     std::string cStr_init=fmt::format(
             "_VarDeclLs * _vdLs=_init_varLs_inFn(\"{}\", \"{}\", {}, {}); /* 初始化函数变量列表, {}*/",
-            funcLocId.filePath,
-            funcLocId.funcName,
-            funcLocId.line, funcLocId.column,
-            funcLocId.to_string()
+            fnBdLBrcLocId.filePath,
+            fnBdLBrcLocId.funcName,
+            fnBdLBrcLocId.line, fnBdLBrcLocId.column,
+            fnBdLBrcLocId.to_string()
     );
     llvm::StringRef strRef_init(cStr_init);
     bool insertResult_init=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef_init);
@@ -39,9 +57,9 @@ bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId funcLocId, So
     //region 构造插入语句
     std::string cStr_destroy=fmt::format(
             "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表, {}*/",
-            funcLocId.filePath,
-            funcLocId.funcName,
-            funcLocId.to_string()
+            fnBdLBrcLocId.filePath,
+            fnBdLBrcLocId.funcName,
+            fnBdLBrcLocId.to_string()
     );
     llvm::StringRef strRef_destroy(cStr_destroy);
     bool insertResult_destroy=mRewriter_ptr->InsertTextBefore(funcBodyRBraceLoc , strRef_destroy);
@@ -50,7 +68,7 @@ bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId funcLocId, So
 
     //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
-    funcEnterLocIdSet.insert(funcLocId);
+    funcEnterLocIdSet.insert(fnBdLBrcLocId);
 
     return insertResult_init && insertResult_destroy;
 }
@@ -269,7 +287,7 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
       );
 }
 bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
-  if(sizeof(lambdaExpr)<9999999){//以这样一句话暂时跳过lambda
+  if(sizeof(lambdaExpr)<0){//以这样一句话暂时跳过lambda
     return false;
   }
 
@@ -388,5 +406,41 @@ bool FnVst::_Traverse_Func(
 
     return false;
 
+}
+
+bool FnVst::TraverseReturnStmt(ReturnStmt *returnStmt){
+  //跳过非MainFile
+  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
+  if(!_LocFileIDEqMainFileID){
+    return false;
+  }
+
+  //获取主文件ID,文件路径
+  FileID mainFileId;
+  std::string filePath;
+  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+
+/////////////////////////对当前节点returnStmt做 自定义处理
+
+//  int64_t returnStmtID = returnStmt->getID(*Ctx);
+  const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
+  LocId retBgnLocId=LocId::buildFor(filePath, "", retBgnLoc, SM);
+  if(this->funcReturnLocIdSet.count(retBgnLocId) > 0){
+    //若 已插入  释放栈变量，则不必插入,防止重复。
+    return false;
+  }
+
+  if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
+    insertBefore_X__funcReturn(retBgnLocId, retBgnLoc );
+  }
+
+///////////////////// 自定义处理 完毕
+
+////////////////////  粘接直接子节点到递归链条:  对 当前节点doStmt的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+//粘接直接子节点到递归链条: TODO: 这段不知道怎么写（得获得return xxx; 的xxx中可能的lambda表达式，并遍历该lambda表达式)， 也有可能不用写：
+//希望return true能继续遍历子节点吧，因为return中应该可以写lambda，lambada内有更复杂的函数结构
+  return true;
+//  Expr *xxx = returnStmt->getRetValue();
 }
 
