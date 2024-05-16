@@ -13,16 +13,7 @@
 #include <iostream>
 #include <clang/AST/ParentMapContext.h>
 
-#include <stdexcept>
-#define MyAssert(ok_cond,err_msg)     \
-if(!(ok_cond)) {                       \
-try  {                                \
-throw std::runtime_error(err_msg);         \
-}    catch(const std::exception& e) { \
-std::cout<<__FILE__<<":"<< __LINE__<<":"<<e.what()<<std::endl;       \
-throw e;                             \
-}                                    \
-}
+#include "base/MyAssert.h"
 
 using namespace llvm;
 using namespace clang;
