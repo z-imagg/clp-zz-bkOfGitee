@@ -22,7 +22,7 @@ bool VarVst::insertAfter_VarDecl(const std::string typeName,int varCnt,LocId var
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
     //region 构造插入语句
     std::string cStr_inserted=fmt::format(
-            "createVar(\"{}\", {}) ; /* 变量声明语句末尾放入创建变量通知 ; {} */",
+            "createVar(\"{}\", {})  /* 创建变量通知,  {} */ ;",
             typeName, varCnt, varDeclLocId.to_string()
     );
     llvm::StringRef strRef(cStr_inserted);
