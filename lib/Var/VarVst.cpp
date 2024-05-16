@@ -34,6 +34,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
         //多声明（多变量声明、多函数声明、多x声明）
 //        Decl * decl=* (declStmt->getDeclGroup().begin());
         const DeclGroupRef &declGroup = declStmt->getDeclGroup();
+        //遍历每一个声明
         std::for_each(declGroup.begin(),declGroup.end(),[this](const Decl* declK){
             this->process_singleDecl(declK);
         });
