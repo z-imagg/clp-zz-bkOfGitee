@@ -36,16 +36,24 @@ public:
 
     bool insertAfterFnLeftBrace__insertBeforeFnRightBrace( LocId funcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
+    bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
+    bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);
+    bool TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl);
+    bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);
+    bool I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who);
+    bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     bool _Traverse_Func(
-            bool funcIsStatic,
-            bool funcIsInline,
+//            bool funcIsStatic,
+//            bool funcIsInline,
             QualType funcReturnType,
             bool isaCXXConstructorDecl,
             Stmt *endStmtOfFuncBody,
             SourceLocation funcBodyLBraceLoc,
             SourceLocation funcBodyRBraceLoc,
             LocId funcBodyLBraceLocId,
-            CompoundStmt* compoundStmt
+            LocId funcBodyRBraceLocId,
+            CompoundStmt* compoundStmt,
+            std::string funcName
     );
 
 
