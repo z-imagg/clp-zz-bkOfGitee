@@ -40,31 +40,7 @@ public:
 //    virtual bool VisitDeclStmt(DeclStmt* decl_k);
     virtual bool TraverseDeclStmt(DeclStmt* decl_k);
     bool process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName,QualType &qualType);
-    /**
-'#define STMT'下1行有'bool Traverse##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
-
-python /app/bash-simplify/pyFileReFindAllDotAsAll.py  '#define STMT(?:.*\n){1}  bool Traverse##CLASS(?:.*\n)#include "clang/AST/StmtNodes.inc"\n'  "$RecursiveASTVisitor_H"
-
-文件/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h 匹配行号 行372～行375
- #define STMT(CLASS, PARENT) \
-  bool Traverse##CLASS(CLASS *S, DataRecursionQueue *Queue = nullptr);
-#include "clang/AST/StmtNodes.inc"
-
-
-'#define STMT'下6行有'bool Visit##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
-
-python /app/bash-simplify/pyFileReFindAllDotAsAll.py  '#define STMT(?:.*\n){6}  bool Visit##CLASS(?:.*\n){1}#include "clang/AST/StmtNodes.inc"\n'   "$RecursiveASTVisitor_H"
-
-文件/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/clang/AST/RecursiveASTVisitor.h 匹配行号 行380～行388
- #define STMT(CLASS, PARENT)                                                    \
-  bool WalkUpFrom##CLASS(CLASS *S) {                                           \
-    TRY_TO(WalkUpFrom##PARENT(S));                                             \
-    TRY_TO(Visit##CLASS(S));                                                   \
-    return true;                                                               \
-  }                                                                            \
-  bool Visit##CLASS(CLASS *S) { return true; }
-#include "clang/AST/StmtNodes.inc"
-*/
+    bool insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc );
 
 
 
@@ -78,7 +54,7 @@ public:
     SourceManager& SM;
 
     //一个位置若是插入了花括号，则表明此位置不需要再次插入花括号了。
-    std::unordered_set<LocId,LocId> LBraceLocIdSet;
+    std::unordered_set<LocId,LocId> VarDeclLocIdSet;
 
 };
 

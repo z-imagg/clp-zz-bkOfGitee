@@ -77,7 +77,7 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
 
    //region 3. 插入 已处理 注释标记 到主文件第一个声明前
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才插入 已处理 注释标记
-   if( !(varVst.LBraceLocIdSet.empty()) ){
+   if( !(varVst.VarDeclLocIdSet.empty()) ){
    bool insertResult;
    //插入的注释语句不要带换行,这样不破坏原行号
    //  必须插入此样式/** */ 才能被再次读出来， 而/* */读不出来
@@ -93,7 +93,7 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
 
    //region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
-   if( !(varVst.LBraceLocIdSet.empty()) ){
+   if( !(varVst.VarDeclLocIdSet.empty()) ){
    varVst.mRewriter_ptr->overwriteChangedFiles();
    DiagnosticsEngine &Diags = CI.getDiagnostics();
    std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;

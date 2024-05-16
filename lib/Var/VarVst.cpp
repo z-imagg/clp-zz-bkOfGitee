@@ -18,51 +18,98 @@
 using namespace llvm;
 using namespace clang;
 
+bool VarVst::insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc ){
+    //用funcEnterLocIdSet的尺寸作为LocationId的计数器
+    //region 构造插入语句
+    std::string cStr_inserted=fmt::format(
+            "createVar(\"{}\", {}) ; /* 变量声明语句末尾放入创建变量通知 ; {} */",
+            typeName, varCnt, varDeclLocId.to_string()
+    );
+    llvm::StringRef strRef(cStr_inserted);
+    //endregion
+
+    bool insertResult=mRewriter_ptr->InsertTextAfterToken(varDeclEndLoc , strRef);
+
+
+    //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
+    VarDeclLocIdSet.insert(varDeclLocId);
+
+    //写函数id描述行
+//  funcIdDescSrv.write(funcLocId); // 把 funcLocId.to_csv_line() 牵涉的列们 都 发送到 funcIdDescWebService 去
+
+    return insertResult;
+}
 
 bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     std::cout<<"\n";
 
+    //获取主文件ID,文件路径
+    FileID mainFileId;
+    std::string filePath;
+    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+
+    const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
+    
 //    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
     bool isStructType;
     std::string typeName;
     QualType qualType;
+    int varCnt;
+
+    Decl *p_singleDecl;
+    bool result=false;
 
     bool isSingleDecl = declStmt->isSingleDecl();
     if(isSingleDecl){
+        varCnt=1;
         //单声明（单变量声明、单函数声明、单x声明）
-        Decl *p_singleDecl = declStmt->getSingleDecl();
-        bool result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
-        clang::Type::TypeClass  typeClass = qualType->getTypeClass();
-        return result;
+        p_singleDecl = declStmt->getSingleDecl();
     }else{
         //多声明（多变量声明、多函数声明、多x声明）
+        const DeclGroupRef &dg = declStmt->getDeclGroup();
+        varCnt=std::distance(dg.begin(),dg.end());
         //只看第1个声明
-        Decl * decl0=* (declStmt->getDeclGroup().begin());
-        this->process_singleDecl(decl0,isStructType,typeName,qualType);
-        clang::Type::TypeClass  typeClass = qualType->getTypeClass();
+        p_singleDecl=* (dg.begin());
+    }
 
-        const DeclGroupRef &declGroup = declStmt->getDeclGroup();
+
+    result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
+    clang::Type::TypeClass  typeClass = qualType->getTypeClass();
+
+    //按照左右花括号，构建位置id，防止重复插入
+    LocId declStmtBgnLocId=LocId::buildFor(filePath, declStmtBgnLoc, SM);
+
+    if(isStructType){
+    //只有似结构体变量才会产生通知
+        insertAfter_VarDecl(typeName,varCnt,declStmtBgnLocId,declStmtBgnLoc);
+    }
+
+    if(isSingleDecl){
+
+    }else{
+        //多声明（多变量声明、多函数声明、多x声明）
+//        const DeclGroupRef &declGroup = declStmt->getDeclGroup();
+        const DeclGroupRef &dg = declStmt->getDeclGroup();
+        p_singleDecl=* (dg.begin());
+//        result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
+
         //遍历每一个声明
-        std::for_each(declGroup.begin(),declGroup.end(),[this,isStructType,typeName,typeClass](const Decl* decl_k){
-
+        std::for_each(dg.begin(),dg.end(),[this,isStructType,typeName,typeClass](const Decl* decl_k){
             bool isStructType_k;
             std::string typeName_k;
             QualType qualType_k;
             this->process_singleDecl(decl_k,isStructType_k,typeName_k,qualType_k);
-            const char *typeClassName_k = qualType_k.getTypePtr()->getTypeClassName();
             clang::Type::TypeClass  typeClass_k = qualType_k->getTypeClass();
-            if(typeClass!=clang::Type::Pointer &&
-            typeClass_k!=clang::Type::Pointer) //等价于 typeClassName_k!="Pointer"
-            {
+            if(typeClass!=clang::Type::Pointer && typeClass_k!=clang::Type::Pointer)   {
                 //断言第k个声明和第0个声明的类型一致
                 MyAssert(isStructType_k==isStructType && typeName_k==typeName,"[AssertErr]NotFit:isStructType_k==isStructType && typeName_k==typeName" )
             }
         });
-        return true;
     }
 
+    return result;
 }
 
 
