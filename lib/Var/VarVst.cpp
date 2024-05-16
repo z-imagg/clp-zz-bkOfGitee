@@ -52,32 +52,16 @@ bool VarVst::process_singleDecl(const Decl *p_singleDecl){
         clang::Type::TypeClass typeClass = qualType->getTypeClass();
         const clang::Type *typePtr = qualType.getTypePtr();
         const char *typeClassName = typePtr->getTypeClassName();
-        //比如  ' qualType.getTypePtr()->getTypeClassName()== "Builtin" 或 基本类型的"Typedef" ' 即  'clang::Type::Builtin == qualType->getTypeClass()'
-        bool typeClassEqBuiltin = clang::Type::Builtin == typeClass;
         bool isBuiltinType = qualType->isBuiltinType();
-
 
         bool typeClassEqRecord = clang::Type::Record == typeClass;
         bool typeClassEqElaborated = clang::Type::Elaborated == typeClass;
-        bool isObjectType = qualType->isObjectType();
 
-
-
-//        bool isTrivialType = qualType.isTrivialType(*Ctx);
-        bool isClassType = qualType->isClassType();
         bool isPointerType=qualType->isPointerType();
-//        int isStructuralType = qualType->isStructuralType();
-        bool isFloatingType = qualType->isFloatingType();
         const std::string &typeName = qualType.getAsString();
 
         std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n", typeName, (int)typeClass, typeClassName, typeClassEqBuiltin, isObjectType, isBuiltinType, isClassType, isFloatingType);
         std::cout<<msg;
-
-        //断言 typeClassEqBuiltin==isBuiltinType
-//        MyAssert(typeClassEqBuiltin == isBuiltinType,"[AssertErr]NotFit:typeClassEqBuiltin==isBuiltinType"); //失败举例 typeName=='DOUBLE_typedef' && isBuiltinType=true
-        //断言 typeClassEqRecord==isObjectType
-//        MyAssert(typeClassEqRecord == isObjectType,"[AssertErr]NotFit:typeClassEqRecord==isObjectType"); //失败举例 typeClassEqRecord=='Pointer' && isObjectType==true
-
 
         if(isBuiltinType){
             std::cout<<"[跳过]isBuiltinType==true\n";
@@ -93,15 +77,6 @@ bool VarVst::process_singleDecl(const Decl *p_singleDecl){
         //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
 
     }
-    Decl::Kind singleDeclKind = p_singleDecl->getKind();
-
-//    SourceLocation beginLoc,endLoc;
-//    beginLoc = declStmt->getBeginLoc();
-//    endLoc = declStmt->getEndLoc();
-    //构造人类可读开始位置、结束位置、插入者 注释文本
-//    std::string hmTxtCmnt_whoInsrt_BE;
-//    Util::BE_Loc_HumanText(SM, beginLoc, endLoc, "test_VisitDeclStmt", hmTxtCmnt_whoInsrt_BE);
-//    std::cout<<hmTxtCmnt_whoInsrt_BE<<"\n";
 
     return true;
 }
