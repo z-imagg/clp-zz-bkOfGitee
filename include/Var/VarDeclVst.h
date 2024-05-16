@@ -1,5 +1,5 @@
-#ifndef VarVst_H
-#define VarVst_H
+#ifndef VarDeclVst_H
+#define VarDeclVst_H
 
 
 #include <clang/Rewrite/Core/Rewriter.h>
@@ -19,12 +19,12 @@ using namespace clang;
 /**
  * 插入花括号Visitor
  */
-class VarVst
-        : public RecursiveASTVisitor<VarVst> {
+class VarDeclVst
+        : public RecursiveASTVisitor<VarDeclVst> {
 public:
 public:
     //Rewriter:4:  Consumer将Rewriter传递给Visitor
-    explicit VarVst(CompilerInstance &CI, const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, SourceManager& SM, LangOptions &_langOptions)
+    explicit VarDeclVst(CompilerInstance &CI, const std::shared_ptr<Rewriter> rewriter_ptr, ASTContext *Ctx, SourceManager& SM, LangOptions &_langOptions)
     //Rewriter:5:  Consumer将Rewriter传递给Visitor, 并由Visitor.mRewriter接收
     : mRewriter_ptr(rewriter_ptr),
     Ctx(Ctx),
@@ -33,20 +33,6 @@ public:
     {
 
     }
-
-    bool insertAfterFnLeftBrace__insertBeforeFnRightBrace( LocId funcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
-    virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
-    bool _Traverse_Func(
-            bool funcIsStatic,
-            bool funcIsInline,
-            QualType funcReturnType,
-            bool isaCXXConstructorDecl,
-            Stmt *endStmtOfFuncBody,
-            SourceLocation funcBodyLBraceLoc,
-            SourceLocation funcBodyRBraceLoc,
-            LocId funcBodyLBraceLocId,
-            CompoundStmt* compoundStmt
-    );
 
 
 //    virtual bool VisitDeclStmt(DeclStmt* decl_k);
@@ -67,8 +53,6 @@ public:
 
     //一个位置若是插入了花括号，则表明此位置不需要再次插入花括号了。
     std::unordered_set<LocId,LocId> VarDeclLocIdSet;
-
-    std::unordered_set<LocId,LocId> funcEnterLocIdSet;
 };
 
 

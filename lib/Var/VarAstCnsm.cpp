@@ -2,6 +2,7 @@
 #include "Var/CollectIncMacro_PPCb.h"
 #include "Var/Constant.h"
 
+#include "base/MyAssert.h"
 
 
 bool VarAstCnsm::mainFileProcessed=false;
@@ -16,12 +17,12 @@ bool VarAstCnsm::mainFileProcessed=false;
      //endregion
 
      ///region 打印各重要对象地址
-   std::cout<< fmt::format("HandleTranslationUnit打印各重要对象地址: CI:{:x},this->Ctx:{:x},Ctx:{:x},SM:{:x},mRewriter_ptr:{:x}",
+   std::cout << fmt::format("HandleTranslationUnit打印各重要对象地址: CI:{:x},this->Ctx:{:x},Ctx:{:x},SM:{:x},mRewriter_ptr:{:x}",
 reinterpret_cast<uintptr_t> (&CI ),
 reinterpret_cast<uintptr_t> (&(this->Ctx) ),
 reinterpret_cast<uintptr_t> (&Ctx ),
 reinterpret_cast<uintptr_t> (&SM ),
-reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
+reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
 //  ASTConsumer::HandleTranslationUnit(Ctx);
     //endregion
 
@@ -88,26 +89,33 @@ reinterpret_cast<uintptr_t> ( (varVst.mRewriter_ptr.get()) ) ) <<std::endl;
        continue;
      }
      //只处理MainFile中的声明
-     this->varVst.TraverseDecl(D);
+     this->fnVst.TraverseDecl(D);
+     this->varDeclVst.TraverseDecl(D);
    }
    //endregion
 
    ///region 3. 插入 已处理 注释标记 到主文件第一个声明前
      bool insertResult;
-     Util::insertIncludeToFileStart(c.PrgMsgStmt_funcIdAsmIns, mainFileId, SM, varVst.mRewriter_ptr,insertResult);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
+     Util::insertIncludeToFileStart(c.PrgMsgStmt_funcIdAsmIns, mainFileId, SM, fnVst.mRewriter_ptr, insertResult);//此时  insertVst.mRewriter.getRewriteBufferFor(mainFileId)  != NULL， 可以做插入
      std::string msg=fmt::format("插入'#pragma 消息'到文件{},对mainFileId:{},结果:{}\n",filePath,mainFileId.getHashValue(),insertResult);
      std::cout<< msg ;
 
 
    //endregion
 
+   //断言两个Vst中的rewriter是同一个对象
+   MyAssert(varDeclVst.mRewriter_ptr==fnVst.mRewriter_ptr,"[AssertErr]NotFit:varDeclVst.mRewriter_ptr==fnVst.mRewriter_ptr")
+
    ///region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
-   if( !(varVst.VarDeclLocIdSet.empty()) ){
-   varVst.mRewriter_ptr->overwriteChangedFiles();
-   DiagnosticsEngine &Diags = CI.getDiagnostics();
-   std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
+   if( !(varDeclVst.VarDeclLocIdSet.empty()) ){
+   varDeclVst.mRewriter_ptr->overwriteChangedFiles();
    }
+   if( !(fnVst.funcEnterLocIdSet.empty()) ){
+   fnVst.mRewriter_ptr->overwriteChangedFiles();
+   }
+     DiagnosticsEngine &Diags = CI.getDiagnostics();
+     std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion
 
    ///region 在此编译进程内, 标记本mainFile已处理, 避免重复处理

@@ -15,8 +15,9 @@
 
 #include <fmt/core.h>
 
-#include "Var/VarVst.h"
+#include "Var/FnVst.h"
 #include "base/Util.h"
+#include "VarDeclVst.h"
 
 using namespace llvm;
 using namespace clang;
@@ -37,7 +38,8 @@ public:
             Ctx(*_astContext),
             SM(_SM),
             varOk(false),
-            varVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
+            fnVst(_CI, _rewriter_ptr, _astContext, _SM, _langOptions),
+            varDeclVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
             {
       //构造函数
 //      _rewriter_ptr->overwriteChangedFiles();//C'正常.
@@ -51,7 +53,7 @@ public:
 public:
     CompilerInstance &CI;
     ASTContext & Ctx;
-//    VarVst insertVst;
+//    FnVst insertVst;
 //    FndVarFlagCmtHdl findTCCallROVisitor;
     SourceManager &SM;
     //两次HandleTranslationUnit的ASTConsumer只能每次新建，又期望第二次不要发生，只能让标志字段mainFileProcessed写成static
@@ -63,8 +65,10 @@ public:
     //endregion
 
     //region 进行处理：插入花括号
-    VarVst varVst;
+    FnVst fnVst;
     //endregion
+
+    VarDeclVst varDeclVst;
 };
 
 
