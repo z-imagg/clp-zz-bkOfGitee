@@ -10,67 +10,44 @@
 #include <vector>
 
 #include <fmt/core.h>
-
-using namespace clang;
-
 #include <iostream>
 #include <clang/AST/ParentMapContext.h>
-#include <fmt/core.h>
 
+#include "base/MyAssert.h"
 
 using namespace llvm;
 using namespace clang;
 
-void printDeclStmtTree(DeclStmt *declStmt, int depth) {
-    // 获取当前节点的声明
-    Decl *decl = nullptr;
-    if (auto *singleDecl = declStmt->getSingleDecl()) {
-        decl = singleDecl;
-
-    } else  {
-        // 如果是一组声明，则选择第一个声明
-        decl=* (declStmt->getDeclGroup().begin());
-    }
-
-    // 如果找到声明，则打印其名称
-    if (decl) {
-//        decl->getKind()
-        Decl::Kind declKind = decl->getKind();
-        std::string  msg=fmt::format("depth={}, kind={}, DeclKindName={}\n",depth,(int)declKind,decl->getDeclKindName());
-//        llvm::errs() << msg ;
-        std::cout<<msg;
-    }
-
-//    Stmt *body = decl->getBody();
-    // 打印当前节点的子节点
-    for (auto *child : declStmt->children()) {
-        if (auto *childDeclStmt = llvm::dyn_cast<DeclStmt>(child)) {
-            printDeclStmtTree(childDeclStmt, depth + 1);
-        } else {
-
-            // 如果子节点不是 DeclStmt，则打印其名称
-            Stmt::StmtClass childStmtClass = child->getStmtClass();
-            std::string  msg=fmt::format("depth={}, StmtClass={}, StmtClassName={}\n",depth+1,(int)childStmtClass,child->getStmtClassName());
-//            llvm::errs() << msg  ;
-            std::cout<<msg;
-        }
-    }
-}
 
 bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
     std::cout<<"\n";
-//    printDeclStmtTree(declStmt,0);
-    Stmt::StmtClass stmtClass = declStmt->getStmtClass();
-    const char *stmtClassName = declStmt->getStmtClassName();
+
+//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
+    Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
     bool isSingleDecl = declStmt->isSingleDecl();
-    Decl *p_singleDecl = declStmt->getSingleDecl();
-    Decl &singleDecl = *p_singleDecl;
-    Stmt *body = singleDecl.getBody();
-    AttrVec &attrVec = singleDecl.getAttrs();
-    size_t vecCnt = attrVec.size();
+    if(isSingleDecl){
+        //单声明（单变量声明、单函数声明、单x声明）
+        Decl *p_singleDecl = declStmt->getSingleDecl();
+        return this->process_singleDecl(p_singleDecl);
+    }else{
+        //多声明（多变量声明、多函数声明、多x声明）
+//        Decl * decl=* (declStmt->getDeclGroup().begin());
+        const DeclGroupRef &declGroup = declStmt->getDeclGroup();
+        //遍历每一个声明
+        std::for_each(declGroup.begin(),declGroup.end(),[this](const Decl* declK){
+            this->process_singleDecl(declK);
+        });
+        return true;
+    }
 
-    if (ValueDecl *valueDecl = dyn_cast<ValueDecl>(&singleDecl)) {
+}
+
+
+bool VarVst::process_singleDecl(const Decl *p_singleDecl){
+
+
+    if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(p_singleDecl)) {
         const QualType &qualType = valueDecl->getType();
         clang::Type::TypeClass typeClass = qualType->getTypeClass();
         const clang::Type *typePtr = qualType.getTypePtr();
@@ -78,32 +55,45 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
         //比如  ' qualType.getTypePtr()->getTypeClassName()== "Builtin" 或 基本类型的"Typedef" ' 即  'clang::Type::Builtin == qualType->getTypeClass()'
         bool typeClassEqBuiltin = clang::Type::Builtin == typeClass;
         bool isBuiltinType = qualType->isBuiltinType();
-        if(typeClassEqBuiltin){
-            //断言 typeClassEqBuiltin==isBuiltinType
-            assert(isBuiltinType);
-            return true;
-        }
 
 
         bool typeClassEqRecord = clang::Type::Record == typeClass;
+        bool typeClassEqElaborated = clang::Type::Elaborated == typeClass;
         bool isObjectType = qualType->isObjectType();
-        if(typeClassEqRecord){
-            //断言 typeClassEqRecord==isObjectType
-            assert(isObjectType);
-            //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
-        }
+
+
 
 //        bool isTrivialType = qualType.isTrivialType(*Ctx);
-        int isClassType = qualType->isClassType();
+        bool isClassType = qualType->isClassType();
+        bool isPointerType=qualType->isPointerType();
 //        int isStructuralType = qualType->isStructuralType();
-        int isFloatingType = qualType->isFloatingType();
+        bool isFloatingType = qualType->isFloatingType();
         const std::string &typeName = qualType.getAsString();
+
         std::string  msg=fmt::format("typeName='{}',typeClass={},typeClassName={},typeClassEqBuiltin={},isObjectType={},isBuiltinType={},isClassType={},isFloatingType={}\n", typeName, (int)typeClass, typeClassName, typeClassEqBuiltin, isObjectType, isBuiltinType, isClassType, isFloatingType);
         std::cout<<msg;
-        
-        
+
+        //断言 typeClassEqBuiltin==isBuiltinType
+//        MyAssert(typeClassEqBuiltin == isBuiltinType,"[AssertErr]NotFit:typeClassEqBuiltin==isBuiltinType"); //失败举例 typeName=='DOUBLE_typedef' && isBuiltinType=true
+        //断言 typeClassEqRecord==isObjectType
+//        MyAssert(typeClassEqRecord == isObjectType,"[AssertErr]NotFit:typeClassEqRecord==isObjectType"); //失败举例 typeClassEqRecord=='Pointer' && isObjectType==true
+
+
+        if(isBuiltinType){
+            std::cout<<"[跳过]isBuiltinType==true\n";
+            return true;
+        }
+        if(isPointerType){
+            std::cout<<"[跳过]isPointerType==true\n";
+            return true;
+        }
+
+        MyAssert(typeClassEqRecord||typeClassEqElaborated,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
+
+        //TODO 【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
+
     }
-    Decl::Kind singleDeclKind = singleDecl.getKind();
+    Decl::Kind singleDeclKind = p_singleDecl->getKind();
 
 //    SourceLocation beginLoc,endLoc;
 //    beginLoc = declStmt->getBeginLoc();
@@ -113,8 +103,6 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 //    Util::BE_Loc_HumanText(SM, beginLoc, endLoc, "test_VisitDeclStmt", hmTxtCmnt_whoInsrt_BE);
 //    std::cout<<hmTxtCmnt_whoInsrt_BE<<"\n";
 
-//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
-    Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
     return true;
 }
 

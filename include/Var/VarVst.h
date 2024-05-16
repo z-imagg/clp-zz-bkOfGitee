@@ -38,6 +38,7 @@ public:
 
 //    virtual bool VisitDeclStmt(DeclStmt* declStmt);
     virtual bool TraverseDeclStmt(DeclStmt* declStmt);
+    bool process_singleDecl(const Decl *p_singleDecl);
     /**
 '#define STMT'下1行有'bool Traverse##CLASS'下1行'#include "clang/AST/StmtNodes.inc"'
 
