@@ -16,9 +16,9 @@ std::vector<_VarDecl> *  _init_varLs_inFn(char* srcFilePath,char* funcName,int f
 
 
 //结构体变量声明末尾 插入 'createVar(_varLs_ptr,"变量类型名",变量个数);'
-void createVar(void* _varLs_ptr, char* varTypeName,int varCnt);
+void createVar(std::vector<_VarDecl> * _vdVec, char* varTypeName,int varCnt);
 
 
 //【销毁变量通知】 TODO  函数右花括号前 插入 'destroyVarLs_inFn(_varLs_ptr);'
-void destroyVarLs_inFn(void* _varLs_ptr);
+void destroyVarLs_inFn(std::vector<_VarDecl> * _vdVec);
 #endif //runtime_cpp__vars_fn_H
