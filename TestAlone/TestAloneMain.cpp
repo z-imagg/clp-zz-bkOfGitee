@@ -123,10 +123,10 @@ int main() {
   //region 设置头文件路径
   HeaderSearchOptions &HSO = CI.getHeaderSearchOpts();
   HSO.AddPath("/usr/include/",clang::frontend::Angled, false, false);
-  HSO.AddPath("/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/",clang::frontend::Angled, false, false);
-  HSO.AddPath("/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/",clang::frontend::Angled, false, false);
+  HSO.AddPath("/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0/include/",clang::frontend::Angled, false, false);
+  HSO.AddPath("/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/include/",clang::frontend::Angled, false, false);
   //ResourceDir 应该是有用的，但是不知道如何正确添加
-//  HSO.ResourceDir=="/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
+//  HSO.ResourceDir=="/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/lib/clang/15.0.0";
   //endregion
 
 //  PP.EnterSourceFile()
