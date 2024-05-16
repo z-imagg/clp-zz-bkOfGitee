@@ -306,4 +306,4 @@ bool VarVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, std::s
     return true;
 }
 
-//TODO 【块离开时， 执行业务内容】 遍历每个k: 直接在该块内声明的栈区变量k，找到变量k的类型名Tk，向threadLocal记录 释放了一个类型为Tk的变量
+//TODO 【块离开时， 执行业务内容】 遍历每个k: 直接在该块内声明的栈区变量k，找到变量k的类型名Tk，向threadLocal记录 释放了一个类型为Tk的变量： 主动遍历每个块太复杂，该函数执行时每个块都被会执行，跟着一起运行即可间接遍历了每个块
