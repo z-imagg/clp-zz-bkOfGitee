@@ -39,7 +39,7 @@ public:
 
 //    virtual bool VisitDeclStmt(DeclStmt* decl_k);
     virtual bool TraverseDeclStmt(DeclStmt* decl_k);
-    bool process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName,QualType &qualType);
+    bool process_singleDecl(const Decl *singleDecl, bool& isStructType, std::string &typeName, QualType &qualType);
     bool insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc );
 
 

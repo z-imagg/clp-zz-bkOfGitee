@@ -50,7 +50,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
     
-//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
+//    Util::printDecl(*Ctx,CI,"tag1","title1",&p_singleDecl,true);
     Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
     bool isStructType;
@@ -76,20 +76,13 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     // 多声明 result 依赖 第0个声明
     // 单声明 result 依赖 该声明
-    result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
+    result= this->process_singleDecl(p_singleDecl, isStructType, typeName, qualType);
     clang::Type::TypeClass  typeClass = qualType->getTypeClass();
-
-    //按照左右花括号，构建位置id，防止重复插入
-    LocId declStmtBgnLocId=LocId::buildFor(filePath, declStmtBgnLoc, SM);
-
 
     if(isSingleDecl){}
     else{
         //多声明（多变量声明、多函数声明、多x声明）
-//        const DeclGroupRef &declGroup = declStmt->getDeclGroup();
         const DeclGroupRef &dg = declStmt->getDeclGroup();
-        p_singleDecl=* (dg.begin());
-//        result= this->process_singleDecl(p_singleDecl,isStructType,typeName,qualType);
 
         //遍历每一个声明
         std::for_each(dg.begin(),dg.end(),[this,isStructType,typeName,typeClass,&varCnt](const Decl* decl_k){
@@ -105,8 +98,10 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
         });
     }
 
-
+    //是结构体
     if(isStructType){
+        //按照左右花括号，构建位置id，防止重复插入
+        LocId declStmtBgnLocId=LocId::buildFor(filePath, declStmtBgnLoc, SM);
         //只有似结构体变量才会产生通知
         insertAfter_VarDecl(typeName,varCnt,declStmtBgnLocId,declStmtBgnLoc);
     }
@@ -115,7 +110,7 @@ bool VarVst::TraverseDeclStmt(DeclStmt* declStmt){
 }
 
 
-bool VarVst::process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std::string &typeName,QualType &qualType){
+bool VarVst::process_singleDecl(const Decl *p_singleDecl, bool& isStructType, std::string &typeName, QualType &qualType){
 
 
     if (const ValueDecl *valueDecl = dyn_cast_or_null<ValueDecl>(p_singleDecl)) {
@@ -135,16 +130,19 @@ bool VarVst::process_singleDecl(const Decl *p_singleDecl,bool& isStructType,std:
         std::cout<<msg;
 
         if(isBuiltinType){
+            //非结构体
             isStructType=false;
             std::cout<<"[跳过]isBuiltinType==true;[返回]isStructType==false\n";
             return true;
         }
         if(isPointerType){
+            //非结构体
             isStructType=false;
             std::cout<<"[跳过]isPointerType==true;[返回]isStructType==false\n";
             return true;
         }
 
+        //是结构体==是Record或是Elaborated
         isStructType=(typeClassEqRecord||typeClassEqElaborated);
         MyAssert(isStructType,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
 
