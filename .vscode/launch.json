@@ -1,0 +1,10 @@
+{
+"version": "0.2.0",
+"configurations": [
+
+{ "name": "VarAlone", "type": "cppdbg", "request": "launch", "program": "${workspaceRoot}/build/bin/VarAlone",   "cwd": ".",
+"args": ["/fridaAnlzAp/clang-var/test_in/test_main.cpp"] }
+
+]
+
+}
