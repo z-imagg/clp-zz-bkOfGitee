@@ -20,7 +20,7 @@ using namespace clang;
 
 
 //在函数体左花括号紧后插入'初始化语句'
-bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
+bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
 
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
@@ -34,7 +34,7 @@ bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation func
     std::string cStr_init=fmt::format(
             "_VarDeclLs * _vdLs=_init_varLs_inFn(\"{}\", \"{}\", {}, {}); /* 初始化函数变量列表, {}*/",
             fnBdLBrcLocId.filePath,
-            fnBdLBrcLocId.funcName,
+            funcName,
             fnBdLBrcLocId.line, fnBdLBrcLocId.column,
             verbose
     );
@@ -372,7 +372,7 @@ bool FnVst::_Traverse_Func(
 //        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&fnBdLBrcLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
 
         //若 本函数还 没有 插入 函数进入语句，才插入。
-        insert_init__After_FnBdLBrc(funcBodyLBraceLocId, funcBodyLBraceLoc, funcBodyRBraceLoc);
+        insert_init__After_FnBdLBrc(funcBodyLBraceLocId,funcName, funcBodyLBraceLoc, funcBodyRBraceLoc);
     }
 //    }
     //endregion

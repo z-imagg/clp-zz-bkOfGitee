@@ -31,7 +31,6 @@ bool RetVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retB
     std::string cStr_destroy=fmt::format(
             "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: {}*/",
             retBgnLocId.filePath,
-            retBgnLocId.funcName,
             verbose
     );
     llvm::StringRef strRef_destroy(cStr_destroy);
