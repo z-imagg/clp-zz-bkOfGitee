@@ -42,8 +42,34 @@ clang++  $Clang_VFIRPlugin_run   $Clang_Varlugin_run -c  $test_main_cpp_F
 
 
 
+
 因此，暂时只能分两次运行这两个插件
+
+##### 插件使用步骤(请按此步骤写入cmd-wrap中)
+
+1. 分两次运行插件，以修改源码
   ```shell
 clang++  $Clang_VFIRPlugin_run  -c  $test_main_cpp_F 
 clang++  $Clang_Varlugin_run    -c  $test_main_cpp_F 
+```
+
+2. 最后， 编译命令中加入'-include runtime_cpp__vars_fn.h', 再正常编译修改后源码
+```shell
+
+PrjHm=/fridaAnlzAp/clang-var/
+
+# 以clang编译命令-include 等效test_main.cpp中书写了'#include "runtime_cpp__vars_fn.h"'
+clang++ -I $PrjHm/runtime_cpp__vars_fn/include/ -include runtime_cpp__vars_fn.h  -c   $PrjHm/test_in/test_main.cpp
+
+```
+
+3. 链接时，加入runtime_cpp__vars_fn.o
+```shell
+
+clang++ -I $PrjHm/runtime_cpp__vars_fn/include   -c   $PrjHm/runtime_cpp__vars_fn/runtime_cpp__vars_fn.cpp
+
+#链接时，加入runtime_cpp__vars_fn.o
+clang++ test_main.o runtime_cpp__vars_fn.o -o test_main.elf
+
+./test_main.elf && echo test_main__ok
 ```
