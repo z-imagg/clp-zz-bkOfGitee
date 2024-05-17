@@ -20,13 +20,19 @@ using namespace clang;
 
 //在return紧前插入'销毁语句'
 bool RetVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  ){
+    std::string verbose="";
+    //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
+    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+        verbose=retBgnLocId.to_string();
+    }
+
 //【销毁变量通知】  函数在return紧前 插入 销毁语句'destroyVarLs_inFn(_vdLs);'
     //region 构造插入语句
     std::string cStr_destroy=fmt::format(
-            "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表, {}*/",
+            "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: {}*/",
             retBgnLocId.filePath,
             retBgnLocId.funcName,
-            retBgnLocId.to_string()
+            verbose
     );
     llvm::StringRef strRef_destroy(cStr_destroy);
     bool insertResult_destroy=mRewriter_ptr->InsertTextBefore(retBgnLoc , strRef_destroy);

@@ -22,6 +22,12 @@ using namespace clang;
 //在函数体左花括号紧后插入'初始化语句'
 bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
 
+    std::string verbose="";
+    //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
+    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+        verbose=fnBdLBrcLocId.to_string();
+    }
+
 //在函数左花括号紧后插入  初始化语句'_VarDeclLs * _vdLs=_init_varLs_inFn("源文件路径","函数名",行号,列号);'
 
     //region 构造插入语句
@@ -30,7 +36,7 @@ bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation func
             fnBdLBrcLocId.filePath,
             fnBdLBrcLocId.funcName,
             fnBdLBrcLocId.line, fnBdLBrcLocId.column,
-            fnBdLBrcLocId.to_string()
+            verbose
     );
     llvm::StringRef strRef_init(cStr_init);
     bool insertResult_init=mRewriter_ptr->InsertTextAfterToken(funcBodyLBraceLoc , strRef_init);
