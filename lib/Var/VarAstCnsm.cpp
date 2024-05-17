@@ -89,9 +89,10 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
        continue;
      }
      //只处理MainFile中的声明
-     this->fnVst.TraverseDecl(D);
-     this->retVst.TraverseDecl(D);
-     this->varDeclVst.TraverseDecl(D);
+       // A1、B1、C1需要保持顺序一致么？
+     this->fnVst.TraverseDecl(D);//A1
+     this->retVst.TraverseDecl(D);//B1
+     this->varDeclVst.TraverseDecl(D);//C1
    }
    //endregion
 
@@ -109,15 +110,16 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
 
    ///region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
-   if( !(varDeclVst.VarDeclLocIdSet.empty()) ){
-   varDeclVst.mRewriter_ptr->overwriteChangedFiles();
-   }
-   if( !(fnVst.fnBdLBrcLocIdSet.empty()) ){
-   fnVst.mRewriter_ptr->overwriteChangedFiles();
-   }
- if( !(retVst.retBgnLocIdSet.empty()) ){
-     retVst.mRewriter_ptr->overwriteChangedFiles();
- }
+     // A1、B1、C1需要保持顺序一致么？
+     if( !(fnVst.fnBdLBrcLocIdSet.empty()) ){
+         fnVst.mRewriter_ptr->overwriteChangedFiles();//A1
+     }
+     if( !(retVst.retBgnLocIdSet.empty()) ){
+         retVst.mRewriter_ptr->overwriteChangedFiles();//B1
+     }
+    if( !(varDeclVst.VarDeclLocIdSet.empty()) ){
+    varDeclVst.mRewriter_ptr->overwriteChangedFiles();//C1
+    }
      DiagnosticsEngine &Diags = CI.getDiagnostics();
      std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion
