@@ -39,6 +39,8 @@ public:
     }
 
     void voidDemo(int cnt, short chr){
+        auto user_auto_var = UserEntity();
+        auto user_auto_ptr=new UserEntity();
     }
 
     void voidDemo2(UserEntity userEntity){
