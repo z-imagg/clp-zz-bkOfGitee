@@ -90,6 +90,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
      }
      //只处理MainFile中的声明
      this->fnVst.TraverseDecl(D);
+     this->retVst.TraverseDecl(D);
      this->varDeclVst.TraverseDecl(D);
    }
    //endregion
@@ -114,6 +115,9 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    if( !(fnVst.fnBdLBrcLocIdSet.empty()) ){
    fnVst.mRewriter_ptr->overwriteChangedFiles();
    }
+ if( !(retVst.retBgnLocIdSet.empty()) ){
+     retVst.mRewriter_ptr->overwriteChangedFiles();
+ }
      DiagnosticsEngine &Diags = CI.getDiagnostics();
      std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion

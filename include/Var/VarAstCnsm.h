@@ -18,6 +18,7 @@
 #include "Var/FnVst.h"
 #include "base/Util.h"
 #include "VarDeclVst.h"
+#include "RetVst.h"
 
 using namespace llvm;
 using namespace clang;
@@ -39,6 +40,7 @@ public:
             SM(_SM),
             varOk(false),
             fnVst(_CI, _rewriter_ptr, _astContext, _SM, _langOptions),
+            retVst(_CI, _rewriter_ptr, _astContext, _SM, _langOptions),
             varDeclVst(_CI,_rewriter_ptr,_astContext,_SM,_langOptions)
             {
       //构造函数
@@ -67,6 +69,8 @@ public:
     //region 进行处理：插入花括号
     FnVst fnVst;
     //endregion
+
+    RetVst retVst;
 
     VarDeclVst varDeclVst;
 };

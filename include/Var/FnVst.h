@@ -35,7 +35,6 @@ public:
 
     }
 
-    bool insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  );
     bool insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
     bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
@@ -58,7 +57,6 @@ public:
             std::string funcName
     );
 
-    bool TraverseReturnStmt(ReturnStmt *returnStmt);
 
 
 
@@ -71,8 +69,6 @@ public:
     CompilerInstance& CI;
     SourceManager& SM;
 
-    //return紧前
-    std::unordered_set<LocId,LocId> retBgnLocIdSet;
     //函数体左花括号紧后
     std::unordered_set<LocId,LocId> fnBdLBrcLocIdSet;
 };
