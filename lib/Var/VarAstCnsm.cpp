@@ -107,6 +107,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
 
    //断言两个Vst中的rewriter是同一个对象
    MyAssert(varDeclVst.mRewriter_ptr==fnVst.mRewriter_ptr,"[AssertErr]NotFit:varDeclVst.mRewriter_ptr==fnVst.mRewriter_ptr")
+   MyAssert(fnVst.mRewriter_ptr==retVst.mRewriter_ptr,"[AssertErr]NotFit:fnVst.mRewriter_ptr==retVst.mRewriter_ptr")
 
    ///region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
