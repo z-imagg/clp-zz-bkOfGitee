@@ -1,19 +1,18 @@
 #include "Var/VarDeclVst.h"
 
-#include "clang/AST/AST.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
+#include "base/StrUtil.h"
 #include "Var/RangeHasMacroAstVst.h"
 #include "Var/CollectIncMacro_PPCb.h"
 #include <vector>
 
 #include <fmt/core.h>
 #include <iostream>
-#include <clang/AST/ParentMapContext.h>
 
 #include "base/MyAssert.h"
+
+
 
 using namespace llvm;
 using namespace clang;
@@ -126,6 +125,7 @@ bool VarDeclVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, st
 
         bool typeClassEqRecord = clang::Type::Record == typeClass;
         bool typeClassEqElaborated = clang::Type::Elaborated == typeClass;
+        bool typeClassEqAuto = clang::Type::Auto == typeClass;
 
         bool isPointerType=qualType->isPointerType();
         typeName = qualType.getAsString();
@@ -146,9 +146,30 @@ bool VarDeclVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, st
             return true;
         }
 
-        //是结构体==是Record或是Elaborated
-        likeStruct=(typeClassEqRecord||typeClassEqElaborated);
-        MyAssert(likeStruct,"[AssertErr]NotFit:typeClassEqRecord||typeClassEqElaborated");
+        const std::string &qualTypeAsStr = qualType.getAsString();
+        std::cout<<"qualTypeAsStr="<<qualTypeAsStr<<"\n";
+
+        //是lambda表达式
+        bool isAuto_Lambda=false;
+        //是常规类
+        bool isAuto_Regular=false;
+        if(typeClassEqAuto){
+            //S2是S1前缀，因此S1必须在S2前面，二者顺序不能反
+            //S1
+            if(StrUtil::startsWith(typeName, "class (lambda at" )){
+                isAuto_Lambda=true;
+            }
+            //S2
+            else if(StrUtil::startsWith(typeName, "class " )  ){
+
+                isAuto_Regular= true;
+            }
+        }
+
+        //是结构体==不是Auto_Lambda且(是Record或是Elaborated或是Auto_常规类)
+        likeStruct=( !isAuto_Lambda ) && (typeClassEqRecord||typeClassEqElaborated|| isAuto_Regular);
+        MyAssert(likeStruct,"[AssertErr]NotFit:( !isAuto_Lambda ) && (typeClassEqRecord||typeClassEqElaborated|| isAuto_Regular);");
+
 
         std::cout<<fmt::format("[返回]likeStruct=={}\n",likeStruct);
 
@@ -156,3 +177,21 @@ bool VarDeclVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, st
 
     return true;
 }
+
+/**  clang::Type::Auto == typeClass , 但是typeName不同 , typeName为 'class (lambda at ...)' 或 typeName='class ...'
+tag1,title1,parent0NodeKind:CompoundStmt,nodeID:2305,文件路径、坐标:</fridaAnlzAp/clang-var/test_in/test_main.cpp:31:9, line:36:10>,getStmtClassName:DeclStmt,getStmtClass:12,mainFileId:1,fileId:1,源码:【auto fn_point = [](const Point& point) {
+            if(point.x>point.y)
+                return point.x+point.y;
+            else
+                return 0.1;
+        }】
+typeName='class (lambda at /fridaAnlzAp/clang-var/test_in/test_main.cpp:31:25)',typeClass=14,typeClassName=Auto,isBuiltinType=false
+qualTypeAsStr=class (lambda at /fridaAnlzAp/clang-var/test_in/test_main.cpp:31:25)
+[返回]likeStruct==true
+
+tag1,title1,parent0NodeKind:CompoundStmt,nodeID:2483,文件路径、坐标:</fridaAnlzAp/clang-var/test_in/test_main.cpp:42:9, col:42>,getStmtClassName:DeclStmt,getStmtClass:12,mainFileId:1,fileId:1,源码:【auto user_auto_var = UserEntity()】
+typeName='class UserEntity',typeClass=14,typeClassName=Auto,isBuiltinType=false
+qualTypeAsStr=class UserEntity
+
+
+*/
