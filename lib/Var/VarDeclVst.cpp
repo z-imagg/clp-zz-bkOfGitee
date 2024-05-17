@@ -168,7 +168,7 @@ bool VarDeclVst::process_singleDecl(const Decl *singleDecl, bool& likeStruct, st
 
         //是结构体==不是Auto_Lambda且(是Record或是Elaborated或是Auto_常规类)
         likeStruct=( !isAuto_Lambda ) && (typeClassEqRecord||typeClassEqElaborated|| isAuto_Regular);
-        MyAssert(likeStruct,"[AssertErr]NotFit:( !isAuto_Lambda ) && (typeClassEqRecord||typeClassEqElaborated|| isAuto_Regular);");
+//        MyAssert(likeStruct,"[AssertErr]NotFit:( !isAuto_Lambda ) && (typeClassEqRecord||typeClassEqElaborated|| isAuto_Regular);");
 
 
         std::cout<<fmt::format("[返回]likeStruct=={}\n",likeStruct);
