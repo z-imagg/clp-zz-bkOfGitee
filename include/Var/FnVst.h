@@ -17,7 +17,8 @@ using namespace llvm;
 using namespace clang;
 
 /**
- * 插入花括号Visitor
+ * 先以 clang插件clang-voidFnEndInsertRet 确保  每个void函数末尾都有return语句
+ * 再执行本插件
  */
 class FnVst
         : public RecursiveASTVisitor<FnVst> {
@@ -34,8 +35,8 @@ public:
 
     }
 
-    bool insertBefore_X__funcReturn(LocId retBgnLocId, SourceLocation retBgnLoc  );
-    bool insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
+    bool insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  );
+    bool insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
     bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);
@@ -70,9 +71,10 @@ public:
     CompilerInstance& CI;
     SourceManager& SM;
 
-
-    std::unordered_set<LocId,LocId> funcReturnLocIdSet;
-    std::unordered_set<LocId,LocId> funcEnterLocIdSet;
+    //return紧前
+    std::unordered_set<LocId,LocId> retBgnLocIdSet;
+    //函数体左花括号紧后
+    std::unordered_set<LocId,LocId> fnBdLBrcLocIdSet;
 };
 
 

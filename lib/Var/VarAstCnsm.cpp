@@ -111,7 +111,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    if( !(varDeclVst.VarDeclLocIdSet.empty()) ){
    varDeclVst.mRewriter_ptr->overwriteChangedFiles();
    }
-   if( !(fnVst.funcEnterLocIdSet.empty()) ){
+   if( !(fnVst.fnBdLBrcLocIdSet.empty()) ){
    fnVst.mRewriter_ptr->overwriteChangedFiles();
    }
      DiagnosticsEngine &Diags = CI.getDiagnostics();

@@ -18,8 +18,9 @@
 using namespace llvm;
 using namespace clang;
 
-
-bool FnVst::insertBefore_X__funcReturn(LocId retBgnLocId, SourceLocation retBgnLoc  ){
+//在return紧前插入'销毁语句'
+bool FnVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  ){
+//【销毁变量通知】  函数在return紧前 插入 销毁语句'destroyVarLs_inFn(_vdLs);'
     //region 构造插入语句
     std::string cStr_destroy=fmt::format(
             "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表, {}*/",
@@ -32,13 +33,14 @@ bool FnVst::insertBefore_X__funcReturn(LocId retBgnLocId, SourceLocation retBgnL
     //endregion
 
   //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
-  funcReturnLocIdSet.insert(retBgnLocId);
+  retBgnLocIdSet.insert(retBgnLocId);
   return insertResult_destroy;
 }
 
-bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
+//在函数体左花括号紧后插入'初始化语句'
+bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
 
-//函数左花括号后 插入 '_VarDeclLs * _vdLs=_init_varLs_inFn("runtime_cpp__vars_fn/test_main__runtime_cpp__vars_fn.cpp","func1",7,14);'
+//在函数左花括号紧后插入  初始化语句'_VarDeclLs * _vdLs=_init_varLs_inFn("源文件路径","函数名",行号,列号);'
 
     //region 构造插入语句
     std::string cStr_init=fmt::format(
@@ -53,24 +55,11 @@ bool FnVst::insertAfterFnLeftBrace__insertBeforeFnRightBrace(LocId fnBdLBrcLocId
     //endregion
 
 
-//【销毁变量通知】  函数右花括号前 插入 'destroyVarLs_inFn(_vdLs);'
-    //region 构造插入语句
-    std::string cStr_destroy=fmt::format(
-            "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表, {}*/",
-            fnBdLBrcLocId.filePath,
-            fnBdLBrcLocId.funcName,
-            fnBdLBrcLocId.to_string()
-    );
-    llvm::StringRef strRef_destroy(cStr_destroy);
-    bool insertResult_destroy=mRewriter_ptr->InsertTextBefore(funcBodyRBraceLoc , strRef_destroy);
-    //endregion
-
-
     //记录已插入语句的节点ID们以防重： 即使重复遍历了 但不会重复插入
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
-    funcEnterLocIdSet.insert(fnBdLBrcLocId);
+    fnBdLBrcLocIdSet.insert(fnBdLBrcLocId);
 
-    return insertResult_init && insertResult_destroy;
+    return insertResult_init ;
 }
 
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
@@ -132,7 +121,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     std::string verboseLogMsg=fmt::format("开发查问题日志funcIsStatic_funcIsInline:【{}:{}:{};funcQualifiedName】,funcIsStatic={},funcIsInline={}\n",filePath,funcBodyLBraceLocId.line,funcBodyLBraceLocId.column,funcIsStatic,funcIsInline);
     std::cout<<verboseLogMsg;
 
-    return this->_Traverse_Func(//其中的insertAfter_X__funcEnter内Vst.funcEnterLocIdSet、funcLocId.locationId相互配合使得funcLocId.locationId作为funcLocId.srcFileId局部下的自增数
+    return this->_Traverse_Func(//其中的insertAfter_X__funcEnter内Vst.fnBdLBrcLocIdSet、funcLocId.locationId相互配合使得funcLocId.locationId作为funcLocId.srcFileId局部下的自增数
             funcReturnType,
             false,
             endStmtOfFuncBody,
@@ -391,11 +380,11 @@ bool FnVst::_Traverse_Func(
 
 
     //region 插入 函数进入语句
-    if(Util::LocIdSetNotContains(funcEnterLocIdSet, funcBodyLBraceLocId)){//若没有
-//        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&funcEnterLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
+    if(Util::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
+//        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&fnBdLBrcLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
 
         //若 本函数还 没有 插入 函数进入语句，才插入。
-        insertAfterFnLeftBrace__insertBeforeFnRightBrace(funcBodyLBraceLocId,funcBodyLBraceLoc,funcBodyRBraceLoc);
+        insert_init__After_FnBdLBrc(funcBodyLBraceLocId, funcBodyLBraceLoc, funcBodyRBraceLoc);
     }
 //    }
     //endregion
@@ -426,13 +415,13 @@ bool FnVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 //  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
   LocId retBgnLocId=LocId::buildFor(filePath, "", retBgnLoc, SM);
-  if(this->funcReturnLocIdSet.count(retBgnLocId) > 0){
+  if(this->retBgnLocIdSet.count(retBgnLocId) > 0){
     //若 已插入  释放栈变量，则不必插入,防止重复。
     return false;
   }
 
   if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
-    insertBefore_X__funcReturn(retBgnLocId, retBgnLoc );
+      insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc);
   }
 
 ///////////////////// 自定义处理 完毕
