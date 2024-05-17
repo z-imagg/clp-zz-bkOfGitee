@@ -62,7 +62,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
 //  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
-  LocId retBgnLocId=LocId::buildFor(filePath, "", retBgnLoc, SM);
+  LocId retBgnLocId=LocId::buildFor(filePath,   retBgnLoc, SM);
   if(this->retBgnLocIdSet.count(retBgnLocId) > 0){
     //若 已插入  释放栈变量，则不必插入,防止重复。
     return false;

@@ -103,7 +103,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     if(likeStruct){
         //按照左右花括号，构建位置id，防止重复插入
         //  在变量声明语句这，不知道如何获得当前所在函数名 因此暂时函数名传递空字符串
-        LocId declStmtBgnLocId=LocId::buildFor(filePath,"", declStmtBgnLoc, SM);
+        LocId declStmtBgnLocId=LocId::buildFor(filePath,declStmtBgnLoc, SM);
         //【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
         //只有似结构体变量才会产生通知
         insertAfter_VarDecl(typeName,varCnt,declStmtBgnLocId,declStmtBgnLoc);

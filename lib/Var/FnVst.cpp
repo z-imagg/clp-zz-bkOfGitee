@@ -97,8 +97,8 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 //  funcDecl->getName();
 
     //按照左右花括号，构建位置id，防止重复插入
-    LocId funcBodyLBraceLocId=LocId::buildFor(filePath,funcQualifiedName, funcBodyLBraceLoc, SM);
-    LocId funcBodyRBraceLocId=LocId::buildFor(filePath,funcQualifiedName, funcBodyRBraceLoc, SM);
+    LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+    LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
 
     //获取返回类型
     const QualType funcReturnType = funcDecl->getReturnType();
@@ -170,8 +170,8 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   const std::string &funcQualifiedName = cxxCnstrDecl->getQualifiedNameAsString();
 
   //按照左右花括号，构建位置id，防止重复插入
-  LocId funcBodyLBraceLocId=LocId::buildFor(filePath,funcQualifiedName, funcBodyLBraceLoc, SM);
-  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcQualifiedName,funcBodyRBraceLoc, SM);
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath,funcBodyRBraceLoc, SM);
 
   //获取返回类型
   const QualType funcReturnType = cxxCnstrDecl->getReturnType();
@@ -245,8 +245,8 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   const std::string &funcQualifiedName = cxxMethDecl->getQualifiedNameAsString();
 
   //按照左右花括号，构建位置id，防止重复插入
-  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcQualifiedName,funcBodyLBraceLoc, SM);
-  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcQualifiedName,funcBodyRBraceLoc, SM);
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath,funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath,funcBodyRBraceLoc, SM);
 
   //获取返回类型
   const QualType funcReturnType = cxxMethDecl->getReturnType();
@@ -314,8 +314,8 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   const char * funName="";
 
   //按照左右花括号，构建位置id，防止重复插入
-  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funName,funcBodyLBraceLoc, SM);
-  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funName,funcBodyRBraceLoc, SM);
+  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
+  LocId funcBodyRBraceLocId=LocId::buildFor(filePath, funcBodyRBraceLoc, SM);
 
   //获取返回类型
   CXXRecordDecl *cxxRecordDecl = lambdaExpr->getLambdaClass();
