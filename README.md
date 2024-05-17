@@ -35,17 +35,15 @@ Clang_Varlugin_run=" -Xclang   -load -Xclang /fridaAnlzAp/clang-var/build/lib/li
        不确定 编译、本插件 之间的先后次序
   ```shell
 clang++  $Clang_VFIRPlugin_run   $Clang_Varlugin_run -c  $test_main_cpp_F 
+#两个插件放在一起运行，第二个插件修改源码文本时报错
+#6 0x0000651c02920df6 clang::Rewriter::InsertText(clang::SourceLocation, llvm::StringRef, bool, bool) (/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4/bin/clang-15+0x5ad0df6)
+#7 0x00007858cf2a2960 FnVst::insertBefore_Return(LocId, clang::SourceLocation) /fridaAnlzAp/clang-voidFnEndInsertRet/lib/VFIR/FnVst.cpp:0:0
   ```
-参考: https://www.ibm.com/docs/en/xl-c-and-cpp-linux/16.1.0?topic=cla-running-user-defined-actions-by-using-clang-plug-ins
 
 
 
-
-
-##### clang插件其他运行方法
-- `-add-plugin` 尝试 编译、链接、本插件， 本插件 正常修改源文件,  正常编译链接 输出 test_main.elf
-
-      不确定 编译、链接、本插件 之间的先后次序
+因此，暂时只能分两次运行这两个插件
   ```shell
-  clang++  $Clang_VFIRPlugin_run   $Clang_Varlugin_run  $test_main_cpp_F  -o test_main.elf -mllvm -print-after-all 2>&1 | gedit -
-  ```
+clang++  $Clang_VFIRPlugin_run  -c  $test_main_cpp_F 
+clang++  $Clang_Varlugin_run    -c  $test_main_cpp_F 
+```
