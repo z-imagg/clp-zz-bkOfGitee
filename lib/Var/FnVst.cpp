@@ -380,8 +380,8 @@ bool FnVst::_Traverse_Func(
 
 ///////////////////// 自定义处理 完毕
 
-
-    return false;
+// _Traverse_Func返回true表示继续遍历函数声明
+    return true;
 
 }
 
