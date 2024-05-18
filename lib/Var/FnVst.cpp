@@ -157,6 +157,7 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   if(stmtCntInFuncBody<=0){
     return false;
   }
+  bool parentKindIsCXXConstructorDecl= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXConstructorDecl>());
 
   //获取最后一条语句
   Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);

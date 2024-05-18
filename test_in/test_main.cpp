@@ -1,3 +1,4 @@
+#pragma message("VarBE_inserted")
 #pragma message("VFIR_inserted")
 #define CASE_SAME(x) case x:
 #define INT_T int
@@ -16,9 +17,9 @@ public:
     double m_d1;
     int m_n2;
 
-    void ff1() { return; }
-    MyClass( ){
-        return; /* voidFnEndInsertRet: */}
+    void ff1() {_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::ff1", 19, 16); /* 初始化函数变量列表, */ destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; }
+    MyClass( ){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::MyClass", 20, 15); /* 初始化函数变量列表, */
+        destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
 
     //构造函数MyClass中的return和左花括号  若 不在同一行，则正常（为init在前 destroy在后）
     //                                 若 在同一行，  则错误（为destroy在前 init在后）
