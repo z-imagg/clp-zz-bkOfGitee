@@ -1,3 +1,4 @@
+#pragma message("VFIR_inserted")
 #define CASE_SAME(x) case x:
 #define INT_T int
 typedef double DOUBLE_typedef;
@@ -15,14 +16,15 @@ public:
     double m_d1;
     int m_n2;
 
-    void ff1() {   }
-    MyClass( ){}
+    void ff1() {   return; /* voidFnEndInsertRet: */}
+    MyClass( ){
+return; /* voidFnEndInsertRet: */}
 
     MyClass(float f1, int n1)
             :m_d1(f1),m_n2(n1)
     {
         char c3=1+n1;
-    }
+    return; /* voidFnEndInsertRet: */}
 
     ~MyClass(){
         int x,y,z;
@@ -37,16 +39,16 @@ public:
         };
 
         fn_point(point0);
-    }
+    return; /* voidFnEndInsertRet: */}
 
     void voidDemo(int cnt, short chr){
-    }
+    return; /* voidFnEndInsertRet: */}
 
     void voidDemo2(UserEntity userEntity){
         if(true){
             return;
         }
-    }
+    return; /* voidFnEndInsertRet: */}
 
 
 
@@ -58,7 +60,7 @@ void voidDemo3(){
     int k=0;
     k++;
 
-}
+return; /* voidFnEndInsertRet: */}
 int main(int argc, char** argv){
     MyClass varMyClass;
     static Point pnt1;
