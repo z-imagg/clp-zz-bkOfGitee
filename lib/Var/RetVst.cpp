@@ -61,13 +61,11 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 //  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
   LocId retBgnLocId=LocId::buildFor(filePath,   retBgnLoc, SM);
-  if(this->retBgnLocIdSet.count(retBgnLocId) > 0){
-    //若 已插入  释放栈变量，则不必插入,防止重复。
-    return false;
-  }
 
   if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
-      insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc);
+      if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
+          insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc);
+      }
   }
 
 ///////////////////// 自定义处理 完毕
