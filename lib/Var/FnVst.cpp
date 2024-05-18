@@ -57,9 +57,9 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
         return false;
     }
     //跳过 default
-    if(Util::funcIsDefault(funcDecl)){
-        return false;
-    }
+//    if(Util::funcIsDefault(funcDecl)){
+//        return false;
+//    }
     //跳过 无函数体
     bool hasBody=funcDecl->hasBody();
     if(!hasBody){
@@ -132,9 +132,9 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
     return false;
   }
   //跳过 default
-  if(Util::cxxConstructorIsDefault(cxxCnstrDecl)){
-    return true;
-  }
+//  if(Util::cxxConstructorIsDefault(cxxCnstrDecl)){
+//    return true;
+//  }
   //跳过 无函数体
   bool hasBody=cxxCnstrDecl->hasBody();
   if(!hasBody){
@@ -207,9 +207,9 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
     return false;
   }
   //跳过 default
-  if(Util::funcIsDefault(cxxMethDecl)){
-    return false;
-  }
+//  if(Util::funcIsDefault(cxxMethDecl)){
+//    return false;
+//  }
   //跳过 无函数体
   bool hasBody=cxxMethDecl->hasBody();
   if(!hasBody){
