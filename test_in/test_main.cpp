@@ -1,4 +1,3 @@
-#pragma message("VarBE_inserted")
 #pragma message("VFIR_inserted")
 #define CASE_SAME(x) case x:
 #define INT_T int
@@ -17,61 +16,17 @@ public:
     double m_d1;
     int m_n2;
 
-    void ff1() {_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::ff1", 19, 16); /* 初始化函数变量列表, */ destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; }
-    MyClass( ){destroyVarLs_inFn(_vdLs); /* 注意看此MyClass默认构造函数中只有一个return 其destroyVarLs_inFn位置错误地比_init_varLs_inFn早1, 同只有一个return的普通函数ff1却是正确的。 销毁函数变量列表: */_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::MyClass", 20, 15); /* 初始化函数变量列表, */return; /* voidFnEndInsertRet: */}
+    void ff1() { return; }
+    MyClass( ){
+        return; /* voidFnEndInsertRet: */}
 
-    MyClass(float f1, int n1)
-            :m_d1(f1),m_n2(n1)
-    {_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::MyClass", 24, 5); /* 初始化函数变量列表, */
-        char c3=1+n1;
-    destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
-
-    ~MyClass(){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::~MyClass", 28, 15); /* 初始化函数变量列表, */
-        int x,y,z;
-        UserEntity userEntity;createVar(_vdLs, "class UserEntity", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:30,30 */ ;
-
-        Point point0;createVar(_vdLs, "struct Point", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:32,21 */ ;
-        auto fn_point = [](const Point& point) {
-            if(point.x>point.y)
-                return point.x+point.y;
-            else
-                return 0.1;
-        };
-
-        fn_point(point0);
-    destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
-
-    void voidDemo(int cnt, short chr){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::voidDemo", 43, 38); /* 初始化函数变量列表, */
-        auto user_auto_var = UserEntity();createVar(_vdLs, "class UserEntity", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:44,42 */ ;
-        auto user_auto_ptr=new UserEntity();
-    destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
-
-    void voidDemo2(UserEntity userEntity){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::voidDemo2", 48, 42); /* 初始化函数变量列表, */
-        if(true){
-            destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return;
-        }
-    destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
-
+    //构造函数MyClass中的return和左花括号  若 不在同一行，则正常（为init在前 destroy在后）
+    //                                 若 在同一行，  则错误（为destroy在前 init在后）
+    //不过这解释不了 为何函数ff1 即使 return和做花括号 在同一行 ，也正常（为init在前 destroy在后）
+    //不过 由此 可得到建议， clang插件 修改源码 应该避免对同一行做多个Insert动作，若非要做 则事先确保多个Insert修改处不是同一行， 否则插入顺序可能是非预期的。
+    //【因此得解决办法】 插件voidFnEndInsertRet 插入内容增加换行 即 'return;'改为'\nreturn;'
 
 
 };
 
 int MyClass::ZERO=0;
-
-void voidDemo3(){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "voidDemo3", 60, 17); /* 初始化函数变量列表, */
-    int k=0;
-    k++;
-
-destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
-int main(int argc, char** argv){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "main", 65, 32); /* 初始化函数变量列表, */
-    MyClass varMyClass;createVar(_vdLs, "class MyClass", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:66,23 */ ;
-    static Point pnt1;createVar(_vdLs, "struct Point", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:67,22 */ ;
-    struct Point pnt2;createVar(_vdLs, "struct Point", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:68,22 */ ;
-    {
-        struct Point * ptr1=&pnt1;
-        struct Point * ptr2=&pnt2;
-        struct Point pnt3;createVar(_vdLs, "struct Point", 1)  /* 创建变量通知,  /fridaAnlzAp/clang-var/test_in/test_main.cpp:72,26 */ ;
-    }
-
-    destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return 0;
-}
