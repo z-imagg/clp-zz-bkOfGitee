@@ -43,6 +43,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "描述CMAKE_BUILD_TYPE" FORCE)
 endif()
 
+#为方便开发: 禁止任何优化、默认调试级别
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
 #向CXX_FLAGS添加-Wall ： 启用所有常规警告
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 #向CXX_FLAGS添加-fdiagnostics-color=always ：启用编译器输出中的彩色标记，以提高可读性
