@@ -30,7 +30,6 @@ bool RetVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retB
     //region 构造插入语句
     std::string cStr_destroy=fmt::format(
             "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: {}*/",
-            retBgnLocId.filePath,
             verbose
     );
     llvm::StringRef strRef_destroy(cStr_destroy);
