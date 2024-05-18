@@ -111,17 +111,10 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
 
    ///region 4. 应用修改到源文件
    //如果 花括号遍历器 确实有进行过至少一次插入花括号 , 才应用修改到源文件
-     // A1写、B1写、C1写需要保持顺序一致么？
-     // 指向同一个对象的多个std::shared_ptr<Rewriter>确实是同一个对象（这些shared_ptr<Rewriter>.overwriteChangedFiles调用等同于单个） 
-     if( !(fnVst.fnBdLBrcLocIdSet.empty()) ){// 有A1写、无B1写、无C1写 == 有A1写、有B1写、有C1写
+     // 指向同一个对象的多个std::shared_ptr<Rewriter>确实是同一个对象（这些shared_ptr<Rewriter>.overwriteChangedFiles调用等同于单个）
+     if( (!(fnVst.fnBdLBrcLocIdSet.empty())) || (!(retVst.retBgnLocIdSet.empty())) || (!(varDeclVst.VarDeclLocIdSet.empty()))  ){
          fnVst.mRewriter_ptr->overwriteChangedFiles();//A1写
      }
-//     if( !(retVst.retBgnLocIdSet.empty()) ){
-//         retVst.mRewriter_ptr->overwriteChangedFiles();//B1写
-//     }
-//    if( !(varDeclVst.VarDeclLocIdSet.empty()) ){
-//    varDeclVst.mRewriter_ptr->overwriteChangedFiles();//C1写
-//    }
      DiagnosticsEngine &Diags = CI.getDiagnostics();
      std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion
