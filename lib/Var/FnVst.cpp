@@ -233,6 +233,8 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   if(stmtCntInFuncBody<=0){
     return false;
   }
+  bool parentKindIsCXXConstructorDecl___= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXConstructorDecl>());
+  bool parentKindIsCXXMethodDecl= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXMethodDecl>());
 
   //获取最后一条语句
   Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
