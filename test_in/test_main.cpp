@@ -1,5 +1,3 @@
-#pragma message("VarBE_inserted")
-#pragma message("VFIR_inserted")
 #define CASE_SAME(x) case x:
 #define INT_T int
 typedef double DOUBLE_typedef;
@@ -17,17 +15,59 @@ public:
     double m_d1;
     int m_n2;
 
-    void ff1() {_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::ff1", 19, 16); /* 初始化函数变量列表, */ destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; }
-    MyClass( ){_VarDeclLs * _vdLs=_init_varLs_inFn("/fridaAnlzAp/clang-var/test_in/test_main.cpp", "MyClass::MyClass", 20, 15); /* 初始化函数变量列表, */
-        destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: */return; /* voidFnEndInsertRet: */}
+    void ff1() {   }
+    MyClass( ){}
 
-    //构造函数MyClass中的return和左花括号  若 不在同一行，则正常（为init在前 destroy在后）
-    //                                 若 在同一行，  则错误（为destroy在前 init在后）
-    //不过这解释不了 为何函数ff1 即使 return和做花括号 在同一行 ，也正常（为init在前 destroy在后）
-    //不过 由此 可得到建议， clang插件 修改源码 应该避免对同一行做多个Insert动作，若非要做 则事先确保多个Insert修改处不是同一行， 否则插入顺序可能是非预期的。
-    //【因此得解决办法】 插件voidFnEndInsertRet 插入内容增加换行 即 'return;'改为'\nreturn;'
+    MyClass(float f1, int n1)
+            :m_d1(f1),m_n2(n1)
+    {
+        char c3=1+n1;
+    }
+
+    ~MyClass(){
+        int x,y,z;
+        UserEntity userEntity;
+
+        Point point0;
+        auto fn_point = [](const Point& point) {
+            if(point.x>point.y)
+                return point.x+point.y;
+            else
+                return 0.1;
+        };
+
+        fn_point(point0);
+    }
+
+    void voidDemo(int cnt, short chr){
+    }
+
+    void voidDemo2(UserEntity userEntity){
+        if(true){
+            return;
+        }
+    }
+
 
 
 };
 
 int MyClass::ZERO=0;
+
+void voidDemo3(){
+    int k=0;
+    k++;
+
+}
+int main(int argc, char** argv){
+    MyClass varMyClass;
+    static Point pnt1;
+    struct Point pnt2;
+    {
+        struct Point * ptr1=&pnt1;
+        struct Point * ptr2=&pnt2;
+        struct Point pnt3;
+    }
+
+    return 0;
+}
