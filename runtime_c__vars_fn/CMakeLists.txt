@@ -21,18 +21,26 @@ MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(runtime_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/runtime_c__vars_fn.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/test_main__runtime_c__vars_fn.c"
+"/app/antirez--sds/sds.c"
+)
+
+add_executable(
+runtime_c__test_main
+  ${runtime_c__SOURCES}
 )
 
 target_include_directories(
 runtime_c__test_main
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/clibs--list/src"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/antirez--sds/"
+    "/app/clibs--list/src"
+    "/app/antirez--sds/"
 )
-add_executable(
+target_link_libraries(
 runtime_c__test_main
-  ${runtime_c__SOURCES}
+    "/app/clibs--list/build/libclibs_list.a"
+    "/app/clibs--list/build/libclibs_list.a"
 )
+
 
 
