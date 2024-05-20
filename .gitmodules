@@ -1,3 +1,9 @@
 [submodule "base_home"]
 	path = base_home
 	url = http://giteaz:3000/cl_plg/clang-plugin-base.git
+[submodule "required/antirez--sds"]
+	path = required/antirez--sds
+	url = http://giteaz:3000/util/antirez--sds.git
+[submodule "required/clibs--list"]
+	path = required/clibs--list
+	url = http://giteaz:3000/util/clibs--list.git
