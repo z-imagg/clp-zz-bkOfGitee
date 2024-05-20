@@ -42,4 +42,19 @@ runtime_c__test_main
 )
 
 
+# 添加静态库目标
+add_library(clangPlgVar_runtime_c STATIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/runtime_c__vars_fn.c"
+    "/app/antirez--sds/sds.c"
+    )
+
+# 设置静态库目标的包含目录
+target_include_directories(clangPlgVar_runtime_c
+    PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/include"
+    "/app/clibs--list/src"
+    "/app/antirez--sds/"
+    )
+
+
 
