@@ -39,7 +39,6 @@ runtime_c__test_main
 target_link_libraries(
 runtime_c__test_main
     "/app/clibs--list/build/libclibs_list.a"
-    "/app/clibs--list/build/libclibs_list.a"
 )
 
 
