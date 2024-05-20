@@ -23,16 +23,16 @@ set(runtime_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/test_main__runtime_c__vars_fn.c"
 )
 
-    add_executable(
-    runtime_c__test_main
-      ${runtime_c__SOURCES}
-      )
-
-    target_include_directories(
-    runtime_c__test_main
-      PRIVATE
+target_include_directories(
+runtime_c__test_main
+    PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/clibs--list/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/antirez--sds/"
-    )
+)
+add_executable(
+runtime_c__test_main
+  ${runtime_c__SOURCES}
+)
+
 
