@@ -1,4 +1,4 @@
-#include "runtime_cpp__vars_fn.h"
+#include "runtime_cpp__vars_fn.hpp"
 
 class T_User{};
 class T_Book{};
