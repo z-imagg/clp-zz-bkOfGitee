@@ -4,3 +4,6 @@
 [submodule "runtime_c__vars_fn/clibs--list"]
 	path = runtime_c__vars_fn/clibs--list
 	url = http://giteaz:3000/util/clibs--list.git
+[submodule "runtime_c__vars_fn/antirez--sds"]
+	path = runtime_c__vars_fn/antirez--sds
+	url = http://giteaz:3000/util/antirez--sds.git
