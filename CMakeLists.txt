@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
 #项目名称
-project(clangPlugin-FuncStartInsertAsm)
+project(clangPlugin-Var)
 
 #确保project在find_package之前,
 #  否则 有警告："ADD_LIBRARY called with SHARED option but the target platform does not".
@@ -64,5 +64,4 @@ add_subdirectory(VarPlugin)
 add_subdirectory(VarAlone)
 add_subdirectory(TestAlone)
 add_subdirectory(test_in)
-add_subdirectory(runtime_c__vars_fn)
 add_subdirectory(runtime_cpp__vars_fn)
