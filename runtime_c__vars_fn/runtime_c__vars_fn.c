@@ -48,7 +48,7 @@ void destroyVarLs_inFn(_VarDeclLs *vdLs){
     list_iterator_t *it = list_iterator_new(_vdVec, LIST_HEAD);
     while ((nodeK = list_iterator_next(it))) {
       _VarDecl* vdK=(_VarDecl*)(nodeK->val); //这不是c++，这是c，无类型信息，只能做危险的强制类型转换
-      printf("vd:{varTypeName=%s,varCnt=%d\n",vdK->varTypeName,vdK->varCnt);
+      printf("vd:{varTypeName=%s,varCnt=%d}\n",vdK->varTypeName,vdK->varCnt);
       varCntSum += vdK->varCnt;
       _DEL_(vdK);//释放 对象1 : _DEL_1
     }
