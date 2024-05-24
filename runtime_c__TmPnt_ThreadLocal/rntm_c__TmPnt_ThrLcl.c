@@ -20,6 +20,11 @@ int TL_TmPnt__get() {
     return TL_TmPnt;
 }
 
+//打印ThreadLocal中某变量指针
+#include <stdio.h>
+void TL_TmPnt__printPtr( ) {
+  printf("TL_TmPnt@0x%x\n", &TL_TmPnt) ;
+}
 
 #ifdef __cplusplus
 };
