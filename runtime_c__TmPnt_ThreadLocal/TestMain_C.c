@@ -5,6 +5,7 @@
 void* thread_function(void* _tmPnt_init_ptr);
 
 #include <pthread.h>
+#include <unistd.h>
 int main(int argc, char** argv){
   pthread_t thread1, thread2, thread3;
 
@@ -28,13 +29,9 @@ int main(int argc, char** argv){
   }
 
 
-  char tmp;
-  printf("pressEnterToExit:");scanf("%c",&tmp);
-
+  sleep(5);
   return 0;
 }
-
-#include <unistd.h>
 
 extern __thread  int TL_TmPnt;
 void* thread_function(void* _tmPnt_init_ptr) {
