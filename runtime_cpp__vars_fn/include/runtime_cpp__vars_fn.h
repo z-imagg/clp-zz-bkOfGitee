@@ -2,6 +2,11 @@
 #ifndef runtime_cpp__vars_fn_H
 #define runtime_cpp__vars_fn_H
 
+// 始终保持 为 C++函数，而非C函数
+#ifndef __cplusplus
+extern "C++" {
+#endif
+
 #include <vector>
 #include <string>
 struct __VarDecl{
@@ -35,4 +40,9 @@ void createVar(_VarDeclLs * _vdLs, std::string varTypeName,int varCnt);
 
 //【销毁变量通知】 TODO  函数右花括号前 插入 'destroyVarLs_inFn(_varLs_ptr);'
 void destroyVarLs_inFn(_VarDeclLs * _vdLs);
+
+#ifndef __cplusplus
+}
+#endif
+
 #endif //runtime_cpp__vars_fn_H
