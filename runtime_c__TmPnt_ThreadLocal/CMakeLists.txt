@@ -79,3 +79,20 @@ PRIVATE
 /fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/cmake-build-debug/libclangPlgVar_runtime_cTmPntThrLcl.a
 )
 # _c__test_main_linkStaticArch.elf 结束
+
+
+
+# _cxx__test_main_linkStaticArch.elf 开始
+# 示范 c++如何 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
+set(_cxx_LinkStaticArch__SOURCES
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_CXX.cpp"
+)
+add_executable(_cxx__test_main_linkStaticArch.elf
+${_cxx_LinkStaticArch__SOURCES}
+)
+target_include_directories( _cxx__test_main_linkStaticArch.elf
+PRIVATE
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+)
+# _cxx__test_main_linkStaticArch.elf 结束
