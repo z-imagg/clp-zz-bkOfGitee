@@ -15,18 +15,19 @@ project(clangPlugin-Var--runtime_c__TmPnt_ThreadLocal)
 include("${CMAKE_CURRENT_SOURCE_DIR}/../ClAsCxx.cmake")
 
 MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+#CMAKE_SOURCE_DIR: /fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+#CMAKE_CURRENT_SOURCE_DIR: /fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal
 
 # libclangPlgVar_runtime_c_TmPnt_ThrLcl.a 开始
 add_library(clangPlgVar_runtime_c_TmPnt_ThrLcl STATIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
-        )
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
+)
 
-target_include_directories(clangPlgVar_runtime_c_TmPnt_ThrLcl
-        PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
-        )
+target_include_directories(clangPlgVar_runtime_c_TmPnt_ThrLcl  PUBLIC
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+)
 # libclangPlgVar_runtime_c_TmPnt_ThrLcl.a 结束
 
 # _c__test_main.elf 开始
@@ -34,14 +35,11 @@ set(_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_C.c"
 )
-add_executable(
-_c__test_main.elf
-  ${_c__SOURCES}
+add_executable(_c__test_main.elf
+${_c__SOURCES}
 )
-target_include_directories(
-_c__test_main.elf
-    PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+target_include_directories(_c__test_main.elf PRIVATE
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
 # _c__test_main.elf 结束
 
@@ -50,14 +48,11 @@ set(_cxx__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_CXX.cpp"
 )
-add_executable(
-_cxx__test_main.elf
-  ${_cxx__SOURCES}
+add_executable(_cxx__test_main.elf
+${_cxx__SOURCES}
 )
-target_include_directories(
-_cxx__test_main.elf
-    PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+target_include_directories( _cxx__test_main.elf PRIVATE
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
 # _cxx__test_main.elf 结束
 
@@ -69,13 +64,11 @@ set(_c_LinkStaticArch__SOURCES
 add_executable( _c__test_main_linkStaticArch.elf
 ${_c_LinkStaticArch__SOURCES}
 )
-target_include_directories( _c__test_main_linkStaticArch.elf
-PRIVATE
+target_include_directories( _c__test_main_linkStaticArch.elf  PRIVATE
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
 #指定链接静态库 libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
-target_link_libraries(_c__test_main_linkStaticArch.elf
-PRIVATE
+target_link_libraries(_c__test_main_linkStaticArch.elf PRIVATE
 /fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/cmake-build-debug/libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
 )
 # _c__test_main_linkStaticArch.elf 结束
