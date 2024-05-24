@@ -3,6 +3,7 @@
 
 // __thread是gcc扩展 ,  
 //    __thread == ThreadLocal
+//  术语  TL_ == ThreadLocal_
 __thread int TL_TmPnt = -1;
 
 void TL_TmPnt__update(int _TmPnt_new) {
