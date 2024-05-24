@@ -18,16 +18,16 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
-# libclangPlgVar_runtime_cTmPntThrLcl.a 开始
-add_library(clangPlgVar_runtime_cTmPntThrLcl STATIC
+# libclangPlgVar_runtime_c_TmPnt_ThrLcl.a 开始
+add_library(clangPlgVar_runtime_c_TmPnt_ThrLcl STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
         )
 
-target_include_directories(clangPlgVar_runtime_cTmPntThrLcl
+target_include_directories(clangPlgVar_runtime_c_TmPnt_ThrLcl
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
         )
-# libclangPlgVar_runtime_cTmPntThrLcl.a 结束
+# libclangPlgVar_runtime_c_TmPnt_ThrLcl.a 结束
 
 # _c__test_main.elf 开始
 set(_c__SOURCES
@@ -62,7 +62,7 @@ _cxx__test_main.elf
 # _cxx__test_main.elf 结束
 
 # _c__test_main_linkStaticArch.elf 开始
-# 示范 c如何 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
+# 示范 c如何 使用 libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
 set(_c_LinkStaticArch__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_C.c"
 )
@@ -73,17 +73,17 @@ target_include_directories( _c__test_main_linkStaticArch.elf
 PRIVATE
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
-#指定链接静态库 libclangPlgVar_runtime_cTmPntThrLcl.a
+#指定链接静态库 libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
 target_link_libraries(_c__test_main_linkStaticArch.elf
 PRIVATE
-/fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/cmake-build-debug/libclangPlgVar_runtime_cTmPntThrLcl.a
+/fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/cmake-build-debug/libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
 )
 # _c__test_main_linkStaticArch.elf 结束
 
 
 
 # _cxx__test_main_linkStaticArch.elf 开始
-# 示范 c++如何 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
+# 示范 c++如何 使用 libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
 set(_cxx_LinkStaticArch__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_CXX.cpp"
