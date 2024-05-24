@@ -55,3 +55,13 @@ void* thread_function(void* _tmPnt_init_ptr) {
 
   pthread_exit(NULL);
 }
+
+/** 输出举例
+
+pressEnterToExit:
+
+ThreadLocal_TmPnt@0xeb9fe63c; tmPnt_ThreadLocal[A=-1, B=7, C=14, D=14]; ThreadLocal_TmPnt=14
+ThreadLocal_TmPnt@0xeb1fd63c; tmPnt_ThreadLocal[A=-1, B=23, C=46, D=46]; ThreadLocal_TmPnt=46
+ThreadLocal_TmPnt@0xec1ff63c; tmPnt_ThreadLocal[A=-1, B=4, C=8, D=8]; ThreadLocal_TmPnt=8
+
+ */
