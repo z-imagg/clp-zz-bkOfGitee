@@ -62,12 +62,12 @@ _cxx__test_main.elf
 # _cxx__test_main.elf 结束
 
 # _c__test_main_linkStaticArch.elf 开始
-# 示范 如果 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
-set(_c__SOURCES
+# 示范 c如何 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
+set(_c_LinkStaticArch__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_C.c"
 )
 add_executable( _c__test_main_linkStaticArch.elf
-${_c__SOURCES}
+${_c_LinkStaticArch__SOURCES}
 )
 target_include_directories( _c__test_main_linkStaticArch.elf
 PRIVATE
