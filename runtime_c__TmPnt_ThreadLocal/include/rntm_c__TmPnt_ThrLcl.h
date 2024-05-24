@@ -2,6 +2,7 @@
 #ifndef rntm_c__TmPnt_ThrLcl_H
 #define rntm_c__TmPnt_ThrLcl_H
 
+// 始终保持 为 C函数，而非C++函数
 #ifdef __cplusplus
 extern "C" {
 #endif
