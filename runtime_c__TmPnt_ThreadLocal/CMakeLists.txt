@@ -18,6 +18,17 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
+# libclangPlgVar_runtime_cTmPntThrLcl.a 开始
+add_library(clangPlgVar_runtime_cTmPntThrLcl STATIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
+        )
+
+target_include_directories(clangPlgVar_runtime_cTmPntThrLcl
+        PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+        )
+# libclangPlgVar_runtime_cTmPntThrLcl.a 结束
+
 # _c__test_main.elf 开始
 set(_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
@@ -49,20 +60,6 @@ _cxx__test_main.elf
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
 # _cxx__test_main.elf 结束
-
-# libclangPlgVar_runtime_cTmPntThrLcl.a 开始
-add_library(clangPlgVar_runtime_cTmPntThrLcl STATIC
-"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
-)
-
-target_include_directories(clangPlgVar_runtime_cTmPntThrLcl
-PUBLIC
-"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
-)
-# libclangPlgVar_runtime_cTmPntThrLcl.a 结束
-
-
-
 
 # _c__test_main_linkStaticArch.elf 开始
 # 示范 如果 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
