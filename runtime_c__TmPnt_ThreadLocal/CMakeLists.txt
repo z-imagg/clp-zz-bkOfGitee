@@ -18,47 +18,48 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
-#c测试main
+# _c__test_main.elf 开始
 set(_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_C.c"
 )
 add_executable(
-_c__test_main
+_c__test_main.elf
   ${_c__SOURCES}
 )
 target_include_directories(
-_c__test_main
+_c__test_main.elf
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
+# _c__test_main.elf 结束
 
-#c++测试main
+# _cxx__test_main.elf 开始
 set(_cxx__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_CXX.cpp"
 )
 add_executable(
-_cxx__test_main
+_cxx__test_main.elf
   ${_cxx__SOURCES}
 )
 target_include_directories(
-_cxx__test_main
+_cxx__test_main.elf
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
 )
+# _cxx__test_main.elf 结束
 
-
-# 添加静态库目标
+# libclangPlgVar_runtime_cTmPntThrLcl.a 开始
 add_library(clangPlgVar_runtime_cTmPntThrLcl STATIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
-    )
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/rntm_c__TmPnt_ThrLcl.c"
+)
 
-# 设置静态库目标的包含目录
 target_include_directories(clangPlgVar_runtime_cTmPntThrLcl
-    PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
-    )
+PUBLIC
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+)
+# libclangPlgVar_runtime_cTmPntThrLcl.a 结束
 
 
 
