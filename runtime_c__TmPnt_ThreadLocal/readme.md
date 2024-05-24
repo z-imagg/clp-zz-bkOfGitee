@@ -1,4 +1,13 @@
 
+## libclangPlgVar_runtime_c_TmPnt_ThrLcl.a
+
+### libclangPlgVar_runtime_c_TmPnt_ThrLcl.a 是 frida_js 和  'runtime_cpp__vars_fn|runtime_c__vars_fn' 之间的桥梁
+
+- frida_js 写 ThreadLocal_TmPnt 到  libclangPlgVar_runtime_c_TmPnt_ThrLcl.a  
+
+- 'runtime_cpp__vars_fn|runtime_c__vars_fn' 从 libclangPlgVar_runtime_c_TmPnt_ThrLcl.a   读 ThreadLocal_TmPnt
+
+
 ### 术语
 
 TmPnt == TimePoint == 时间点

@@ -9,7 +9,6 @@ public:
     static void* thread_function(void* _tmPnt_init_ptr);
 };
 
-extern __thread  int TL_TmPnt;
 void* TestClass::thread_function(void* _tmPnt_init_ptr){
   int* tmPnt_init_ptr = (int*) _tmPnt_init_ptr;
   int tmPnt_init = *tmPnt_init_ptr;
@@ -22,9 +21,10 @@ void* TestClass::thread_function(void* _tmPnt_init_ptr){
   sleep(1);
   TL_TmPnt__update(tmPnt_init*2);
   int tmPnt_ThreadLocal_C=TL_TmPnt__get();
-  int tmPnt_ThreadLocal_D=TL_TmPnt;
+  int tmPnt_ThreadLocal_D=TL_TmPnt__get();
 
-  printf("ThreadLocal_TmPnt@0x%x; tmPnt_ThreadLocal[A=%d, B=%d, C=%d, D=%d]; ThreadLocal_TmPnt=%d\n",&TL_TmPnt, tmPnt_ThreadLocal_A, tmPnt_ThreadLocal_B, tmPnt_ThreadLocal_C, tmPnt_ThreadLocal_D, TL_TmPnt);
+  TL_TmPnt__printPtr();
+  printf(" tmPnt_ThreadLocal[A=%d, B=%d, C=%d, D=%d]; \n", tmPnt_ThreadLocal_A, tmPnt_ThreadLocal_B, tmPnt_ThreadLocal_C, tmPnt_ThreadLocal_D);
 
   pthread_exit(NULL);
 }
@@ -59,7 +59,10 @@ int main(int argc, char** argv){
 }
 
 /**输出举例
-ThreadLocal_TmPnt@0xe57fd63c; tmPnt_ThreadLocal[A=-1, B=23, C=46, D=46]; ThreadLocal_TmPnt=46
-ThreadLocal_TmPnt@0xe5ffe63c; tmPnt_ThreadLocal[A=-1, B=7, C=14, D=14]; ThreadLocal_TmPnt=14
-ThreadLocal_TmPnt@0xe67ff63c; tmPnt_ThreadLocal[A=-1, B=4, C=8, D=8]; ThreadLocal_TmPnt=8
+TL_TmPnt@0x6d3ff63c
+ tmPnt_ThreadLocal[A=-1, B=4, C=8, D=8];
+TL_TmPnt@0x6c3fd63c
+ tmPnt_ThreadLocal[A=-1, B=23, C=46, D=46];
+TL_TmPnt@0x6cbfe63c
+ tmPnt_ThreadLocal[A=-1, B=7, C=14, D=14];
 */
