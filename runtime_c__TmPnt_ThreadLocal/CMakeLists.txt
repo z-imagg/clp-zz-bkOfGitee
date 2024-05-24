@@ -63,3 +63,22 @@ PUBLIC
 
 
 
+
+# _c__test_main_linkStaticArch.elf 开始
+# 示范 如果 使用 libclangPlgVar_runtime_cTmPntThrLcl.a
+set(_c__SOURCES
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/TestMain_C.c"
+)
+add_executable( _c__test_main_linkStaticArch.elf
+${_c__SOURCES}
+)
+target_include_directories( _c__test_main_linkStaticArch.elf
+PRIVATE
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
+)
+#指定链接静态库 libclangPlgVar_runtime_cTmPntThrLcl.a
+target_link_libraries(_c__test_main_linkStaticArch.elf
+PRIVATE
+/fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/cmake-build-debug/libclangPlgVar_runtime_cTmPntThrLcl.a
+)
+# _c__test_main_linkStaticArch.elf 结束
