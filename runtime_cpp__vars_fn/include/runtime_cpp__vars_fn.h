@@ -25,7 +25,7 @@ struct __VarDeclLs{
 };
 typedef struct __VarDeclLs _VarDeclLs;
 
-//TODO  函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn();'
+//   函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn();'
 _VarDeclLs *  _init_varLs_inFn(std::string srcFilePath, std::string funcName,int funcLBrc_line,int funcLBrc_column);
 
 
