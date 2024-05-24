@@ -20,7 +20,7 @@ MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(runtime_c__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/runtime_c__vars_fn.c"
-"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/test_main__runtime_c__vars_fn.c"
+"${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/TestMain_C.c"
 "/app/antirez--sds/sds.c"
 )
 
