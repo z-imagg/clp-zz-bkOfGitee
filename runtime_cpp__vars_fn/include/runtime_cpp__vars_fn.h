@@ -2,11 +2,8 @@
 #ifndef runtime_cpp__vars_fn_H
 #define runtime_cpp__vars_fn_H
 
-// 始终保持 为 C++函数，而非C函数
-#ifndef __cplusplus
-extern "C++" {
-#endif
-
+#ifdef __cplusplus
+// 主为c++, 书写真实定义
 #include <vector>
 #include <string>
 struct __VarDecl{
@@ -41,8 +38,14 @@ void createVar(_VarDeclLs * _vdLs, std::string varTypeName,int varCnt);
 //【销毁变量通知】 TODO  函数右花括号前 插入 'destroyVarLs_inFn(_varLs_ptr);'
 void destroyVarLs_inFn(_VarDeclLs * _vdLs);
 
+#endif
+
 #ifndef __cplusplus
-}
+// 客为c, 指向c++函数
+// 查找命令  objdump --syms  /fridaAnlzAp/clang-var/build/runtime_cpp__vars_fn/libclangPlgVar_runtime_cxx.a | grep Var
+#define _init_varLs_inFn   _Z16_init_varLs_inFnNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES4_ii
+#define createVar          _Z9createVarP11__VarDeclLsNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi
+#define destroyVarLs_inFn  _Z17destroyVarLs_inFnP11__VarDeclLs
 #endif
 
 #endif //runtime_cpp__vars_fn_H

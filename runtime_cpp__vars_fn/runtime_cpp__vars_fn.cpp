@@ -2,10 +2,8 @@
 #include "runtime_cpp__vars_fn.h"
 
 
-// 始终保持 为 C++函数，而非C函数
-#ifndef __cplusplus
-extern "C++" {
-#endif
+#ifdef __cplusplus
+// 主为c++, 书写真实定义
 
 #include <iostream>
 #include <algorithm>
@@ -73,6 +71,4 @@ void destroyVarLs_inFn(_VarDeclLs *vdLs){
 }
 
 
-#ifndef __cplusplus
-}
 #endif
