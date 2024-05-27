@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "base/MyAssert.h"
+#include "Var/Constant.h"
 
 
 
@@ -18,13 +19,14 @@ using namespace llvm;
 using namespace clang;
 
 
-//结构体变量声明末尾 插入 'createVar(_varLs_ptr,"变量类型名",变量个数);'
-bool VarDeclVst::insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc ){
+//结构体变量声明末尾 插入 'createVar__RtCxx(_varLs_ptr,"变量类型名",变量个数);'
+bool VarDeclVst::insertAfter_VarDecl( bool useCXX,const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc ){
+     std::string fnName=Constant::fnNameS__createVar[useCXX];
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
     //region 构造插入语句
     std::string cStr_inserted=fmt::format(
-            "createVar(_vdLs, \"{}\", {})  /* 创建变量通知,  {} */ ;",
-            typeName, varCnt, varDeclLocId.to_string()
+            "{}(_vdLs, \"{}\", {})  /* 创建变量通知,  {} */ ;", // createVar__RtCxx 或 createVar__RtC00
+            fnName,typeName, varCnt, varDeclLocId.to_string()
     );
     llvm::StringRef strRef(cStr_inserted);
     //endregion
