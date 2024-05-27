@@ -44,6 +44,9 @@ void createVar__RtCxx(_VarDeclLs *_vdLs, std::string varTypeName, int varCnt){
 void destroyVarLs_inFn__RtCxx(_VarDeclLs *_vdLs){
     std::vector<_VarDecl> *_vdVec = _vdLs->_vdVec;
 
+  long varDeclGroupCnt = std::distance(_vdVec->begin(), _vdVec->end());
+
+if(varDeclGroupCnt>0){
     _VarDecl zero; zero.varCnt=0;
 
     const _VarDecl &sum_vd = std::accumulate(
@@ -59,12 +62,12 @@ void destroyVarLs_inFn__RtCxx(_VarDeclLs *_vdLs){
 
     int varCntSum=sum_vd.varCnt;
 
-    long varDeclGroupCnt = std::distance(_vdVec->begin(), _vdVec->end());
     std::cout << _vdLs->srcFilePath << ":" << _vdLs->funcLBrc_line << ":" << _vdLs->funcLBrc_column << ",varDeclGroupCnt=" << varDeclGroupCnt << ",varCntSum=" << varCntSum << std::endl;
 
     std::for_each(_vdVec->begin(), _vdVec->end(), [](const _VarDecl vd){
-        std::cout<<"vd:{varTypeName="<<vd.varTypeName<<",varCnt="<<vd.varCnt<<"}"<<std::endl;
+      std::cout<<"vd@runtimeCxx:{varTypeName="<<vd.varTypeName<<",varCnt="<<vd.varCnt<<"}"<<std::endl;
     });
+  }
 
     //delete:HeapObj_vdVec
     delete _vdLs->_vdVec; _vdLs->_vdVec= nullptr;

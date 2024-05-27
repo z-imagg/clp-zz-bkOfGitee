@@ -48,24 +48,24 @@ void createVar__RtC00(_VarDeclLs *_vdLs, sds varTypeName, int varCnt){
 void destroyVarLs_inFn__RtC00(_VarDeclLs *_vdLs){
     list_t* _vdVec = _vdLs->_vdVec; // std::vector<_VarDecl>
 
-    _VarDecl zero; zero.varCnt=0;
+  long varDeclGroupCnt = _vdVec->len; //std::distance(_vdVec->begin(), _vdVec->end());
 
-    int varCntSum=0;
+if(varDeclGroupCnt>0){
+  int varCntSum=0;
+  list_node_t *nodeK;
+  list_iterator_t *it = list_iterator_new(_vdVec, LIST_HEAD);
+  while ((nodeK = list_iterator_next(it))) {
+    _VarDecl* vdK=(_VarDecl*)(nodeK->val); //这不是c++，这是c，无类型信息，只能做危险的强制类型转换
+    printf("vd:{varTypeName=%s,varCnt=%d}\n",vdK->varTypeName,vdK->varCnt);
+    varCntSum += vdK->varCnt;
+    _DEL_(vdK);//释放 对象1 : _DEL_1
+  }
+  //释放迭代器(不释放链表自身)
+  list_iterator_destroy(it);
 
-    list_node_t *nodeK;
-    list_iterator_t *it = list_iterator_new(_vdVec, LIST_HEAD);
-    while ((nodeK = list_iterator_next(it))) {
-      _VarDecl* vdK=(_VarDecl*)(nodeK->val); //这不是c++，这是c，无类型信息，只能做危险的强制类型转换
-      printf("vd:{varTypeName=%s,varCnt=%d}\n",vdK->varTypeName,vdK->varCnt);
-      varCntSum += vdK->varCnt;
-      _DEL_(vdK);//释放 对象1 : _DEL_1
-    }
-    //释放迭代器(不释放链表自身)
-    list_iterator_destroy(it);
+  printf("%s:%d:%d,varDeclGroupCnt=%d,varCntSum=%d\n", _vdLs->srcFilePath , _vdLs->funcLBrc_line , _vdLs->funcLBrc_column , varDeclGroupCnt, varCntSum ) ;
 
-
-    long varDeclGroupCnt = _vdVec->len; //std::distance(_vdVec->begin(), _vdVec->end());
-    printf("%s:%d:%d,varDeclGroupCnt=%d,varCntSum=%d\n", _vdLs->srcFilePath , _vdLs->funcLBrc_line , _vdLs->funcLBrc_column , varDeclGroupCnt, varCntSum ) ;
+}
 
     list_destroy(_vdLs->_vdVec); // 释放 对象0 : _DEL_0  // delete vdLs->_vdVec;  vdLs->_vdVec= nullptr;
     _DEL_(_vdLs); // delete vdLs;
