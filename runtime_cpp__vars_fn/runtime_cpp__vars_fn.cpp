@@ -4,7 +4,7 @@
 // 本模块runtime_cpp__vars_fn 只允许被C++使用，而不允许被C使用
 #ifndef __cplusplus
 // 本模块若被C使用, 则报错以终止编译
-#error "[ERROR] runtime_cpp__vars_fn must be used as C++ not C"
+#error "[ERROR] runtime_cpp__vars_fn must be used as C++ not C @runtime_cpp__vars_fn.cpp"
 #else
 // 本模块必须被C++使用
 
