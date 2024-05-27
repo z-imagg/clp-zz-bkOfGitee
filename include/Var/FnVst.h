@@ -35,7 +35,7 @@ public:
 
     }
 
-    bool insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
+    bool insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
     bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);
     bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl);

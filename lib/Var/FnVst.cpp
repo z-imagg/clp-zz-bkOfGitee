@@ -14,25 +14,28 @@
 #include <clang/AST/ParentMapContext.h>
 
 #include "base/MyAssert.h"
+#include "Var/Constant.h"
 
 using namespace llvm;
 using namespace clang;
 
 
 //在函数体左花括号紧后插入'初始化语句'
-bool FnVst::insert_init__After_FnBdLBrc(LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
+bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc ){
 
+    std::string fnName=Constant::fnNameS__init_varLs[useCXX];
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
     if(Util::envVarEq("clangPlgVerbose_Var","true")){
         verbose=fnBdLBrcLocId.to_string();
     }
 
-//在函数左花括号紧后插入  初始化语句'_VarDeclLs * _vdLs=_init_varLs_inFn("源文件路径","函数名",行号,列号);'
+//在函数左花括号紧后插入  初始化语句'_VarDeclLs * _vdLs=_init_varLs_inFn__RtCxx("源文件路径","函数名",行号,列号);'
 
     //region 构造插入语句
     std::string cStr_init=fmt::format(
-            "_VarDeclLs * _vdLs=_init_varLs_inFn(\"{}\", \"{}\", {}, {}); /* 初始化函数变量列表, {}*/",
+            "_VarDeclLs * _vdLs={}(\"{}\", \"{}\", {}, {}); /* 初始化函数变量列表, {}*/", // _init_varLs_inFn__RtCxx 或 _init_varLs_inFn__RtC00
+            fnName,
             fnBdLBrcLocId.filePath,
             funcName,
             fnBdLBrcLocId.line, fnBdLBrcLocId.column,
