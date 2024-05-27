@@ -33,16 +33,16 @@ struct __VarDeclLs{
 };
 typedef struct __VarDeclLs _VarDeclLs;
 
-//   函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn();'
-_VarDeclLs *  _init_varLs_inFn(sds srcFilePath, sds funcName,int funcLBrc_line,int funcLBrc_column);
+//   函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn__RtC00();'
+_VarDeclLs *  _init_varLs_inFn__RtC00(sds srcFilePath, sds funcName, int funcLBrc_line, int funcLBrc_column);
 
 
-//结构体变量声明末尾 插入 'createVar(_varLs_ptr,"变量类型名",变量个数);'
-void createVar(_VarDeclLs * _vdLs, sds varTypeName,int varCnt);
+//结构体变量声明末尾 插入 'createVar__RtC00(_varLs_ptr,"变量类型名",变量个数);'
+void createVar__RtC00(_VarDeclLs * _vdLs, sds varTypeName, int varCnt);
 
 
-//【销毁变量通知】    函数右花括号前 插入 'destroyVarLs_inFn(_varLs_ptr);'
-void destroyVarLs_inFn(_VarDeclLs * _vdLs);
+//【销毁变量通知】    函数右花括号前 插入 'destroyVarLs_inFn__RtCxx(_varLs_ptr);'
+void destroyVarLs_inFn__RtCxx(_VarDeclLs * _vdLs);
 
 #endif  //__cplusplus判断结束
 

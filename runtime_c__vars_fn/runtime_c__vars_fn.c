@@ -16,8 +16,8 @@
 #include "sds.h"
 #include "list.h"
 
-//函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn();'
-_VarDeclLs *  _init_varLs_inFn(sds srcFilePath, sds funcName,int funcLBrc_line,int funcLBrc_column){
+//函数左花括号后 插入 'void* _varLs_ptr=_init_varLs_inFn__RtC00();'
+_VarDeclLs *  _init_varLs_inFn__RtC00(sds srcFilePath, sds funcName, int funcLBrc_line, int funcLBrc_column){
     //new:HeapObj_vdLs
     _VarDeclLs *vdLs = _NEW_(_VarDeclLs); // 分配 对象0 : _NEW_0  //new _VarDeclLs;
     //new:HeapObj_vdVec
@@ -32,21 +32,21 @@ _VarDeclLs *  _init_varLs_inFn(sds srcFilePath, sds funcName,int funcLBrc_line,i
 }
 
 
-//结构体变量声明末尾 插入 'createVar(_varLs_ptr,"变量类型名",变量个数);'
-void createVar(_VarDeclLs *vdLs, sds varTypeName,int varCnt){
+//结构体变量声明末尾 插入 'createVar__RtC00(_varLs_ptr,"变量类型名",变量个数);'
+void createVar__RtC00(_VarDeclLs *_vdLs, sds varTypeName, int varCnt){
 
     _VarDecl *vd= _NEW_(_VarDecl);//分配 对象1 : _NEW_1
     vd->varTypeName=varTypeName;
     vd->varCnt=varCnt;
 
     list_node_t *node=list_node_new(vd);
-    list_rpush(vdLs->_vdVec,node); // vdLs->_vdVec->push_back(vd);
+    list_rpush(_vdLs->_vdVec, node); // vdLs->_vdVec->push_back(vd);
 }
 
 
-//【销毁变量通知】 函数右花括号前 插入 'destroyVarLs_inFn(_varLs_ptr);'
-void destroyVarLs_inFn(_VarDeclLs *vdLs){
-    list_t* _vdVec = vdLs->_vdVec; // std::vector<_VarDecl>
+//【销毁变量通知】 函数右花括号前 插入 'destroyVarLs_inFn__RtCxx(_varLs_ptr);'
+void destroyVarLs_inFn__RtCxx(_VarDeclLs *_vdLs){
+    list_t* _vdVec = _vdLs->_vdVec; // std::vector<_VarDecl>
 
     _VarDecl zero; zero.varCnt=0;
 
@@ -65,10 +65,10 @@ void destroyVarLs_inFn(_VarDeclLs *vdLs){
 
 
     long varDeclGroupCnt = _vdVec->len; //std::distance(_vdVec->begin(), _vdVec->end());
-    printf( "%s:%d:%d,varDeclGroupCnt=%d,varCntSum=%d\n", vdLs->srcFilePath ,  vdLs->funcLBrc_line , vdLs->funcLBrc_column ,  varDeclGroupCnt,varCntSum ) ;
+    printf("%s:%d:%d,varDeclGroupCnt=%d,varCntSum=%d\n", _vdLs->srcFilePath , _vdLs->funcLBrc_line , _vdLs->funcLBrc_column , varDeclGroupCnt, varCntSum ) ;
 
-    list_destroy(vdLs->_vdVec); // 释放 对象0 : _DEL_0  // delete vdLs->_vdVec;  vdLs->_vdVec= nullptr;
-    _DEL_(vdLs); // delete vdLs;
+    list_destroy(_vdLs->_vdVec); // 释放 对象0 : _DEL_0  // delete vdLs->_vdVec;  vdLs->_vdVec= nullptr;
+    _DEL_(_vdLs); // delete vdLs;
 
 }
 
