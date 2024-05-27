@@ -14,23 +14,24 @@
 #include <clang/AST/ParentMapContext.h>
 
 #include "base/MyAssert.h"
+#include "Var/Constant.h"
 
 using namespace llvm;
 using namespace clang;
 
 //在return紧前插入'销毁语句'
-bool RetVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  ){
+bool RetVst::insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc ,bool useCXX ){
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
     if(Util::envVarEq("clangPlgVerbose_Var","true")){
         verbose=retBgnLocId.to_string();
     }
-
-//【销毁变量通知】  函数在return紧前 插入 销毁语句'destroyVarLs_inFn(_vdLs);'
+    std::string destroy_fnName=Constant::fnNameS__destroyVar[useCXX];
+//【销毁变量通知】  函数在return紧前 插入 销毁语句'destroyVarLs_inFn__RtCxx(_vdLs);'
     //region 构造插入语句
     std::string cStr_destroy=fmt::format(
-            "destroyVarLs_inFn(_vdLs); /* 销毁函数变量列表: {}*/",
-            verbose
+            "{}(_vdLs); /* 销毁函数变量列表: {}*/",  // destroyVarLs_inFn__RtCxx 或 destroyVarLs_inFn__RtC00
+            destroy_fnName, verbose
     );
     llvm::StringRef strRef_destroy(cStr_destroy);
     bool insertResult_destroy=mRewriter_ptr->InsertTextBefore(retBgnLoc , strRef_destroy);
@@ -57,6 +58,9 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
 
 /////////////////////////对当前节点returnStmt做 自定义处理
+  //  Ctx.langOpts.CPlusPlus 估计只能表示当前是用clang++编译的、还是clang编译的, [TODO] 但不能涵盖 'extern c'、'extern c++'造成的语言变化
+  const LangOptions &langOpts = Ctx->getLangOpts();
+  bool useCXX = (langOpts.CPlusPlus==1);
 
 //  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
@@ -64,7 +68,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
   if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
       if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
-          insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc);
+          insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc,useCXX);
       }
   }
 

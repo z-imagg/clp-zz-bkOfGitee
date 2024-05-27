@@ -12,6 +12,7 @@
 #include "clang/AST/Type.h"
 #include "clang/Basic/SourceManager.h"
 #include "base/LocId.h"
+#include "Constant.h"
 
 using namespace llvm;
 using namespace clang;
@@ -35,7 +36,7 @@ public:
 
     }
 
-    bool insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc  );
+    bool insert_destroy__Before_fnRet(LocId retBgnLocId, SourceLocation retBgnLoc ,bool useCXX );
 
     bool TraverseReturnStmt(ReturnStmt *returnStmt);
 
