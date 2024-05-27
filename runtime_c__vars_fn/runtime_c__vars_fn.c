@@ -2,6 +2,14 @@
 #include "runtime_c__vars_fn.h"
 #include <malloc.h>
 
+// 本模块 runtime_c__vars_fn 只允许被C使用，而不允许被C++使用
+#ifdef __cplusplus
+// 本模块若被C++使用, 则报错以终止编译
+#error "[ERROR] runtime_c__vars_fn must be used as C not C++"
+#else
+// 本模块必须被C使用
+
+
 #define _NEW_(Type)  ( (Type*)malloc(sizeof(Type)) )
 #define _DEL_(ptr)   free(ptr); ptr=NULL
 
@@ -63,3 +71,5 @@ void destroyVarLs_inFn(_VarDeclLs *vdLs){
     _DEL_(vdLs); // delete vdLs;
 
 }
+
+#endif  //__cplusplus判断结束
