@@ -88,6 +88,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
      if(!Util::isDeclInMainFile(SM,D)){
        continue;
      }
+     // TODO 若函数声明D 的身体只占据一行（  即 '{'和'}'在同一行， 则 忽略 即 不处理， 情况举例 /shl_app/qemu/util/module.c ）
      //只处理MainFile中的声明
        // A1、B1、C1需要保持顺序一致么？
      this->fnVst.TraverseDecl(D);//A1
