@@ -18,12 +18,12 @@ using namespace llvm;
 using namespace clang;
 
 
-//结构体变量声明末尾 插入 'createVar(_varLs_ptr,"变量类型名",变量个数);'
+//结构体变量声明末尾 插入 'createVar__RtCxx(_varLs_ptr,"变量类型名",变量个数);'
 bool VarDeclVst::insertAfter_VarDecl(const std::string typeName,int varCnt,LocId varDeclLocId, SourceLocation varDeclEndLoc ){
     //用funcEnterLocIdSet的尺寸作为LocationId的计数器
     //region 构造插入语句
     std::string cStr_inserted=fmt::format(
-            "createVar(_vdLs, \"{}\", {})  /* 创建变量通知,  {} */ ;",
+            "createVar__RtCxx(_vdLs, \"{}\", {})  /* 创建变量通知,  {} */ ;",
             typeName, varCnt, varDeclLocId.to_string()
     );
     llvm::StringRef strRef(cStr_inserted);
