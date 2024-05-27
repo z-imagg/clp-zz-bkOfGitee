@@ -44,8 +44,8 @@ void createVar__RtC00(_VarDeclLs *_vdLs, sds varTypeName, int varCnt){
 }
 
 
-//【销毁变量通知】 函数右花括号前 插入 'destroyVarLs_inFn__RtCxx(_varLs_ptr);'
-void destroyVarLs_inFn__RtCxx(_VarDeclLs *_vdLs){
+//【销毁变量通知】 函数右花括号前 插入 'destroyVarLs_inFn__RtC00(_varLs_ptr);'
+void destroyVarLs_inFn__RtC00(_VarDeclLs *_vdLs){
     list_t* _vdVec = _vdLs->_vdVec; // std::vector<_VarDecl>
 
     _VarDecl zero; zero.varCnt=0;

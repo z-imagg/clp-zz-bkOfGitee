@@ -41,8 +41,8 @@ _VarDeclLs *  _init_varLs_inFn__RtC00(sds srcFilePath, sds funcName, int funcLBr
 void createVar__RtC00(_VarDeclLs * _vdLs, sds varTypeName, int varCnt);
 
 
-//【销毁变量通知】    函数右花括号前 插入 'destroyVarLs_inFn__RtCxx(_varLs_ptr);'
-void destroyVarLs_inFn__RtCxx(_VarDeclLs * _vdLs);
+//【销毁变量通知】    函数右花括号前 插入 'destroyVarLs_inFn__RtC00(_varLs_ptr);'
+void destroyVarLs_inFn__RtC00(_VarDeclLs * _vdLs);
 
 #endif  //__cplusplus判断结束
 
