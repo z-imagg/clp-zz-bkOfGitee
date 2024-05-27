@@ -5,6 +5,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
+#include "base/ASTContextUtil.h"
 #include "Var/RangeHasMacroAstVst.h"
 #include "Var/CollectIncMacro_PPCb.h"
 #include <vector>
@@ -59,8 +60,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
 /////////////////////////对当前节点returnStmt做 自定义处理
   //  Ctx.langOpts.CPlusPlus 估计只能表示当前是用clang++编译的、还是clang编译的, [TODO] 但不能涵盖 'extern c'、'extern c++'造成的语言变化
-  const LangOptions &langOpts = Ctx->getLangOpts();
-  bool useCXX = (langOpts.CPlusPlus==1);
+  bool useCxx=ASTContextUtil::useCxx(Ctx);
 
 //  int64_t returnStmtID = returnStmt->getID(*Ctx);
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
@@ -68,7 +68,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
 
   if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
       if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
-          insert_destroy__Before_fnRet(retBgnLocId, retBgnLoc,useCXX);
+          insert_destroy__Before_fnRet(useCxx, retBgnLocId, retBgnLoc);
       }
   }
 
@@ -80,4 +80,5 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   return true;
 //  Expr *xxx = returnStmt->getRetValue();
 }
+
 

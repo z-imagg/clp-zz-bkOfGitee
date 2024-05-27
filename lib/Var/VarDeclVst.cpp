@@ -2,6 +2,7 @@
 
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
+#include "base/ASTContextUtil.h"
 #include "base/StrUtil.h"
 #include "Var/RangeHasMacroAstVst.h"
 #include "Var/CollectIncMacro_PPCb.h"
@@ -101,6 +102,8 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
         });
     }
 
+  //  Ctx.langOpts.CPlusPlus 估计只能表示当前是用clang++编译的、还是clang编译的, [TODO] 但不能涵盖 'extern c'、'extern c++'造成的语言变化
+    bool useCxx=ASTContextUtil::useCxx(Ctx);
     //是结构体
     if(likeStruct){
         //按照左右花括号，构建位置id，防止重复插入
@@ -108,7 +111,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
         LocId declStmtBgnLocId=LocId::buildFor(filePath,declStmtBgnLoc, SM);
         //【执行业务内容】 向threadLocal记录发生一次 :  栈区变量声明 其类型为typeClassName
         //只有似结构体变量才会产生通知
-        insertAfter_VarDecl(typeName,varCnt,declStmtBgnLocId,declStmtBgnLoc);
+        insertAfter_VarDecl(useCxx,typeName,varCnt,declStmtBgnLocId,declStmtBgnLoc);
     }
 
     return result;

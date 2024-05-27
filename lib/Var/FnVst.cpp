@@ -5,6 +5,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
 #include "base/Util.h"
+#include "base/ASTContextUtil.h"
 #include "Var/RangeHasMacroAstVst.h"
 #include "Var/CollectIncMacro_PPCb.h"
 #include <vector>
@@ -370,14 +371,14 @@ bool FnVst::_Traverse_Func(
     Util::printStmt(*Ctx,CI,"_Traverse_Func","查看语句compoundStmt源码",compoundStmt,true);
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
-
+  bool useCxx = ASTContextUtil::useCxx(Ctx);
 
     //region 插入 函数进入语句
     if(Util::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
 //        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&fnBdLBrcLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
 
         //若 本函数还 没有 插入 函数进入语句，才插入。
-        insert_init__After_FnBdLBrc(funcBodyLBraceLocId,funcName, funcBodyLBraceLoc, funcBodyRBraceLoc);
+        insert_init__After_FnBdLBrc(useCxx,funcBodyLBraceLocId,funcName, funcBodyLBraceLoc, funcBodyRBraceLoc);
     }
 //    }
     //endregion
