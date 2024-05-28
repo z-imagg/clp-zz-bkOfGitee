@@ -140,12 +140,31 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 
 
 
-bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
+bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMthD){
 
-  Util::printDecl(*Ctx,CI,"TraverseCXXMethodDecl","CxxMethDecl源码",cxxMethDecl,true);
-  CXXRecordDecl *parent = cxxMethDecl->getParent();//parent->methods()
-  Decl::Kind parentKind = parent->getKind();
-  return FnVst::I__TraverseCXXMethodDecl(cxxMethDecl,"TraverseCXXMethodDecl");
+  Decl::Kind kind = cxxMthD->getKind();
+  std::string who = fmt::format("CXXMethodDecl(kind={})", (int)kind);
+  if (cxxMthD && llvm::isa<clang::Decl>(*cxxMthD)) {
+    if (clang::Decl *decl = dyn_cast<clang::Decl>(cxxMthD)) {
+      const char *kindName = decl->getDeclKindName();
+      who=fmt::format("{}(kindName={})",who,kindName);
+    }
+  }
+  Util::printDecl(*Ctx, CI, "TraverseCXXMethodDecl", fmt::format("{}源码",who), cxxMthD, true); // CXXMethodDecl(kind=55)
+
+  if (cxxMthD && llvm::isa<clang::CXXConstructorDecl>(*cxxMthD)) {
+    if (clang::CXXConstructorDecl *cxxConD = dyn_cast<clang::CXXConstructorDecl>(cxxMthD)) {
+      return FnVst::I__TraverseCXXMethodDecl(cxxConD, who.c_str());
+    }
+  }
+
+  if (cxxMthD && llvm::isa<clang::CXXDestructorDecl>(*cxxMthD)) {
+    if (clang::CXXDestructorDecl *cxxDesD = dyn_cast<clang::CXXDestructorDecl>(cxxMthD)) {
+      return FnVst::I__TraverseCXXMethodDecl(cxxDesD, who.c_str());
+    }
+  }
+
+  return FnVst::I__TraverseCXXMethodDecl(cxxMthD, who.c_str());
 }
 
 bool FnVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
