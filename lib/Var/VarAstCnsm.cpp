@@ -106,9 +106,11 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
          std::for_each(cxxRecordDecl->method_begin(), cxxRecordDecl->method_end(), [this](  CXXMethodDecl* cxxMethodDecl){
            // cxx方法k
            // A1、B1、C1需要保持顺序一致么？
-           this->fnVst.TraverseCXXMethodDecl(cxxMethodDecl);//A1
-           this->retVst.TraverseCXXMethodDecl(cxxMethodDecl);//B1
-           this->varDeclVst.TraverseCXXMethodDecl(cxxMethodDecl);//C1
+           bool focusFunc=this->fnVst.TraverseCXXMethodDecl(cxxMethodDecl);//A1
+           if(focusFunc){
+             this->retVst.TraverseCXXMethodDecl(cxxMethodDecl);//B1
+             this->varDeclVst.TraverseCXXMethodDecl(cxxMethodDecl);//C1
+           }
          });
 
        }
@@ -118,9 +120,11 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
        if(clang::FunctionDecl *funDecl = dyn_cast<clang::FunctionDecl>(D)){
          // CUser::cxx方法j(){方法体}  , 普通方法i(){方法体}
          // A1、B1、C1需要保持顺序一致么？
-         this->fnVst.TraverseDecl(funDecl);//A1
-         this->retVst.TraverseDecl(funDecl);//B1
-         this->varDeclVst.TraverseDecl(funDecl);//C1
+         bool focusFunc=this->fnVst.TraverseDecl(funDecl);//A1
+         if(focusFunc){
+           this->retVst.TraverseDecl(funDecl);//B1
+           this->varDeclVst.TraverseDecl(funDecl);//C1
+         }
        }
      }else{
        const std::string &msg = fmt::format("跳过不关心的Decl，declKind={},declKindName={}\n\n", int(declKind), declKindName);
