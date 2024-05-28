@@ -168,7 +168,7 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   //跳过 函数体内无语句
   int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
-    return true;// class CxxUser{ cxx方法1(){ 方法体 }  ...   cxx方法k(){ 方法体 }  }  // TraverseCXX*Decl中途返回false(本函数内有多个中途返回false) 会导致CxxUser中后续方法不再被遍历, 这种行为 是 Consumer类中的 'this->fnVst.TraverseDecl(D)' 导致的
+    return false;
   }
 
   Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
