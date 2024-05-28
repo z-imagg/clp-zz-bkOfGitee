@@ -368,7 +368,7 @@ bool FnVst::_Traverse_Func(
 //  Stmt *funcBodyStmt,
 )
 {
-    Util::printStmt(*Ctx,CI,"_Traverse_Func","查看语句compoundStmt源码",compoundStmt,true);
+//    Util::printStmt(*Ctx,CI,"_Traverse_Func","查看语句compoundStmt源码",compoundStmt,true);
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
   bool useCxx = ASTContextUtil::useCxx(Ctx);
