@@ -45,7 +45,6 @@ bool VarDeclVst::insertAfter_VarDecl( bool useCXX,const std::string typeName,int
 }
 
 bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
-    std::cout<<"\n";
 
     //获取主文件ID,文件路径
     FileID mainFileId;
