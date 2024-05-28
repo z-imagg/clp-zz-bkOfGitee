@@ -55,6 +55,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
 }
 
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
+  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
     //跳过非MainFile
     bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
     if(!_LocFileIDEqMainFileID){
@@ -87,7 +88,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
         return false;
     }
 
-  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
     //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
     bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
     const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
@@ -171,7 +172,7 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
     return false;
   }
 
-  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
   bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
@@ -214,6 +215,8 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
 }
 
 bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
+
+  Util::printDecl(*Ctx,CI,"TraverseCXXMethodDecl","CxxMethDecl源码",cxxMethDecl,true);
   CXXRecordDecl *parent = cxxMethDecl->getParent();//parent->methods()
   Decl::Kind parentKind = parent->getKind();
   return FnVst::I__TraverseCXXMethodDecl(cxxMethDecl,"TraverseCXXMethodDecl");
@@ -259,7 +262,7 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
     return false;
   }
 
-  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
   bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
@@ -337,7 +340,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
     return false;
   }
 
-  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
   bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
