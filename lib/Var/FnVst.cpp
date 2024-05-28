@@ -139,80 +139,6 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 
 
 
-bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
-  //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, cxxCnstrDecl->getLocation());
-  if(!_LocFileIDEqMainFileID){
-    return false;
-  }
-  //跳过 default
-//  if(Util::cxxConstructorIsDefault(cxxCnstrDecl)){
-//    return true;
-//  }
-  //跳过 无函数体
-  bool hasBody=cxxCnstrDecl->hasBody();
-  if(!hasBody){
-    return false;
-  }
-  //跳过 constexpr
-  bool _isConstexpr = cxxCnstrDecl->isConstexpr();
-  if(_isConstexpr){
-    return false;
-  }
-
-  //获得 函数体、左右花括号
-  Stmt* body  = cxxCnstrDecl->getBody();
-  CompoundStmt* compoundStmt;
-  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
-
-  //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
-  if(stmtCntInFuncBody<=0){
-    return false;
-  }
-
-  //Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
-  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
-  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
-  const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
-  std::cout<<msg;
-  if(funcBodyLRBraceInSameLine){
-    return false;
-  }
-
-  bool parentKindIsCXXConstructorDecl= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXConstructorDecl>());
-
-  //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
-
-  //获取主文件ID,文件路径
-  FileID mainFileId;
-  std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
-
-  //获取函数名称
-  const std::string &funcQualifiedName = cxxCnstrDecl->getQualifiedNameAsString();
-
-  //按照左右花括号，构建位置id，防止重复插入
-  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
-  LocId funcBodyRBraceLocId=LocId::buildFor(filePath,funcBodyRBraceLoc, SM);
-
-  //获取返回类型
-  const QualType funcReturnType = cxxCnstrDecl->getReturnType();
-
-
-  return this->_Traverse_Func(
-        funcReturnType,
-        true,
-        endStmtOfFuncBody,
-        funcBodyLBraceLoc,
-        funcBodyRBraceLoc,
-        funcBodyLBraceLocId,funcBodyRBraceLocId,
-        compoundStmt,
-        funcQualifiedName
-        );
-}
 
 bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
 
@@ -224,9 +150,6 @@ bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
 
 bool FnVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
   return FnVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
-}
-bool FnVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
-  return FnVst::I__TraverseCXXMethodDecl(cxxDestructorDecl,"CXXDestructorDecl");
 }
 
 bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
