@@ -54,8 +54,6 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
     
-//    Util::printDecl(*Ctx,CI,"tag1","title1",&singleDecl,true);
-    //Util::printStmt(*Ctx,CI,"tag1","title1",declStmt,true);
 
     bool likeStruct;
     std::string typeName;

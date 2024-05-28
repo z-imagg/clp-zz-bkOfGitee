@@ -55,7 +55,6 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
 //注意: 直接写的'case {'内的 、 直接写在'case'内  不是一回事，而是差别很大。
       ){
         VarDeclDirectlyInCaseKCnt++;
-  //Util::printStmt(CI.getASTContext(),CI,"直接写在'case'内","VarDeclDirectlyInCaseKCnt",stmt,true);
       }
 
 
@@ -68,7 +67,6 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   //endregion
 
 
-//  Util::printStmt(CI.getASTContext(),CI,"caseK的子语句","",stmt,true);
 
   //到此处， 语句stmt 一定是 caseK的子语句
 

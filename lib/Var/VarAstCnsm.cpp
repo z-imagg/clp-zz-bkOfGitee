@@ -92,7 +92,6 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
 
      //只处理MainFile中的声明
 
-//     Util::printDecl(Ctx,CI,fmt::format("HandleTranslationUnit.Decl_{}",i),"Decl源码",D,true);
      Decl::Kind declKind = D->getKind();
      const char *declKindName = D->getDeclKindName();
 

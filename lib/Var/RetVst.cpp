@@ -50,7 +50,6 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
     return false;
   }
 
-  //Util::printStmt(CtxRef,CI,"打印TraverseReturnStmt参数","",returnStmt,true);
 
   //获取主文件ID,文件路径
   FileID mainFileId;
