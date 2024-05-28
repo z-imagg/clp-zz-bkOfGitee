@@ -55,6 +55,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
 }
 
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
+//  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
     //跳过非MainFile
     bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
     if(!_LocFileIDEqMainFileID){
@@ -84,6 +85,12 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     //跳过 函数体内无语句
     int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
     if(stmtCntInFuncBody<=0){
+        return false;
+    }
+
+    //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
+    bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+    if(funcBodyLRBraceInSameLine){
         return false;
     }
 
@@ -129,80 +136,15 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 
 
 
-bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
-  //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, cxxCnstrDecl->getLocation());
-  if(!_LocFileIDEqMainFileID){
-    return false;
-  }
-  //跳过 default
-//  if(Util::cxxConstructorIsDefault(cxxCnstrDecl)){
-//    return true;
-//  }
-  //跳过 无函数体
-  bool hasBody=cxxCnstrDecl->hasBody();
-  if(!hasBody){
-    return false;
-  }
-  //跳过 constexpr
-  bool _isConstexpr = cxxCnstrDecl->isConstexpr();
-  if(_isConstexpr){
-    return false;
-  }
 
-  //获得 函数体、左右花括号
-  Stmt* body  = cxxCnstrDecl->getBody();
-  CompoundStmt* compoundStmt;
-  SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMthD){
+  //cxxMthD is 'CXXMethodDecl | CXXConstructorDecl | CXXDestructorDecl'
 
-  //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
-  if(stmtCntInFuncBody<=0){
-    return false;
-  }
-  bool parentKindIsCXXConstructorDecl= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXConstructorDecl>());
-
-  //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
-
-  //获取主文件ID,文件路径
-  FileID mainFileId;
-  std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
-
-  //获取函数名称
-  const std::string &funcQualifiedName = cxxCnstrDecl->getQualifiedNameAsString();
-
-  //按照左右花括号，构建位置id，防止重复插入
-  LocId funcBodyLBraceLocId=LocId::buildFor(filePath, funcBodyLBraceLoc, SM);
-  LocId funcBodyRBraceLocId=LocId::buildFor(filePath,funcBodyRBraceLoc, SM);
-
-  //获取返回类型
-  const QualType funcReturnType = cxxCnstrDecl->getReturnType();
-
-
-  return this->_Traverse_Func(
-        funcReturnType,
-        true,
-        endStmtOfFuncBody,
-        funcBodyLBraceLoc,
-        funcBodyRBraceLoc,
-        funcBodyLBraceLocId,funcBodyRBraceLocId,
-        compoundStmt,
-        funcQualifiedName
-        );
-}
-
-bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl){
-  return FnVst::I__TraverseCXXMethodDecl(cxxMethDecl,"TraverseCXXMethodDecl");
+  return FnVst::I__TraverseCXXMethodDecl(cxxMthD, "Cxx*");
 }
 
 bool FnVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
   return FnVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
-}
-bool FnVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
-  return FnVst::I__TraverseCXXMethodDecl(cxxDestructorDecl,"CXXDestructorDecl");
 }
 
 bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
@@ -235,6 +177,12 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   //跳过 函数体内无语句
   int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
+    return false;
+  }
+
+  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
+  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  if(funcBodyLRBraceInSameLine){
     return false;
   }
 
@@ -307,6 +255,12 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
     return false;
   }
 
+  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
+  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  if(funcBodyLRBraceInSameLine){
+    return false;
+  }
+
   //获取最后一条语句
   Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
 
@@ -368,7 +322,7 @@ bool FnVst::_Traverse_Func(
 //  Stmt *funcBodyStmt,
 )
 {
-    Util::printStmt(*Ctx,CI,"_Traverse_Func","查看语句compoundStmt源码",compoundStmt,true);
+//    Util::printStmt(*Ctx,CI,"_Traverse_Func","查看语句compoundStmt源码",compoundStmt,true);
 
 /////////////////////////对当前节点cxxMethodDecl|functionDecl做 自定义处理
   bool useCxx = ASTContextUtil::useCxx(Ctx);
