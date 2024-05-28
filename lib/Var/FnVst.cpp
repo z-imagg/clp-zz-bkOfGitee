@@ -87,6 +87,15 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
         return false;
     }
 
+  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+    //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
+    bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+    const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
+    std::cout<<msg;
+    if(funcBodyLRBraceInSameLine){
+        return false;
+    }
+
     //获取最后一条语句
     Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
 
@@ -161,6 +170,16 @@ bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
   if(stmtCntInFuncBody<=0){
     return false;
   }
+
+  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
+  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
+  std::cout<<msg;
+  if(funcBodyLRBraceInSameLine){
+    return false;
+  }
+
   bool parentKindIsCXXConstructorDecl= Util::parentKindIsSame(Ctx, compoundStmt, ASTNodeKind::getFromNodeKind<CXXConstructorDecl>());
 
   //获取最后一条语句
@@ -238,6 +257,15 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
     return false;
   }
 
+  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
+  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
+  std::cout<<msg;
+  if(funcBodyLRBraceInSameLine){
+    return false;
+  }
+
   //获取最后一条语句
   Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
 
@@ -304,6 +332,15 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   //跳过 函数体内无语句
   int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
+    return false;
+  }
+
+  Util::printStmt(*Ctx,CI,"TraverseLambdaExpr","查看语句compoundStmt源码【为funcBodyLRBraceInSameLine】",compoundStmt,true);
+  //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的
+  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  const std::string &msg = fmt::format("funcBodyLRBraceInSameLine={},stmtCntInFuncBody={}\n\n", funcBodyLRBraceInSameLine, stmtCntInFuncBody);
+  std::cout<<msg;
+  if(funcBodyLRBraceInSameLine){
     return false;
   }
 
