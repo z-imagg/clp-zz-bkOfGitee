@@ -127,8 +127,8 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
          }
        }
      }else{
-       const std::string &msg = fmt::format("跳过不关心的Decl，declKind={},declKindName={}\n\n", int(declKind), declKindName);
-       std::cout<<msg;
+//       const std::string &msg = fmt::format("跳过不关心的Decl，declKind={},declKindName={}\n\n", int(declKind), declKindName);
+//       std::cout<<msg;
      }
 
      //clang::Decl::Function //clang::Decl::CXXRecord

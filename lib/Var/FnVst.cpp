@@ -55,7 +55,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
 }
 
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
-  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
+//  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
     //跳过非MainFile
     bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
     if(!_LocFileIDEqMainFileID){
