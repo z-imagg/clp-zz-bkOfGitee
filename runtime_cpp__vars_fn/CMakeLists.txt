@@ -28,7 +28,7 @@ set(runtime_c__TmPnt_ThreadLocal__staticLib "/fridaAnlzAp/clang-var/runtime_c__T
     )
 
 target_link_libraries(
-runtime_c__test_main
+runtime_cpp__test_main
     "${runtime_c__TmPnt_ThreadLocal__staticLib}"
 )
 #测试main 结束
