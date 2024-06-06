@@ -26,6 +26,8 @@ set(runtime_c__SOURCES
 
 #本c运行时 依赖模块 runtime_c__TmPnt_ThreadLocal 的头文件路径
 set(runtime_c__TmPnt_ThreadLocal__include "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include")
+#本c运行时 依赖模块 runtime_c__TmPnt_ThreadLocal 的静态库路径
+set(runtime_c__TmPnt_ThreadLocal__staticLib "/fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/build/libclangPlgVar_runtime_c_TmPnt_ThrLcl.a")
 
 #测试main 开始
 add_executable(
@@ -44,7 +46,7 @@ runtime_c__test_main
 target_link_libraries(
 runtime_c__test_main
     "/app/clibs--list/build/libclibs_list.a"
-    "/fridaAnlzAp/clang-var/runtime_c__TmPnt_ThreadLocal/build/libclangPlgVar_runtime_c_TmPnt_ThrLcl.a"
+    "${runtime_c__TmPnt_ThreadLocal__staticLib}"
 )
 #测试main 结束
 
