@@ -2,6 +2,9 @@
 #ifndef runtime_cpp__vars_fn_H
 #define runtime_cpp__vars_fn_H
 
+/* frida_js中的 术语
+TmPnt == TimePoint
+*/ 
 
 // 本模块runtime_cpp__vars_fn 只允许被C++使用，而不允许被C使用
 #ifndef __cplusplus
@@ -26,6 +29,9 @@ struct __VarDeclLs{
     std::string funcName;
     int funcLBrc_line;
     int funcLBrc_column;
+
+    //这些变量 所属 时刻点
+    int TmPnt;
 
     //业务字段
     std::vector<_VarDecl> * _vdVec;

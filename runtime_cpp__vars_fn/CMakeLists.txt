@@ -18,6 +18,8 @@ set(runtime_cpp__SOURCES
     runtime_cpp__test_main
       PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_cpp__vars_fn/include"
+#本c++运行时 依赖模块 runtime_c__TmPnt_ThreadLocal， 所以依赖 本c++运行时 的应用 一定要添加依赖 runtime_c__TmPnt_ThreadLocal
+    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
     )
 
 # 添加静态库目标
