@@ -52,6 +52,8 @@ add_library(clangPlgVar_runtime_c STATIC
 target_include_directories(clangPlgVar_runtime_c
     PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__vars_fn/include"
+#本c运行时 依赖模块 runtime_c__TmPnt_ThreadLocal， 所以依赖 本c运行时 的应用 一定要添加依赖 runtime_c__TmPnt_ThreadLocal
+    "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
     "/app/clibs--list/src"
     "/app/antirez--sds/"
     )
