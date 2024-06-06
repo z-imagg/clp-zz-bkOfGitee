@@ -9,6 +9,7 @@ set(runtime_cpp__SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_cpp__vars_fn/TestMain_Cpp.cpp"
 )
 
+#测试main 开始
     add_executable(
     runtime_cpp__test_main
       ${runtime_cpp__SOURCES}
@@ -18,10 +19,11 @@ set(runtime_cpp__SOURCES
     runtime_cpp__test_main
       PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_cpp__vars_fn/include"
-#本c++运行时 依赖模块 runtime_c__TmPnt_ThreadLocal， 所以依赖 本c++运行时 的应用 一定要添加依赖 runtime_c__TmPnt_ThreadLocal
     "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
     )
+#测试main 结束
 
+#静态库 开始
 # 添加静态库目标
 add_library(clangPlgVar_runtime_cxx STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_cpp__vars_fn/runtime_cpp__vars_fn.cpp"
@@ -31,4 +33,7 @@ add_library(clangPlgVar_runtime_cxx STATIC
 target_include_directories(clangPlgVar_runtime_cxx
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_cpp__vars_fn/include"
+#本c++运行时 依赖模块 runtime_c__TmPnt_ThreadLocal， 所以依赖 本c++运行时 的应用 一定要添加依赖 runtime_c__TmPnt_ThreadLocal
+        "${CMAKE_CURRENT_SOURCE_DIR}/../runtime_c__TmPnt_ThreadLocal/include"
         )
+#静态库 结束
