@@ -30,7 +30,7 @@ _VarDeclLs *  _init_varLs_inFn__RtC00(sds srcFilePath, sds funcName, int funcLBr
     vdLs->funcLBrc_column=funcLBrc_column;
 
     //依赖模块 runtime_c__TmPnt_ThreadLocal
-    vdLs.TmPnt=TL_TmPnt__get();
+    vdLs->TmPnt=TL_TmPnt__get();
 
     return vdLs;
 }
