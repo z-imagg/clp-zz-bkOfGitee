@@ -37,10 +37,16 @@ public:
 
     bool insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
-    //bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);//CXXConstructorDecl是一种CXXMethodDecl
+/* c++构造函数声明和实现 在不在同一个源文件 中 对于 TraverseCXXMethodDecl 的差异
+1. c++构造函数声明和实现分开放时,TraverseCXXMethodDecl并不会遍历这样的构造函数实现,因此FnVst需要明确写出TraverseCXXConstructorDecl
+     c++构造函数声明和实现分开放==’声明在.h、实现在.cxx‘
+2. c++构造函数声明和实现放在同一个源文件中时,TraverseCXXMethodDecl并会遍历这样的构造函数实现
+     c++构造函数声明和实现放在同一个源文件中 == ‘不论实现是否写在类声明中, 只要 声明在和实现都在同一个x.h 或 声明和实现都在同一个x.cpp’
+     */
+    bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);//CXXConstructorDecl是一种CXXMethodDecl
     bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMthD);
     bool TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl);
-    //bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);//CXXDestructorDecl是一种CXXMethodDecl
+    bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);//CXXDestructorDecl是一种CXXMethodDecl
     bool I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who);
     bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     bool _Traverse_Func(
