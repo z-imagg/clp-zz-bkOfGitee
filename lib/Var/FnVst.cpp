@@ -135,16 +135,23 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 }
 
 
+bool FnVst::TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl){
 
+    return FnVst::I__TraverseCXXMethodDecl(cxxCnstrDecl, "_CXXConstructorDecl");
+}
 
 bool FnVst::TraverseCXXMethodDecl(CXXMethodDecl* cxxMthD){
   //cxxMthD is 'CXXMethodDecl | CXXConstructorDecl | CXXDestructorDecl'
 
-  return FnVst::I__TraverseCXXMethodDecl(cxxMthD, "Cxx*");
+  return FnVst::I__TraverseCXXMethodDecl(cxxMthD, "_CXXMethodDecl");
 }
 
 bool FnVst::TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl){
   return FnVst::I__TraverseCXXMethodDecl(cxxCnvDecl,"TraverseCXXConversionDecl");
+}
+
+bool FnVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
+    return FnVst::I__TraverseCXXMethodDecl(cxxDestructorDecl, "_CXXDestructorDecl");
 }
 
 bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){

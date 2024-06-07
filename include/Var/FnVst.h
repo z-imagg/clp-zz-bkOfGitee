@@ -37,10 +37,10 @@ public:
 
     bool insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::string funcName, SourceLocation funcBodyLBraceLoc , SourceLocation funcBodyRBraceLoc );
     virtual bool TraverseFunctionDecl(FunctionDecl* funcDecl);
-    //bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);//CXXConstructorDecl是一种CXXMethodDecl
+    bool TraverseCXXConstructorDecl(CXXConstructorDecl* cxxCnstrDecl);//CXXConstructorDecl是一种CXXMethodDecl
     bool TraverseCXXMethodDecl(CXXMethodDecl* cxxMthD);
     bool TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl);
-    //bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);//CXXDestructorDecl是一种CXXMethodDecl
+    bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);//CXXDestructorDecl是一种CXXMethodDecl
     bool I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who);
     bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     bool _Traverse_Func(
