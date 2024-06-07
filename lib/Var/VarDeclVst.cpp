@@ -52,7 +52,13 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
-    
+
+
+    DynTypedNode parent;
+    ASTNodeKind parentNK;
+    bool only1P = Util::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
+    assert(only1P);
+    bool parentNKIsForStmt = ASTNodeKind::getFromNodeKind<ForStmt>().isSame(parentNK);
 
     bool likeStruct;
     std::string typeName;
