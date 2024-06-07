@@ -26,7 +26,6 @@ APFSSpacemanCIB::APFSSpacemanCIB(const APFSPool& pool,
     if (obj_type() != 0) {
         throw std::runtime_error("APFSSpacemanCIB: invalid object type");
     }
-//这里不该插入 销毁变量调用 destroyVarLs_inFn__RtC**
 return; /* voidFnEndInsertRet: */}
 int main(int argc, char** argv){
     return 0;
