@@ -1,73 +1,28 @@
-#define CASE_SAME(x) case x:
-#define INT_T int
-typedef double DOUBLE_typedef;
+//来源: https://gitee.com/repok/sleuthkit-4.12.1/blob/master/tsk/fs/yaffs.cpp
+#include <map>
+#include <string>
+#include <set>
 
-struct Point{
-    float x;
-    double y;
-};
-class UserEntity{};
-class ScoreRelation{};
-class MyClass {
-public:
-    static int ZERO;
-public:
-    double m_d1;
-    int m_n2;
 
-    void ff1() {   }
-    MyClass( ){}
+static int
+yaffs_validate_integer_field(std::string numStr){
+    return 0;
+}
 
-    MyClass(float f1, int n1)
-            :m_d1(f1),m_n2(n1)
-    {
-        char c3=1+n1;
-    }
+static int
+yaffs_validate_config_file(std::map<std::string, std::string> & paramMap){
+    int offset_field_count;
 
-    ~MyClass(){
-        int x,y,z;
-        UserEntity userEntity;
+    // Make a list of all fields to test
+    std::set<std::string> integerParams;
+    integerParams.insert("YAFFS_CONFIG_OBJ_ID_STR");
 
-        Point point0;
-        auto fn_point = [](const Point& point) {
-            if(point.x>point.y)
-                return point.x+point.y;
-            else
-                return 0.1;
-        };
-
-        fn_point(point0);
-    }
-
-    void voidDemo(int cnt, short chr){
-    }
-
-    void voidDemo2(UserEntity userEntity){
-        if(true){
-            return;
+    // If the parameter is set, verify that the value is an int
+    for(std::set<std::string>::iterator it = integerParams.begin();it != integerParams.end();it++){
+        if((paramMap.find(*it) != paramMap.end()) && 
+            (0 != yaffs_validate_integer_field(paramMap[*it]))){
+            return 1;
         }
     }
-
-
-
-};
-
-int MyClass::ZERO=0;
-
-void voidDemo3(){
-    int k=0;
-    k++;
-
-}
-int main(int argc, char** argv){
-    MyClass varMyClass;
-    static Point pnt1;
-    struct Point pnt2;
-    {
-        struct Point * ptr1=&pnt1;
-        struct Point * ptr2=&pnt2;
-        struct Point pnt3;
-    }
-
     return 0;
 }
