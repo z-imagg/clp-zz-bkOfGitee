@@ -1,3 +1,4 @@
+#pragma message("VFIR_inserted")
 //来源 ： /fridaAnlzAp/sleuthkit-4.12.1/tsk/fs/apfs.cpp
 
 #include <stdexcept>
@@ -26,7 +27,7 @@ APFSSpacemanCIB::APFSSpacemanCIB(const APFSPool& pool,
         throw std::runtime_error("APFSSpacemanCIB: invalid object type");
     }
 //这里不该插入 销毁变量调用 destroyVarLs_inFn__RtC**
-}
+return; /* voidFnEndInsertRet: */}
 int main(int argc, char** argv){
     return 0;
 }
