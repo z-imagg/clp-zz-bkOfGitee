@@ -53,12 +53,18 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
 
-
+    //忽略for中的循环变量声明, 因该位置插入函数调用语句createVar__RtC**不符合语法
+    //忽略'for(T var; var<3; var++) { T var2; }' 中的循环变量声明'T var', 该声明的特征是其父亲是ForStmt
+    //   请注意 'T var2;' 的父亲是CompoundStmt
     DynTypedNode parent;
     ASTNodeKind parentNK;
     bool only1P = Util::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
     assert(only1P);
     bool parentNKIsForStmt = ASTNodeKind::getFromNodeKind<ForStmt>().isSame(parentNK);
+    if(parentNKIsForStmt){
+        return false;
+    }
+    //TODO ForEach 要像 ForStmt 一样 处理么?
 
     bool likeStruct;
     std::string typeName;
