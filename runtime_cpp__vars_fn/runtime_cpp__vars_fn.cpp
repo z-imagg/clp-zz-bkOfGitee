@@ -1,5 +1,6 @@
 
 #include "runtime_cpp__vars_fn.h"
+#include "rntm_c__TmPnt_ThrLcl.h"
 
 // 本模块runtime_cpp__vars_fn 只允许被C++使用，而不允许被C使用
 #ifndef __cplusplus
@@ -23,6 +24,9 @@ _VarDeclLs *  _init_varLs_inFn__RtCxx(std::string srcFilePath, std::string funcN
     vdLs->funcName=funcName;
     vdLs->funcLBrc_line=funcLBrc_line;
     vdLs->funcLBrc_column=funcLBrc_column;
+
+    //依赖模块 runtime_c__TmPnt_ThreadLocal
+    vdLs->TmPnt=TL_TmPnt__get();
 
     return vdLs;
 }
