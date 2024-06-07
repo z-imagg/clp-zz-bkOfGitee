@@ -77,10 +77,15 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
 
     // 多声明 result 依赖 第0个声明
     // 单声明 result 依赖 该声明
+
+    // 获得 声明 中的 变量类型
     result= this->process_singleDecl(singleDecl, likeStruct, typeName, qualType);
     clang::Type::TypeClass  typeClass = qualType->getTypeClass();
 
+    // 获得 声明 中的 变量个数
+    //   单声明 变量个数为1， varCnt已经是1了. 因此单声明这里不做任何处理
     if(isSingleDecl){}
+    //   多声明 循环变量们 以获得变量个数
     else{
         //多声明（多变量声明、多函数声明、多x声明）
         const DeclGroupRef &dg = declStmt->getDeclGroup();
