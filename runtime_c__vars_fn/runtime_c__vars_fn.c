@@ -1,5 +1,6 @@
 
 #include "runtime_c__vars_fn.h"
+#include "rntm_c__TmPnt_ThrLcl.h"
 #include <malloc.h>
 
 // 本模块 runtime_c__vars_fn 只允许被C使用，而不允许被C++使用
@@ -27,6 +28,9 @@ _VarDeclLs *  _init_varLs_inFn__RtC00(sds srcFilePath, sds funcName, int funcLBr
     vdLs->funcName=funcName;
     vdLs->funcLBrc_line=funcLBrc_line;
     vdLs->funcLBrc_column=funcLBrc_column;
+
+    //依赖模块 runtime_c__TmPnt_ThreadLocal
+    vdLs->TmPnt=TL_TmPnt__get();
 
     return vdLs;
 }
