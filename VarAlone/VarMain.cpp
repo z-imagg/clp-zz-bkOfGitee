@@ -6,9 +6,9 @@
 #include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
-#include "Zz/VarAstCnsm.h"
+#include "Var/VarAstCnsm.h"
 #include "base/ActMain.h"
-#include "Zz/CollectIncMacro_PPCb.h"
+#include "Var/CollectIncMacro_PPCb.h"
 
 using namespace llvm;
 using namespace clang;
