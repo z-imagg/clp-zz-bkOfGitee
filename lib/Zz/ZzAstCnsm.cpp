@@ -8,6 +8,7 @@
 #include "base/UtilIsSysSrcFileOrMe.h"
 #include "base/UtilFile.h"
 #include "base/UtilEnvVar.h"
+#include "base/UtilDiagnostics.h"
 #include <llvm/Support/Casting.h>
 
 
@@ -160,7 +161,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
          fnVst.mRewriter_ptr->overwriteChangedFiles();//A1写
      }
      DiagnosticsEngine &Diags = CI.getDiagnostics();
-     std::cout <<  Util::strDiagnosticsEngineHasErr(Diags) << std::endl;
+     std::cout <<  UtilDiagnostics::strDiagnosticsEngineHasErr(Diags) << std::endl;
    //endregion
 
    ///region 在此编译进程内, 标记本mainFile已处理, 避免重复处理
