@@ -58,8 +58,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
 # 添加子模块
-add_subdirectory(ZzPlugin)
-add_subdirectory(ZzAlone)
+add_subdirectory(VarPlugin)
+add_subdirectory(VarAlone)
 add_subdirectory(TestAlone)
 add_subdirectory(test_in)
 add_subdirectory(base_home)
