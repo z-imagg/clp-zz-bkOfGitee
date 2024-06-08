@@ -7,6 +7,7 @@
 
 
 #include "base/Util.h"
+#include "base/UtilMainFile.h"
 
 
 using namespace clang;
@@ -23,7 +24,7 @@ using namespace clang;
       //region 获取主文件ID,文件路径
       FileID mainFileId;
       std::string filePath;
-      Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+      UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
       //endregion
 
       //region 跳过非主文件
@@ -49,7 +50,7 @@ using namespace clang;
       //region 获取主文件ID,文件路径
       FileID mainFileId;
       std::string filePath;
-      Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+      UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
       //endregion
 
       //region 跳过非主文件
@@ -104,7 +105,7 @@ std::unordered_set<LocId,LocId> CollectIncMacro_PPCb::MacroDefinedLocSet;
         //region 获取主文件ID,文件路径
         FileID mainFileId;
         std::string filePath;
-        Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
         //endregion
 
         //region 跳过非主文件

@@ -16,6 +16,13 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
+#include "base/UtilEndStmtOf.h"
+#include "base/UtilFuncIsX.h"
+#include "base/UtilCompoundStmt.h"
+#include "base/UtilLineNum.h"
+#include "base/UtilMainFile.h"
+#include "base/UtilLocId.h"
+#include "base/UtilEnvVar.h"
 
 using namespace llvm;
 using namespace clang;
@@ -27,7 +34,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
     std::string fnName=Constant::fnNameS__init_varLs[useCXX];
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
-    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+    if(UtilEnvVar::envVarEq("clangPlgVerbose_Var","true")){
         verbose=fnBdLBrcLocId.to_string();
     }
 
@@ -57,7 +64,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 //  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
     //跳过非MainFile
-    bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
+    bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
     if(!_LocFileIDEqMainFileID){
         return false;
     }
@@ -80,27 +87,27 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     Stmt* body  = funcDecl->getBody();
     CompoundStmt* compoundStmt;
     SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-    Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
     //跳过 函数体内无语句
-    int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+    int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
     if(stmtCntInFuncBody<=0){
         return false;
     }
 
     //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-    bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+    bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
     if(funcBodyLRBraceInSameLine){
         return false;
     }
 
     //获取最后一条语句
-    Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+    Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
     //获取主文件ID,文件路径
     FileID mainFileId;
     std::string filePath;
-    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
     //获取函数名称
     const std::string &funcQualifiedName = funcDecl->getQualifiedNameAsString();
@@ -115,7 +122,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     const QualType funcReturnType = funcDecl->getReturnType();
 
     bool funcIsStatic = funcDecl->isStatic();
-    bool funcIsInline = Util::funcIsInline(funcDecl);
+    bool funcIsInline = UtilFuncIsX::funcIsInline(funcDecl);
 
 //    std::string verboseLogMsg=fmt::format("开发查问题日志funcIsStatic_funcIsInline:【{}:{}:{};funcQualifiedName】,funcIsStatic={},funcIsInline={}\n",filePath,funcBodyLBraceLocId.line,funcBodyLBraceLocId.column,funcIsStatic,funcIsInline);
 //    std::cout<<verboseLogMsg;
@@ -156,7 +163,7 @@ bool FnVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
 
 bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -179,27 +186,27 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   Stmt* body = cxxMethDecl->getBody();
   CompoundStmt* compoundStmt;
   SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
   //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
     return false;
   }
 
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   if(funcBodyLRBraceInSameLine){
     return false;
   }
 
   //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+  Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
   //获取函数名称
   const std::string &funcQualifiedName = cxxMethDecl->getQualifiedNameAsString();
@@ -229,7 +236,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   }
 
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -254,27 +261,27 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   CompoundStmt* compoundStmt = lambdaExpr->getCompoundStmtBody();
 //  CompoundStmt* compoundStmt;
   SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::GetCompoundLRBracLoc( compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::GetCompoundLRBracLoc( compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
   //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
     return false;
   }
 
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   if(funcBodyLRBraceInSameLine){
     return false;
   }
 
   //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+  Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
   //lambda无函数名称
   const char * funName="";
@@ -335,7 +342,7 @@ bool FnVst::_Traverse_Func(
   bool useCxx = ASTContextUtil::useCxx(Ctx);
 
     //region 插入 函数进入语句
-    if(Util::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
+    if(UtilLocId::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
 //        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&fnBdLBrcLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
 
         //若 本函数还 没有 插入 函数进入语句，才插入。
