@@ -21,6 +21,7 @@
 #include "base/UtilCompoundStmt.h"
 #include "base/UtilLineNum.h"
 #include "base/UtilMainFile.h"
+#include "base/UtilLocId.h"
 
 using namespace llvm;
 using namespace clang;
@@ -340,7 +341,7 @@ bool FnVst::_Traverse_Func(
   bool useCxx = ASTContextUtil::useCxx(Ctx);
 
     //region 插入 函数进入语句
-    if(Util::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
+    if(UtilLocId::LocIdSetNotContains(fnBdLBrcLocIdSet, funcBodyLBraceLocId)){//若没有
 //        Util::printStmt(*Ctx, CI, fmt::format("排查问题:{:x},",reinterpret_cast<uintptr_t> (&fnBdLBrcLocIdSet)), funcBodyLBraceLocId.to_csv_line(), compoundStmt, true);
 
         //若 本函数还 没有 插入 函数进入语句，才插入。

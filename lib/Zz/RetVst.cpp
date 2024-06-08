@@ -18,6 +18,7 @@
 #include "Zz/Constant.h"
 #include "base/UtilParentKind.h"
 #include "base/UtilMainFile.h"
+#include "base/UtilLocId.h"
 
 using namespace llvm;
 using namespace clang;
@@ -68,7 +69,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   LocId retBgnLocId=LocId::buildFor(filePath,   retBgnLoc, SM);
 
   if(bool parentIsCompound=UtilParentKind::parentIsCompound(Ctx,returnStmt)){
-      if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
+      if(UtilLocId::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
           insert_destroy__Before_fnRet(useCxx, retBgnLocId, retBgnLoc);
       }
   }
