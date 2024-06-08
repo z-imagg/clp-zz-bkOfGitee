@@ -2,6 +2,7 @@
 #include "base/UtilParentKind.h"
 #include "base/UtilSrcRangeRelation.h"
 #include "base/UtilSrcRangeRelation.h"
+#include "base/UtilMacro.h"
 
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
@@ -95,7 +96,7 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   // 如果遍历到的单语句，开始位置在宏中 或 结束位置在宏中，则 给定Switch的限定位置范围内 有宏，直接返回，且不需要再遍历了。
   SourceLocation B = stmt->getBeginLoc();
   SourceLocation E = stmt->getEndLoc();
-  bool inMacro = Util::LocIsInMacro(B,SM) || Util::LocIsInMacro(E,SM);
+  bool inMacro = UtilMacro::LocIsInMacro(B,SM) || UtilMacro::LocIsInMacro(E,SM);
   if(!hasMacro ){
     if(inMacro){
       //若此单语句 在宏中, 则 标记 caseK子语句中 有宏
