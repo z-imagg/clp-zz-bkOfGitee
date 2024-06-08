@@ -8,8 +8,8 @@ MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(TestAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../TestAlone/TestAloneMain.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/RangeHasMacroAstVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/CollectIncMacro_PPCb.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RangeHasMacroAstVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/CollectIncMacro_PPCb.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/StrUtil.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
