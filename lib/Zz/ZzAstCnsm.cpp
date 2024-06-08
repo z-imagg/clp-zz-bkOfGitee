@@ -4,6 +4,7 @@
 
 #include "base/MyAssert.h"
 #include "base/UtilInsertInclude.h"
+#include "base/UtilMainFile.h"
 #include <llvm/Support/Casting.h>
 
 
@@ -34,7 +35,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    //region 顶层翻译单元 的 声明们 既有 主文件的 又有 非主文件的，故 在顶层 不合适 做 跳过 非主文件
    //  translationUnitDecl中同时包含 非MainFile中的Decl、MainFile中的Decl
    //    因此不能用translationUnitDecl的位置 判断当前是否在MainFile中
-//  if(!Util::isDeclInMainFile(SM,translationUnitDecl)){
+//  if(!UtilMainFile::isDeclInMainFile(SM,translationUnitDecl)){
 //    return;
 //  }
   //endregion
@@ -47,7 +48,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    ///region 获取主文件ID，文件路径
    FileID mainFileId;
    std::string filePath;
-   Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+   UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
    //endregion
 
    ///region 若是系统文件 或 tick文件则跳过
@@ -87,7 +88,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    for(int i=0; i<declCnt; i++) {
      Decl *D = declVec[i];
      //跳过非MainFile中的声明
-     if(!Util::isDeclInMainFile(SM,D)){
+     if(!UtilMainFile::isDeclInMainFile(SM,D)){
        continue;
      }
 

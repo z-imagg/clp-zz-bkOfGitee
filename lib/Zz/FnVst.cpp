@@ -20,6 +20,7 @@
 #include "base/UtilFuncIsX.h"
 #include "base/UtilCompoundStmt.h"
 #include "base/UtilLineNum.h"
+#include "base/UtilMainFile.h"
 
 using namespace llvm;
 using namespace clang;
@@ -61,7 +62,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
 bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
 //  Util::printDecl(*Ctx,CI,"TraverseFunctionDecl","FunDecl源码",funcDecl,true);
     //跳过非MainFile
-    bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
+    bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM, funcDecl->getLocation());
     if(!_LocFileIDEqMainFileID){
         return false;
     }
@@ -104,7 +105,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     //获取主文件ID,文件路径
     FileID mainFileId;
     std::string filePath;
-    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
     //获取函数名称
     const std::string &funcQualifiedName = funcDecl->getQualifiedNameAsString();
@@ -160,7 +161,7 @@ bool FnVst::TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl){
 
 bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who){
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,cxxMethDecl->getLocation());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -203,7 +204,7 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
   //获取函数名称
   const std::string &funcQualifiedName = cxxMethDecl->getQualifiedNameAsString();
@@ -233,7 +234,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   }
 
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,lambdaExpr->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -278,7 +279,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
   //lambda无函数名称
   const char * funName="";

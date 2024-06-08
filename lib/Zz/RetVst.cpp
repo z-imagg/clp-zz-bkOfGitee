@@ -17,6 +17,7 @@
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
 #include "base/UtilParentKind.h"
+#include "base/UtilMainFile.h"
 
 using namespace llvm;
 using namespace clang;
@@ -46,7 +47,7 @@ bool RetVst::insert_destroy__Before_fnRet(bool useCXX ,LocId retBgnLocId, Source
 
 bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -55,7 +56,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
 
 /////////////////////////对当前节点returnStmt做 自定义处理

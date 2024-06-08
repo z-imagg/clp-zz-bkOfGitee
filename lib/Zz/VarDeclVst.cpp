@@ -14,6 +14,7 @@
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
 #include "base/UtilParentKind.h"
+#include "base/UtilMainFile.h"
 
 
 using namespace llvm;
@@ -49,7 +50,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     //获取主文件ID,文件路径
     FileID mainFileId;
     std::string filePath;
-    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
 
