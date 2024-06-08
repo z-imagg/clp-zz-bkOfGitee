@@ -6,7 +6,7 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 #CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-var/tools
 
-set(VarAlone_SOURCES
+set(ZzAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ActMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../ZzAlone/VarMain.cpp"
 
@@ -24,13 +24,13 @@ set(VarAlone_SOURCES
 
     # Create a library corresponding to 'plugin'
     add_executable(
-        VarAlone
-      ${VarAlone_SOURCES}
+        ZzAlone
+      ${ZzAlone_SOURCES}
       )
 
     # Configure include directories for 'tool'
     target_include_directories(
-    VarAlone
+    ZzAlone
       PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/../include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/include"
@@ -39,7 +39,7 @@ set(VarAlone_SOURCES
 
     # Link in the required libraries
     target_link_libraries(
-    VarAlone
+    ZzAlone
       "clangTooling"
    "${LIBFMT_STATIC}"  #/pubx/fmt/build/libfmt.a
     )
