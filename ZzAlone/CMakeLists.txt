@@ -6,14 +6,14 @@ MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 #CMAKE_CURRENT_SOURCE_DIR: /pubx/clp-zz/tools
 
+#导入变量 base_util__SOURCES
+include("${CMAKE_CURRENT_SOURCE_DIR}/../base_home/base_util.cmake")
+
 set(ZzAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ActMain.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../ZzAlone/VarMain.cpp"
 
-"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/StrUtil.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ASTContextUtil.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/LocId.cpp"
+"${base_util__SOURCES}"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/FnVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RetVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/VarDeclVst.cpp"
