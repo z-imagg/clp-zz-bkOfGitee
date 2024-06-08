@@ -19,6 +19,7 @@
 #include "base/UtilEndStmtOf.h"
 #include "base/UtilFuncIsX.h"
 #include "base/UtilCompoundStmt.h"
+#include "base/UtilLineNum.h"
 
 using namespace llvm;
 using namespace clang;
@@ -92,7 +93,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     }
 
     //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-    bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+    bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
     if(funcBodyLRBraceInSameLine){
         return false;
     }
@@ -191,7 +192,7 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   }
 
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   if(funcBodyLRBraceInSameLine){
     return false;
   }
@@ -266,7 +267,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   }
 
   //跳过 函数左花括号、右花括号在同一行 且 (todo)函数体内只有一条语句的(难,一个大块复合语句也是一条语句)
-  bool funcBodyLRBraceInSameLine=Util::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
+  bool funcBodyLRBraceInSameLine=UtilLineNum::isEqSrcLocLineNum(SM,funcBodyLBraceLoc,funcBodyRBraceLoc);
   if(funcBodyLRBraceInSameLine){
     return false;
   }
