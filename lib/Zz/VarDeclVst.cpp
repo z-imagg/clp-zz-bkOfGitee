@@ -58,7 +58,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     //   请注意 'T var2;' 的父亲是CompoundStmt
     DynTypedNode parent;
     ASTNodeKind parentNK;
-    bool only1P = Util::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
+    bool only1P = UtilParentKind::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
     assert(only1P);
     bool parentNKIsForStmt = ASTNodeKind::getFromNodeKind<ForStmt>().isSame(parentNK);
     if(parentNKIsForStmt){
