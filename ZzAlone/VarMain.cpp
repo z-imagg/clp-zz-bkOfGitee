@@ -6,7 +6,7 @@
 #include "clang/Tooling/ArgumentsAdjusters.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Lex/PreprocessorOptions.h"
-#include "Zz/VarAstCnsm.h"
+#include "Zz/ZzAstCnsm.h"
 #include "base/ActMain.h"
 #include "Zz/CollectIncMacro_PPCb.h"
 
@@ -33,7 +33,7 @@ public:
       PP.addPPCallbacks(std::make_unique<CollectIncMacro_PPCb>(CI));
 
       //Act中 是 每次都是 新创建 AddBraceAstCnsm
-      return std::make_unique<VarAstCnsm>(CI,mRewriter_ptr, &astContext, SM, langOptions);
+      return std::make_unique<ZzAstCnsm>(CI, mRewriter_ptr, &astContext, SM, langOptions);
     }
 private:
     const std::shared_ptr<Rewriter> mRewriter_ptr=std::make_shared<Rewriter>();//这里是插件Act中的Rewriter，是源头，理应构造Rewriter.

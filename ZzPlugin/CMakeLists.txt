@@ -3,7 +3,7 @@
 
 
 set(Var_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/VarAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/ZzAstAct.cpp"
 
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/Util.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ASTContextUtil.cpp"
@@ -14,7 +14,7 @@ set(Var_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/VarDeclVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RangeHasMacroAstVst.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/CollectIncMacro_PPCb.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/VarAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/ZzAstCnsm.cpp"
 )
 
 

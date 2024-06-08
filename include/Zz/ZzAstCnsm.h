@@ -28,11 +28,11 @@ using namespace clang;
 //-----------------------------------------------------------------------------
 
 
-class VarAstCnsm : public ASTConsumer {
+class ZzAstCnsm : public ASTConsumer {
 public:
     //Rewriter:3:  Action将Rewriter传递给Consumer
-    explicit VarAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
-                        SourceManager &_SM, LangOptions &_langOptions)
+    explicit ZzAstCnsm(CompilerInstance &_CI, const std::shared_ptr<Rewriter> _rewriter_ptr, ASTContext *_astContext,
+                       SourceManager &_SM, LangOptions &_langOptions)
             //Rewriter:4:  Consumer将Rewriter传递给Visitor
             :
             CI(_CI),

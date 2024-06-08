@@ -1,4 +1,4 @@
-#include "Zz/VarAstCnsm.h"
+#include "Zz/ZzAstCnsm.h"
 #include "Zz/CollectIncMacro_PPCb.h"
 #include "Zz/Constant.h"
 
@@ -6,10 +6,10 @@
 #include <llvm/Support/Casting.h>
 
 
-bool VarAstCnsm::mainFileProcessed=false;
+bool ZzAstCnsm::mainFileProcessed=false;
 
 
- void VarAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
+ void ZzAstCnsm::HandleTranslationUnit(ASTContext &Ctx) {
      ///region 在此编译进程内, 跳过已处理的mainFile, 避免重复处理
      //被上层多次调用 本方法HandleTranslationUnit，后续的调用不再进入实际处理
      if(mainFileProcessed){
