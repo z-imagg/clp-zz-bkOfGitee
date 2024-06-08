@@ -21,6 +21,7 @@ set(ZzAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/CollectIncMacro_PPCb.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/ZzAstCnsm.cpp"
 )
+message( "ZzAlone_SOURCES:[${ZzAlone_SOURCES}]")
 
     # Create a library corresponding to 'plugin'
     add_executable(
