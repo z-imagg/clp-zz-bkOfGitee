@@ -6,6 +6,7 @@
 #include "base/UtilInsertInclude.h"
 #include "base/UtilMainFile.h"
 #include "base/UtilIsSysSrcFileOrMe.h"
+#include "base/UtilFile.h"
 #include <llvm/Support/Casting.h>
 
 
@@ -66,7 +67,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    ///region 复制源文件 到 /build/srcCopy/, 开关copySrcFile=true.
    // (适合cmake测试编译器，源文件用完即删除，导致此时出问题后拿不到源文件，难以复现问题）
    if(Util::envVarEq("copySrcFile","true")){
-     Util::copySrcFile(filePath,"/build/srcCopy/");
+     UtilFile::copySrcFile(filePath,"/build/srcCopy/");
    }
    //endregion
 
