@@ -17,6 +17,7 @@
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
 #include "base/UtilEndStmtOf.h"
+#include "base/UtilFuncIsX.h"
 
 using namespace llvm;
 using namespace clang;
@@ -116,7 +117,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     const QualType funcReturnType = funcDecl->getReturnType();
 
     bool funcIsStatic = funcDecl->isStatic();
-    bool funcIsInline = Util::funcIsInline(funcDecl);
+    bool funcIsInline = UtilFuncIsX::funcIsInline(funcDecl);
 
 //    std::string verboseLogMsg=fmt::format("开发查问题日志funcIsStatic_funcIsInline:【{}:{}:{};funcQualifiedName】,funcIsStatic={},funcIsInline={}\n",filePath,funcBodyLBraceLocId.line,funcBodyLBraceLocId.column,funcIsStatic,funcIsInline);
 //    std::cout<<verboseLogMsg;
