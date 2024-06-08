@@ -18,8 +18,6 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/ClAsCxx.cmake")
 #添加依赖 libfmt
 include("${CMAKE_CURRENT_SOURCE_DIR}/libfmt.cmake")
 
-#添加依赖 libncurses
-include("${CMAKE_CURRENT_SOURCE_DIR}/libncurses.cmake")
 
 # 拒绝非15版本的LLVM
 if(NOT LLVM_VERSION_MAJOR STREQUAL "15" )
