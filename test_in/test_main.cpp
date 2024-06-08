@@ -16,7 +16,7 @@ int main(int argc, char** argv){
 
     std::list<my_nsp::MyClass*> ls;
 
-    std::for_each(ls.begin(), ls.end(), [](auto k){ return k; });
+  std::for_each(ls.begin(), ls.end(), [](my_nsp::MyClass* k){ my_nsp::MyClass* idx=k; return k; });
 
     return 0;
 }
