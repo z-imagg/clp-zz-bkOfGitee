@@ -1,5 +1,6 @@
 #include "MyClz.h"
-
+#include <algorithm>
+#include <list>
 
 
 int main(int argc, char** argv){
@@ -11,6 +12,11 @@ int main(int argc, char** argv){
         struct Point * ptr2=&pnt2;
         struct Point pnt3;
     }
+
+
+    std::list<my_nsp::MyClass*> ls;
+
+  std::for_each(ls.begin(), ls.end(), [](my_nsp::MyClass* k){ my_nsp::MyClass* idx=k; return k; });
 
     return 0;
 }
