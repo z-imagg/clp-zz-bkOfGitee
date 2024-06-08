@@ -16,6 +16,7 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
+#include "base/UtilEndStmtOf.h"
 
 using namespace llvm;
 using namespace clang;
@@ -95,7 +96,7 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     }
 
     //获取最后一条语句
-    Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+    Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
     //获取主文件ID,文件路径
     FileID mainFileId;
@@ -194,7 +195,7 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   }
 
   //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+  Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
   //获取主文件ID,文件路径
   FileID mainFileId;
@@ -269,7 +270,7 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   }
 
   //获取最后一条语句
-  Stmt *endStmtOfFuncBody = Util::endStmtOfCompoundStmt(compoundStmt);
+  Stmt *endStmtOfFuncBody = UtilEndStmtOf::endStmtOfCompoundStmt(compoundStmt);
 
   //获取主文件ID,文件路径
   FileID mainFileId;
