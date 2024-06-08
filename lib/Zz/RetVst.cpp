@@ -16,6 +16,7 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
+#include "base/UtilParentKind.h"
 
 using namespace llvm;
 using namespace clang;
@@ -65,7 +66,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
   LocId retBgnLocId=LocId::buildFor(filePath,   retBgnLoc, SM);
 
-  if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
+  if(bool parentIsCompound=UtilParentKind::parentIsCompound(Ctx,returnStmt)){
       if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
           insert_destroy__Before_fnRet(useCxx, retBgnLocId, retBgnLoc);
       }

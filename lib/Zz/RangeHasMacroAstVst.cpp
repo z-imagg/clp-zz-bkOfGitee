@@ -1,5 +1,5 @@
 #include "Zz/RangeHasMacroAstVst.h"
-
+#include "base/UtilParentKind.h"
 
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
@@ -34,13 +34,13 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     if (stmt->getStmtClass() == Stmt::StmtClass::DeclStmtClass) {
       DynTypedNode parent;  ASTNodeKind parentNK;
       DynTypedNode pParent;  ASTNodeKind pParentNK;
-      bool only1P= Util::only1ParentNodeKind(CI, Ctx, stmt, parent, parentNK);
+      bool only1P= UtilParentKind::only1ParentNodeKind(CI, Ctx, stmt, parent, parentNK);
       bool parentNKIsCompound=ASTNodeKind::getFromNodeKind<CompoundStmt>().isSame(parentNK);
       bool belongSwitchDirectlyInCaseK=
           //直接写在'case'内, 但是其父亲是switch块的
           only1P
           && parentNKIsCompound//父是'switch {}'中的 '{}'
-           && Util::only1ParentNodeKind(CI, Ctx, parent.get<Stmt>(), pParent, pParentNK)
+           && UtilParentKind::only1ParentNodeKind(CI, Ctx, parent.get<Stmt>(), pParent, pParentNK)
           && ASTNodeKind::getFromNodeKind<SwitchStmt>().isSame(pParentNK)    //父父是 'switch'
            ;
       bool normalDirectlyInCase=
