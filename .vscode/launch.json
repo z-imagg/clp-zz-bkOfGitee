@@ -3,7 +3,7 @@
 "configurations": [
 
 { "name": "VarAlone", "type": "cppdbg", "request": "launch", "program": "${workspaceRoot}/build/bin/VarAlone",   "cwd": ".",
-"args": ["/fridaAnlzAp/clang-var/test_in/test_main.cpp"] }
+"args": ["/fridaAnlzAp/clp-zz/test_in/test_main.cpp"] }
 
 ]
 

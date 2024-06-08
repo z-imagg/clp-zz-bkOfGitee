@@ -12,7 +12,7 @@
 ```shell
 LLVM15HOME=/app/llvm_release_home/clang+llvm-15.0.0-x86_64-linux-gnu-rhel-8.4
 export PATH=$LLVM15HOME/bin:$PATH
-test_main_cpp_F=/fridaAnlzAp/clang-var/test_in/test_main.cpp
+test_main_cpp_F=/fridaAnlzAp/clp-zz/test_in/test_main.cpp
 ```
 
 ###### 写作CXXFLAGS、CFLAGS以在clang编译命令中运行插件VFIRPlugin
@@ -23,7 +23,7 @@ Clang_VFIRPlugin_run=" -Xclang   -load -Xclang /fridaAnlzAp/clang-voidFnEndInser
 
 ###### 写作CXXFLAGS、CFLAGS以在clang编译命令中运行插件VFIRPlugin
 ```shell
-Clang_Varlugin_run=" -Xclang   -load -Xclang /fridaAnlzAp/clang-var/build/lib/libVarPlugin.so -Xclang   -add-plugin -Xclang  VarPlugin   "
+Clang_Varlugin_run=" -Xclang   -load -Xclang /fridaAnlzAp/clp-zz/build/lib/libVarPlugin.so -Xclang   -add-plugin -Xclang  VarPlugin   "
 
 ```
 
@@ -56,7 +56,7 @@ clang++  $Clang_Varlugin_run    -c  $test_main_cpp_F
 2. 最后， 编译命令中加入'-include runtime_cpp__vars_fn.h', 再正常编译修改后源码
 ```shell
 
-PrjHm=/fridaAnlzAp/clang-var/
+PrjHm=/fridaAnlzAp/clp-zz/
 
 # 以clang编译命令-include 等效test_main.cpp中书写了'#include "runtime_cpp__vars_fn.h"'
 clang++ -I $PrjHm/runtime_cpp__vars_fn/include/ -include runtime_cpp__vars_fn.h  -c   $PrjHm/test_in/test_main.cpp

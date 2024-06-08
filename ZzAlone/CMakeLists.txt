@@ -1,10 +1,10 @@
 
 
 MESSAGE("CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-#CMAKE_SOURCE_DIR: /pubx/clang-var/
+#CMAKE_SOURCE_DIR: /pubx/clp-zz/
 
 MESSAGE("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-#CMAKE_CURRENT_SOURCE_DIR: /pubx/clang-var/tools
+#CMAKE_CURRENT_SOURCE_DIR: /pubx/clp-zz/tools
 
 set(ZzAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../base_home/impl/base/ActMain.cpp"
