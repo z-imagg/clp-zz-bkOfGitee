@@ -1,5 +1,5 @@
 #include "Zz/RangeHasMacroAstVst.h"
-
+#include "UtilParentKind.h"
 
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {

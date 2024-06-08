@@ -13,7 +13,7 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
-
+#include "UtilParentKind.h"
 
 
 using namespace llvm;
