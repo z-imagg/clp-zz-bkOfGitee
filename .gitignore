@@ -48,3 +48,5 @@ include/nlohmann
 cmake-build-debug/
 
 *.elf
+
+.fuse_hidden*
