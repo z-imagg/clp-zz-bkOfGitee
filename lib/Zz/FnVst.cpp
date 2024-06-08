@@ -34,7 +34,7 @@ bool FnVst::insert_init__After_FnBdLBrc( bool useCXX,LocId fnBdLBrcLocId,std::st
     std::string fnName=Constant::fnNameS__init_varLs[useCXX];
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
-    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+    if(UtilEnvVar::envVarEq("clangPlgVerbose_Var","true")){
         verbose=fnBdLBrcLocId.to_string();
     }
 

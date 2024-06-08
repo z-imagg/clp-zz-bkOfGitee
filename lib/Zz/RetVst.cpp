@@ -28,7 +28,7 @@ using namespace clang;
 bool RetVst::insert_destroy__Before_fnRet(bool useCXX ,LocId retBgnLocId, SourceLocation retBgnLoc ){
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
-    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+    if(UtilEnvVar::envVarEq("clangPlgVerbose_Var","true")){
         verbose=retBgnLocId.to_string();
     }
     std::string fnName=Constant::fnNameS__destroyVar[useCXX];
