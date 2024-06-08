@@ -1,5 +1,7 @@
 #include "Zz/RangeHasMacroAstVst.h"
 #include "base/UtilParentKind.h"
+#include "base/UtilSrcRangeRelation.h"
+#include "base/UtilSrcRangeRelation.h"
 
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
@@ -22,7 +24,7 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   // 这种情况可能是拿到了一个更大的非终结符号。
   //注意: SourceRange::fullyContains 结果是错误的, 才有自制方法Util::fullContains
 
-  bool inCaseKRange =  Util::fullContains(SM, caseKSrcRange, stmtR);
+  bool inCaseKRange =  UtilSrcRangeRelation::fullContains(SM, caseKSrcRange, stmtR);
   if(inCaseKRange) {
     //若 当前stmt 是 caseK的子语句
     //此if块内代码，是针对caseK中每个子语句都会执行的。
