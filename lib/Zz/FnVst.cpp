@@ -354,6 +354,12 @@ bool FnVst::_Traverse_Func(
 
 ///////////////////// 自定义处理 完毕
 
+////////////////////  粘接直接子节点到递归链条:  对 当前节点cxxMethodDecl|functionDecl的下一层节点child:{body} 调用顶层方法TraverseStmt(child)
+  // 粘接直接子节点到递归链条
+  if(compoundStmt){
+    TraverseStmt(compoundStmt);
+  }
+
 // _Traverse_Func返回true表示继续遍历函数声明
     return true;
 
