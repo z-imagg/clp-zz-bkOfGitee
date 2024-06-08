@@ -18,6 +18,7 @@
 #include "Zz/Constant.h"
 #include "base/UtilEndStmtOf.h"
 #include "base/UtilFuncIsX.h"
+#include "base/UtilCompoundStmt.h"
 
 using namespace llvm;
 using namespace clang;
@@ -82,10 +83,10 @@ bool FnVst::TraverseFunctionDecl(FunctionDecl *funcDecl) {
     Stmt* body  = funcDecl->getBody();
     CompoundStmt* compoundStmt;
     SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-    Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
     //跳过 函数体内无语句
-    int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+    int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
     if(stmtCntInFuncBody<=0){
         return false;
     }
@@ -181,10 +182,10 @@ bool FnVst::I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who)
   Stmt* body = cxxMethDecl->getBody();
   CompoundStmt* compoundStmt;
   SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::funcBodyIsCompoundThenGetLRBracLoc(body, compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
   //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
     return false;
   }
@@ -256,10 +257,10 @@ bool FnVst::TraverseLambdaExpr(LambdaExpr *lambdaExpr) {
   CompoundStmt* compoundStmt = lambdaExpr->getCompoundStmtBody();
 //  CompoundStmt* compoundStmt;
   SourceLocation funcBodyLBraceLoc,funcBodyRBraceLoc;
-  Util::GetCompoundLRBracLoc( compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
+  UtilCompoundStmt::GetCompoundLRBracLoc( compoundStmt, funcBodyLBraceLoc,funcBodyRBraceLoc);
 
   //跳过 函数体内无语句
-  int stmtCntInFuncBody= Util::childrenCntOfCompoundStmt(compoundStmt);
+  int stmtCntInFuncBody= UtilCompoundStmt::childrenCntOfCompoundStmt(compoundStmt);
   if(stmtCntInFuncBody<=0){
     return false;
   }
