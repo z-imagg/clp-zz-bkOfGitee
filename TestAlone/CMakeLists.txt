@@ -11,8 +11,8 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/../base_home/base_util.cmake")
 
 set(TestAlone_SOURCES
 "${CMAKE_CURRENT_SOURCE_DIR}/../TestAlone/TestAloneMain.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RangeHasMacroAstVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/CollectIncMacro_PPCb.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/RangeHasMacroAstVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/CollectIncMacro_PPCb.cpp"
 "${base_util__SOURCES}"
 
 )

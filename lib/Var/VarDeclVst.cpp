@@ -13,7 +13,8 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
-
+#include "base/UtilParentKind.h"
+#include "base/UtilMainFile.h"
 
 
 using namespace llvm;
@@ -49,7 +50,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     //获取主文件ID,文件路径
     FileID mainFileId;
     std::string filePath;
-    Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
     const SourceLocation declStmtBgnLoc = declStmt->getEndLoc();
 
@@ -58,7 +59,7 @@ bool VarDeclVst::TraverseDeclStmt(DeclStmt* declStmt){
     //   请注意 'T var2;' 的父亲是CompoundStmt
     DynTypedNode parent;
     ASTNodeKind parentNK;
-    bool only1P = Util::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
+    bool only1P = UtilParentKind::only1ParentNodeKind(CI, *Ctx, declStmt, parent, parentNK);
     assert(only1P);
     bool parentNKIsForStmt = ASTNodeKind::getFromNodeKind<ForStmt>().isSame(parentNK);
     if(parentNKIsForStmt){

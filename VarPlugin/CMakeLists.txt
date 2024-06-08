@@ -5,15 +5,15 @@
 include("${CMAKE_CURRENT_SOURCE_DIR}/../base_home/base_util.cmake")
 
 set(Var_SOURCES
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/ZzAstAct.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/VarAstAct.cpp"
 
 "${base_util__SOURCES}"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/FnVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RetVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/VarDeclVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/RangeHasMacroAstVst.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/CollectIncMacro_PPCb.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Zz/ZzAstCnsm.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/FnVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/RetVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/VarDeclVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/RangeHasMacroAstVst.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/CollectIncMacro_PPCb.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/../lib/Var/VarAstCnsm.cpp"
 )
 
 

@@ -1,4 +1,4 @@
-#include "Zz/ZzAstCnsm.h"
+#include "Zz/VarAstCnsm.h"
 
 #include "clang/AST/AST.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -24,7 +24,7 @@ public:
       // Act中 添加 收集#include、#define的 预处理回调
       PP.addPPCallbacks(std::make_unique<CollectIncMacro_PPCb>(CI));
 
-      return std::make_unique<ZzAstCnsm>(CI, mRewriter_ptr, &astContext, SM, langOptions);
+      return std::make_unique<VarAstCnsm>(CI, mRewriter_ptr, &astContext, SM, langOptions);
     }
 
     bool ParseArgs(const CompilerInstance &CI,
