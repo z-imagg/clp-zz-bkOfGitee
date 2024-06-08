@@ -22,6 +22,7 @@
 #include "base/UtilLineNum.h"
 #include "base/UtilMainFile.h"
 #include "base/UtilLocId.h"
+#include "base/UtilEnvVar.h"
 
 using namespace llvm;
 using namespace clang;

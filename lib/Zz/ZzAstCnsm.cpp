@@ -7,6 +7,7 @@
 #include "base/UtilMainFile.h"
 #include "base/UtilIsSysSrcFileOrMe.h"
 #include "base/UtilFile.h"
+#include "base/UtilEnvVar.h"
 #include <llvm/Support/Casting.h>
 
 
