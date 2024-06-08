@@ -16,6 +16,10 @@
 
 #include "base/MyAssert.h"
 #include "Zz/Constant.h"
+#include "base/UtilParentKind.h"
+#include "base/UtilMainFile.h"
+#include "base/UtilLocId.h"
+#include "base/UtilEnvVar.h"
 
 using namespace llvm;
 using namespace clang;
@@ -24,7 +28,7 @@ using namespace clang;
 bool RetVst::insert_destroy__Before_fnRet(bool useCXX ,LocId retBgnLocId, SourceLocation retBgnLoc ){
     std::string verbose="";
     //环境变量 clangPlgVerbose_Var 控制 是否在注释中输出完整路径_行号_列号
-    if(Util::envVarEq("clangPlgVerbose_Var","true")){
+    if(UtilEnvVar::envVarEq("clangPlgVerbose_Var","true")){
         verbose=retBgnLocId.to_string();
     }
     std::string fnName=Constant::fnNameS__destroyVar[useCXX];
@@ -45,7 +49,7 @@ bool RetVst::insert_destroy__Before_fnRet(bool useCXX ,LocId retBgnLocId, Source
 
 bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   //跳过非MainFile
-  bool _LocFileIDEqMainFileID=Util::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
+  bool _LocFileIDEqMainFileID=UtilMainFile::LocFileIDEqMainFileID(SM,returnStmt->getBeginLoc());
   if(!_LocFileIDEqMainFileID){
     return false;
   }
@@ -54,7 +58,7 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   //获取主文件ID,文件路径
   FileID mainFileId;
   std::string filePath;
-  Util::getMainFileIDMainFilePath(SM,mainFileId,filePath);
+  UtilMainFile::getMainFileIDMainFilePath(SM,mainFileId,filePath);
 
 
 /////////////////////////对当前节点returnStmt做 自定义处理
@@ -65,8 +69,8 @@ bool RetVst::TraverseReturnStmt(ReturnStmt *returnStmt){
   const SourceLocation &retBgnLoc = returnStmt->getBeginLoc();
   LocId retBgnLocId=LocId::buildFor(filePath,   retBgnLoc, SM);
 
-  if(bool parentIsCompound=Util::parentIsCompound(Ctx,returnStmt)){
-      if(Util::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
+  if(bool parentIsCompound=UtilParentKind::parentIsCompound(Ctx,returnStmt)){
+      if(UtilLocId::LocIdSetNotContains(retBgnLocIdSet, retBgnLocId)) {//防重复
           insert_destroy__Before_fnRet(useCxx, retBgnLocId, retBgnLoc);
       }
   }

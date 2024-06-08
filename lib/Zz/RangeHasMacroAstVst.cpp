@@ -1,5 +1,8 @@
 #include "Zz/RangeHasMacroAstVst.h"
-
+#include "base/UtilParentKind.h"
+#include "base/UtilSrcRangeRelation.h"
+#include "base/UtilSrcRangeRelation.h"
+#include "base/UtilMacro.h"
 
 
 bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
@@ -22,7 +25,7 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   // 这种情况可能是拿到了一个更大的非终结符号。
   //注意: SourceRange::fullyContains 结果是错误的, 才有自制方法Util::fullContains
 
-  bool inCaseKRange =  Util::fullContains(SM, caseKSrcRange, stmtR);
+  bool inCaseKRange =  UtilSrcRangeRelation::fullContains(SM, caseKSrcRange, stmtR);
   if(inCaseKRange) {
     //若 当前stmt 是 caseK的子语句
     //此if块内代码，是针对caseK中每个子语句都会执行的。
@@ -34,13 +37,13 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
     if (stmt->getStmtClass() == Stmt::StmtClass::DeclStmtClass) {
       DynTypedNode parent;  ASTNodeKind parentNK;
       DynTypedNode pParent;  ASTNodeKind pParentNK;
-      bool only1P= Util::only1ParentNodeKind(CI, Ctx, stmt, parent, parentNK);
+      bool only1P= UtilParentKind::only1ParentNodeKind(CI, Ctx, stmt, parent, parentNK);
       bool parentNKIsCompound=ASTNodeKind::getFromNodeKind<CompoundStmt>().isSame(parentNK);
       bool belongSwitchDirectlyInCaseK=
           //直接写在'case'内, 但是其父亲是switch块的
           only1P
           && parentNKIsCompound//父是'switch {}'中的 '{}'
-           && Util::only1ParentNodeKind(CI, Ctx, parent.get<Stmt>(), pParent, pParentNK)
+           && UtilParentKind::only1ParentNodeKind(CI, Ctx, parent.get<Stmt>(), pParent, pParentNK)
           && ASTNodeKind::getFromNodeKind<SwitchStmt>().isSame(pParentNK)    //父父是 'switch'
            ;
       bool normalDirectlyInCase=
@@ -93,7 +96,7 @@ bool RangeHasMacroAstVst::VisitStmt(clang::Stmt *stmt) {
   // 如果遍历到的单语句，开始位置在宏中 或 结束位置在宏中，则 给定Switch的限定位置范围内 有宏，直接返回，且不需要再遍历了。
   SourceLocation B = stmt->getBeginLoc();
   SourceLocation E = stmt->getEndLoc();
-  bool inMacro = Util::LocIsInMacro(B,SM) || Util::LocIsInMacro(E,SM);
+  bool inMacro = UtilMacro::LocIsInMacro(B,SM) || UtilMacro::LocIsInMacro(E,SM);
   if(!hasMacro ){
     if(inMacro){
       //若此单语句 在宏中, 则 标记 caseK子语句中 有宏
