@@ -5,6 +5,7 @@
 #include "base/MyAssert.h"
 #include "base/UtilInsertInclude.h"
 #include "base/UtilMainFile.h"
+#include "base/UtilIsSysSrcFileOrMe.h"
 #include <llvm/Support/Casting.h>
 
 
@@ -52,7 +53,7 @@ reinterpret_cast<uintptr_t> ( (fnVst.mRewriter_ptr.get()) ) ) << std::endl;
    //endregion
 
    ///region 若是系统文件 或 tick文件则跳过
-   if(Util::isSysSrcFile(filePath)  || Util::isRuntimeSrcFile(filePath,"runtime_cpp__vars_fn")){
+   if(UtilIsSysSrcFileOrMe::isSysSrcFile(filePath)  || UtilIsSysSrcFileOrMe::isRuntimeSrcFile(filePath,"runtime_cpp__vars_fn")){
      return ;
    }
    //endregion
