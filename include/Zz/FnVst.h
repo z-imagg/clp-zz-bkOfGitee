@@ -48,7 +48,6 @@ public:
     bool TraverseCXXConversionDecl(CXXConversionDecl * cxxCnvDecl);
     bool TraverseCXXDestructorDecl(CXXDestructorDecl * cxxDestructorDecl);//CXXDestructorDecl是一种CXXMethodDecl
     bool I__TraverseCXXMethodDecl(CXXMethodDecl* cxxMethDecl,const char* who);
-    bool VisitLambdaExpr(LambdaExpr *lambdaExpr);
     bool TraverseLambdaExpr(LambdaExpr *lambdaExpr);
     bool _Traverse_Func(
 //            bool funcIsStatic,
@@ -63,6 +62,7 @@ public:
             CompoundStmt* compoundStmt,
             std::string funcName
     );
+
 
 
 
